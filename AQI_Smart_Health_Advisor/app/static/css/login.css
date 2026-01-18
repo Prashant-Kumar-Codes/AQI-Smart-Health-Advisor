@@ -1,0 +1,467 @@
+/* * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ===== BACKGROUND ===== 
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: radial-gradient(circle at 30% 30%, #0d026c, #00a3cc 70%);
+    position: relative;
+    padding: 20px;
+} */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #10b981, #059669);
+    --warning-gradient: linear-gradient(135deg, #fbbf24, #f59e0b);
+    --danger-gradient: linear-gradient(135deg, #ef4444, #dc2626);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.1);
+    --shadow-md: 0 10px 30px rgba(0,0,0,0.15);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.3);
+    --radius: 15px;
+    --radius-lg: 20px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+/* Floating glow background */
+.background::before,
+.background::after {
+    content: "";
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent 70%);
+    filter: blur(100px);
+    animation: float 8s ease-in-out infinite alternate;
+    z-index: 0;
+}
+
+.background::before {
+    top: -100px;
+    left: -100px;
+}
+
+.background::after {
+    bottom: -150px;
+    right: -150px;
+    animation-delay: 2s;
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-30px); }
+}
+
+/* ===== CONTAINER ===== */
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    padding: 40px;
+    width: 100%;
+    max-width: 1100px;
+    z-index: 5;
+    position: relative;
+}
+
+/* ===== ILLUSTRATION ===== */
+.illustration {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    min-width: 250px;
+}
+
+.illustration img {
+    width: 100%;
+    max-width: 340px;
+    border-radius: 6%;
+    height: auto;
+    animation: floatImg 3s ease-in-out infinite, glow 4s ease-in-out infinite;
+    filter: drop-shadow(0 8px 20px rgba(0, 167, 225, 0.5));
+}
+
+@keyframes floatImg {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+    0%, 100% {
+        filter: drop-shadow(0 8px 20px rgba(0, 167, 225, 0.4));
+    }
+    50% {
+        filter: drop-shadow(0 8px 20px rgba(0, 167, 225, 0.8));
+    }
+}
+
+/* ===== FORM ===== */
+.form-box {
+    flex: 1;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    min-height: 500px;
+}
+
+.form-container {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    pointer-events: none;
+    animation: fadeOutDown 0.5s ease forwards;
+    transition: all 0.5s ease;
+}
+
+.form-container.active {
+    opacity: 1;
+    position: relative;
+    pointer-events: auto;
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.form-box h2 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #fff;
+    text-align: center;
+}
+
+.input-box {
+    position: relative;
+    margin-bottom: 18px;
+}
+
+.input-box i {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #666;
+    pointer-events: none;
+}
+
+.input-box input,
+.input-box select {
+    width: 100%;
+    padding: 12px 40px 12px 40px;
+    border: none;
+    border-radius: 25px;
+    outline: none;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.input-box select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml;utf8,%3Csvg fill='%23666' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    padding-right: 35px;
+}
+
+.input-box input:focus,
+.input-box select:focus {
+    box-shadow: 0 0 0 2px #00a7e1;
+    background: rgba(255, 255, 255, 1);
+}
+
+.remember {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #eee;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.remember label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.remember input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.remember a {
+    color: #fff;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.remember a:hover {
+    text-decoration: underline;
+}
+
+/* ===== BUTTON ===== */
+.btn {
+    width: 100%;
+    padding: 12px 20px;
+    background-color: #00aaff;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background-color: #0088cc;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 136, 204, 0.4);
+}
+
+.btn:active {
+    transform: translateY(-1px);
+}
+
+/* ===== CREATE ACCOUNT ===== */
+.create {
+    text-align: center;
+    margin: 20px 0 15px 0;
+    font-size: 15px;
+}
+
+.create a {
+    color: #fff;
+    text-decoration: underline;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.create a:hover {
+    color: #00aaff;
+}
+
+/* ===== SOCIAL LOGIN ===== */
+.social-login {
+    text-align: center;
+    margin-top: 20px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.social-login p {
+    margin-bottom: 12px;
+    opacity: 0.9;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.social-icons a {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    color: white;
+    transition: all 0.3s ease;
+    font-size: 18px;
+}
+
+.fb { background: #3b5998; }
+.tw { background: #1da1f2; }
+.gl { background: #db4437; }
+
+.social-icons a:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 6px 15px rgba(255, 255, 255, 0.3);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOutDown {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    .container {
+        gap: 30px;
+        padding: 30px;
+    }
+    
+    .illustration img {
+        /* max-width: 280px; */
+        max-width: 350px;
+        border-radius: 6%;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+        padding: 25px;
+        min-height: auto;
+    }
+    
+    .illustration {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .illustration img {
+        max-width: 220px;
+        border-radius: 6%;
+    }
+    
+    .form-box {
+        width: 100%;
+        max-width: 100%;
+        min-height: auto;
+    }
+    
+    .form-box h2 {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+    
+    .input-box {
+        margin-bottom: 16px;
+    }
+    
+    .input-box input,
+    .input-box select {
+        font-size: 16px;
+    }
+    
+    .btn {
+        padding: 14px 20px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 20px;
+        gap: 15px;
+        border-radius: 15px;
+    }
+    
+    .illustration {
+        display: none;
+    }
+    
+    .form-box {
+        width: 100%;
+        min-height: auto;
+    }
+    
+    .form-box h2 {
+        font-size: 24px;
+        margin-bottom: 18px;
+    }
+    
+    .input-box input,
+    .input-box select {
+        padding: 11px 35px 11px 35px;
+        font-size: 14px;
+    }
+    
+    .remember {
+        font-size: 13px;
+    }
+    
+    .social-icons a {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    
+    .create {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 360px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .form-box h2 {
+        font-size: 22px;
+    }
+    
+    .input-box input,
+    .input-box select {
+        padding: 10px 32px 10px 32px;
+        font-size: 13px;
+    }
+}

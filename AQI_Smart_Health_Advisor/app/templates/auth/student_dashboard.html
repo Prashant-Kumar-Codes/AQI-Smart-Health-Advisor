@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Message Dashboard{% endblock %}
+
+{% block style %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/dashboard.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/dashboard_message.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <section id="nav"><h3>Messaging Dashboard</h3></section>
+    <section id="content"><h3>Content Part - {{username}}, {{unique_id}}</h3></section>
+
+    <section id="message_block">
+        <div id="message_header">
+            <h4>Messages</h4>
+        </div>
+
+        <div id="message_list">
+            <!-- Initial messages from database -->
+            {% if fetched_messages %}
+                {% for message in fetched_messages %}
+                <div class="message_item">
+                    <div class="message_content">
+                        <p><strong>From:</strong> {{ message["from_user"] }}</p>
+                        <p><strong>To:</strong> {{ message["to_user"] }}</p>
+                        <p><strong>Message:</strong> {{ message["message"] }}</p>
+                        <p class="message_meta">
+                            <span>{{ message["date"] }}</span> | <span>{{ message['time'] }}</span>
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="message_empty">
+                    <p>No messages yet. Start a conversation!</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <footer>Real-time Messaging Dashboard</footer>
+
+    <button id="add_message_btn">+</button>
+    <div id="dialog_overlay"></div>
+
+    <div id="message_dialog">
+        <h3>New Message</h3>
+        <form id="message_form">
+            <label for="recipient_id">To (User ID):</label>
+            <input type="text" id="recipient_id" name="recipient_id" placeholder="Enter recipient ID" required>
+
+            <label for="message_text">Message:</label>
+            <textarea id="message_text" name="message_text" placeholder="Type your message here..." required></textarea>
+
+            <div class="dialog_buttons">
+                <button type="button" id="cancel_btn">Cancel</button>
+                <button type="submit" id="send_btn">Send</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <!-- SocketIO CDN -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    
+    <!-- Message Bar Handler -->
+    <script src="{{ url_for('static', filename='js/dashboard_message.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    
+    <!-- Dialog Handler -->
+    <!-- <script src="{{ url_for('static', filename='js/dialog.js') }}"></script> -->
+{% endblock %}

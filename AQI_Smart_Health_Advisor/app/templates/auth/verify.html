@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}Verify OTP{% endblock %}
+
+{% block style %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/verify.css') }}">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+<div class="background"></div>
+
+<div class="container">
+    <div class="verify-content">
+        <div class="verify-header">
+            <div class="verify-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <h2 class="verify-title">Verify OTP</h2>
+            <p class="verify-subtitle">Enter the 6-digit code sent to your email</p>
+        </div>
+
+        <form id="verifyForm" method="POST" action="{{ url_for('auth.verify') }}">
+            <div>
+                <input 
+                    type="text" 
+                    id="otpInput"
+                    name="otp" 
+                    maxlength="6" 
+                    inputmode="numeric"
+                    placeholder="000000" 
+                    class="single-otp-input" 
+                    required
+                    pattern="[0-9]{6}"
+                    title="Please enter 6 digits"
+                >
+            </div>
+
+            <div class="timer-section" id="timerSection">
+                Resend available in: <span id="countdown">60</span>s
+            </div>
+
+            <button id="verify-btn" type="submit" class="verify-btn">
+                <i class="fas fa-check"></i>Verify OTP
+            </button>
+        </form>
+
+        <form id="resendForm" method="POST" action="{{ url_for('auth.resend_otp') }}">
+            <button id="resend-btn" type="submit" class="resend-btn" disabled>
+                <i class="fas fa-redo"></i>Resend OTP
+            </button>
+        </form>
+
+        <div class="back-login">
+            <a href="{{ url_for('auth.auth_page') }}">
+                <i class="fas fa-arrow-left"></i>Back to Login
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    console.log('OTP Script loaded');
+
+    // Get elements
+    const countdown = document.getElementById('countdown');
+    const timerSection = document.getElementById('timerSection');
+    const resendBtn = document.getElementById('resend-btn');
+    const otpInput = document.getElementById('otpInput');
+    const verifyForm = document.getElementById('verifyForm');
+
+    console.log('Elements:', { countdown, timerSection, resendBtn, otpInput, verifyForm });
+
+    let timeLeft = Number("{{ remaining|default(60) }}");
+    let timerRunning = false;
+
+    console.log('Initial timeLeft:', timeLeft);
+
+    /**
+     * Start countdown timer
+     */
+    function startTimer() {
+        console.log('Starting timer with timeLeft:', timeLeft);
+        
+        if (timerRunning) {
+            console.log('Timer already running');
+            return;
+        }
+
+        timerRunning = true;
+        resendBtn.disabled = true;
+        timerSection.classList.remove('expired');
+
+        const timer = setInterval(() => {
+            timeLeft--;
+            console.log('Countdown:', timeLeft);
+            countdown.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timerRunning = false;
+                countdown.textContent = 'Expired';
+                resendBtn.disabled = false;
+                timerSection.classList.add('expired');
+                console.log('Timer expired');
+            }
+        }, 1000);
+    }
+
+    /**
+     * Auto-format OTP - only digits
+     */
+    otpInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    });
+
+    /**
+     * Validate OTP on submit
+     */
+    verifyForm.addEventListener('submit', (e) => {
+        if (otpInput.value.length !== 6) {
+            e.preventDefault();
+            otpInput.style.borderColor = '#ff6b6b';
+            otpInput.style.boxShadow = '0 0 0 3px rgba(255, 107, 107, 0.2)';
+            
+            setTimeout(() => {
+                otpInput.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                otpInput.style.boxShadow = 'none';
+            }, 1500);
+        }
+    });
+
+    /**
+     * Resend button - reset timer
+     */
+    document.getElementById('resendForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        timeLeft = 60;
+        timerRunning = false;
+        console.log('Resend clicked - reset timer');
+        startTimer();
+        // Then submit the form via AJAX or normal submission
+        document.getElementById('resendForm').submit();
+    });
+
+    // ============================================
+    // INITIALIZE
+    // ============================================
+    
+    console.log('Initializing... timeLeft:', timeLeft);
+    
+    if (timeLeft > 0) {
+        startTimer();
+    } else {
+        countdown.textContent = 'Expired';
+        resendBtn.disabled = false;
+        timerSection.classList.add('expired');
+    }
+</script>
+{% endblock %}

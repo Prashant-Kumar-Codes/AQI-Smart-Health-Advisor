@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard{% endblock %}
+
+{% block style %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+{% endblock %}
+
+{% block content %}
+  <!-- Mobile top bar with hamburger -->
+  <header class="topbar">
+    <button id="hamburger" aria-label="Open menu" class="hamburger">
+      <!-- simple hamburger icon -->
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="topbar-title">Student Dashboard</div>
+    <div class="topbar-actions">
+      <button id="notifBtn" class="icon-btn" title="Notifications">
+        <!-- bell -->
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0 1 18 14.158V11a6 6 0 0 0-5-5.917V4a1 1 0 0 0-2 0v1.083A6 6 0 0 0 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="profile-mini" id="profileMini" title="Account">
+        <img src="https://i.pravatar.cc/40?img=5" alt="User" />
+      </div>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <!-- user info -->
+        <div class="user">
+          <img class="avatar" src="https://i.pravatar.cc/80?img=5" alt="User avatar" />
+          <div class="user-info">
+            <div class="name">Sana</div>
+            <div class="role">Student</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nav menu -->
+      <nav class="menu" role="navigation" aria-label="Main menu">
+        <button class="menu-item active" data-route="home">
+          <!-- svg icon -->
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M3 11.5L12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V11.5z" fill="currentColor"/></svg>
+          </span>
+          <span class="label">Home</span>
+        </button>
+
+        <button class="menu-item" data-route="profile">
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z" fill="currentColor"/></svg>
+          </span>
+          <span class="label">Profile</span>
+        </button>
+
+        <button class="menu-item" data-route="assignments">
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M7 2h6l2 2h3v18H4V2h3z" fill="currentColor"/></svg>
+          </span>
+          <span class="label">Assignments</span>
+        </button>
+
+        <button class="menu-item" data-route="progress">
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M3 3v18h18" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 13l4-4 6 6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          </span>
+          <span class="label">Progress</span>
+        </button>
+
+        <button class="menu-item" data-route="logout">
+          <span class="icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M16 17l5-5-5-5M21 12H9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="label">Logout</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <small>© 2025 EduDash</small>
+      </div>
+    </aside>
+
+    <!-- Main content area (changing via SPA routing) -->
+    <main class="main">
+      <!-- Header area -->
+      <section class="main-header">
+        <h1 id="pageTitle">Welcome to Your Dashboard</h1>
+        <p id="pageSubtitle">Select a section from the menu to get started.</p>
+      </section>
+
+      <!-- Dynamic content container -->
+      <section id="view" class="view">
+        <!-- Home view (default) -->
+        <div class="view-page" data-view="home">
+          <div class="cards-grid">
+            <!-- quick stat cards -->
+            <div class="card stat">
+              <div class="card-head">Completed</div>
+              <div class="card-value">12</div>
+              <div class="card-small">assignments</div>
+            </div>
+
+            <div class="card stat">
+              <div class="card-head">Grade</div>
+              <div class="card-value">A-</div>
+              <div class="card-small">avg. performance</div>
+            </div>
+
+            <div class="card stat">
+              <div class="card-head">Active</div>
+              <div class="card-value">3</div>
+              <div class="card-small">upcoming tasks</div>
+            </div>
+
+            <div class="card stat">
+              <div class="card-head">Progress</div>
+              <div class="card-value">72%</div>
+              <div class="card-small">course complete</div>
+            </div>
+          </div>
+
+          <!-- welcome / hero -->
+          <div class="hero">
+            <div class="hero-inner">
+              <h2>Hey, Sana </h2>
+              <p>Keep up the great work — you're doing well this month. Check assignments or update your profile from the menu.</p>
+              <div class="hero-actions">
+                <button class="btn primary" data-route="assignments">View Assignments</button>
+                <button class="btn" data-route="progress">See Progress</button>
+              </div>
+            </div>
+
+            <!-- Messages column (right) -->
+            <aside class="messages-col">
+              <div class="messages-head">Messages</div>
+              <div class="messages-list" id="messagesList">
+                <!-- message cards are injected by JS -->
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <!-- Profile view -->
+        <div class="view-page" data-view="profile" hidden>
+          <div class="card profile-card">
+            <div class="profile-left">
+              <img class="avatar-lg" src="https://i.pravatar.cc/120?img=5" alt="avatar" />
+              <div class="profile-basic">
+                <h3>Sana</h3>
+                <p class="muted">B.Tech - AI & ML student</p>
+                <div class="profile-meta">
+                  <div><strong>Age</strong><span>18</span></div>
+                  <div><strong>Location</strong><span>India</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-right">
+              <h4>About</h4>
+              <p>Enthusiastic learner focusing on placements and practical projects. Loves coding and designing simple UI.</p>
+              <h4>Skills</h4>
+              <div class="chips">
+                <span class="chip">Python</span>
+                <span class="chip">HTML/CSS</span>
+                <span class="chip">ML</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignments view -->
+        <div class="view-page" data-view="assignments" hidden>
+          <div class="card">
+            <h3>Assignments</h3>
+            <ul class="list">
+              <li><strong>Physics - Current Electricity</strong><span class="muted">Due: 12 Nov</span></li>
+              <li><strong>Python Project</strong><span class="muted">Due: 20 Nov</span></li>
+              <li><strong>Biology - Reproduction</strong><span class="muted">Due: 15 Nov</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Progress view -->
+        <div class="view-page" data-view="progress" hidden>
+          <div class="card">
+            <h3>Course Progress</h3>
+            <div class="progress-row">
+              <label>Current semester</label>
+              <div class="progress">
+                <div class="progress-bar" style="width:72%"></div>
+              </div>
+              <small class="muted">72% complete</small>
+            </div>
+            <div class="progress-row">
+              <label>Assignments done</label>
+              <div class="progress">
+                <div class="progress-bar" style="width:60%"></div>
+              </div>
+              <small class="muted">12 of 20</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logout view -->
+        <div class="view-page" data-view="logout" hidden>
+          <div class="card center">
+            <h3>Logout</h3>
+            <p>Are you sure you want to logout?</p>
+            <div class="actions">
+              <button id="confirmLogout" class="btn primary">Yes, logout</button>
+              <button id="cancelLogout" class="btn">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+{% block script %}
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
+
+{% endblock %}

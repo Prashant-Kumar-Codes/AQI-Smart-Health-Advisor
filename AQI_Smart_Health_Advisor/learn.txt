@@ -1,0 +1,5 @@
+url_for:
+    url_for('<blueprint_name>.<function_name>')
+
+render_template:
+    render_template('<folder_name i.e. auth>/<html_file.html>)

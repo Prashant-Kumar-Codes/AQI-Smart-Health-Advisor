@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        {% block title %}AQI_SMART_HEALTH_ADVISOR{% endblock %}
+    </title>
+
+    {%block style%}
+        <style>
+            .flash {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #333;
+                color: #fff;
+                padding: 12px 18px;
+                border-radius: 8px;
+                box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+                opacity: 0.9;
+                z-index: 9999;
+                animation: fadeOut 5s forwards;
+            }
+
+            .flash.success { background: green; }
+            .flash.danger { background: red; }
+            .flash.warning { background: orange; }
+
+            @keyframes fadeOut {
+                0% { opacity: 0.9; }
+                80% { opacity: 0.9; }
+                100% { opacity: 0; display: none; }
+            }
+        </style>
+    {%endblock%}
+
+</head>
+
+<body>
+        {% with pop_messages = get_flashed_messages(with_categories=true) %}
+        {% if pop_messages %}
+            <div id="flash-messages">
+                {% for category, msg in pop_messages %}
+                    <div class="flash {{ category }}">{{ msg }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+    {% block content %}{%endblock%}
+
+    {% block script%}
+        <!-- <script></script> -->
+    {%endblock%}
+
+</body>
