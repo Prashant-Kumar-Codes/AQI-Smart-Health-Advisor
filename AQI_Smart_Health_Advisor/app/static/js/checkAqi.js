@@ -33,16 +33,90 @@ function showSuccess() {
     }, 100);
 }
 
-function showNearestAlert(stationName, originalSearch) {
+function showNearestAlert(stationName, originalSearch, distance) {
     const alertDiv = document.getElementById('nearestAlert');
     const infoSpan = document.getElementById('nearestStationInfo');
+    const distanceDiv = document.getElementById('distanceInfo');
     
-    infoSpan.innerHTML = `Could not find exact data for "<strong>${originalSearch}</strong>". Showing data from nearest station: <strong>${stationName}</strong>`;
+    infoSpan.innerHTML = `Could not find exact data for "<strong>${originalSearch}</strong>". Showing data from: <strong>${stationName}</strong>`;
+    
+    if (distance && distance !== 'Unknown') {
+        const distanceNum = parseFloat(distance);
+        let distanceText = '';
+        let colorClass = '';
+        
+        if (distanceNum < 5) {
+            distanceText = `📍 Distance: ${distance} km (Very close)`;
+            colorClass = 'color: #059669;';
+        } else if (distanceNum < 20) {
+            distanceText = `📍 Distance: ${distance} km (Nearby)`;
+            colorClass = 'color: #0891b2;';
+        } else if (distanceNum < 50) {
+            distanceText = `📍 Distance: ${distance} km (Moderate distance)`;
+            colorClass = 'color: #f59e0b;';
+        } else {
+            distanceText = `⚠️ Distance: ${distance} km (Far - data may not be representative of your exact location)`;
+            colorClass = 'color: #dc2626;';
+        }
+        
+        distanceDiv.innerHTML = `<span style="${colorClass}">${distanceText}</span>`;
+    }
+    
     alertDiv.style.display = 'flex';
+}
+
+function showAlternativeStations(stations) {
+    if (!stations || stations.length === 0) {
+        document.getElementById('alternativeStations').style.display = 'none';
+        return;
+    }
+    
+    const container = document.getElementById('alternativeStations');
+    const listDiv = document.getElementById('alternativeStationsList');
+    
+    listDiv.innerHTML = '';
+    
+    stations.forEach(station => {
+        const stationDiv = document.createElement('div');
+        stationDiv.className = 'station-option';
+        stationDiv.onclick = () => loadStationData(station.uid);
+        
+        const distance = station.distance !== 'Unknown' ? `${station.distance} km away` : 'Distance unknown';
+        
+        stationDiv.innerHTML = `
+            <span class="station-name">${station.name}</span>
+            <span class="station-distance">${distance}</span>
+        `;
+        
+        listDiv.appendChild(stationDiv);
+    });
+    
+    container.style.display = 'block';
+}
+
+async function loadStationData(uid) {
+    showLoading();
+    
+    try {
+        const response = await fetch(`/api/aqi/station/${uid}`);
+        const data = await response.json();
+        
+        if (response.ok && !data.error) {
+            document.getElementById('alternativeStations').style.display = 'none';
+            displayAQIData(data);
+            await fetchAIRecommendation(data.aqi);
+        } else {
+            showError('Failed to load station data. Please try again.');
+        }
+    } catch (error) {
+        showError('Failed to load station data.');
+        console.error('Error:', error);
+    }
 }
 
 function hideNearestAlert() {
     document.getElementById('nearestAlert').style.display = 'none';
+    document.getElementById('alternativeStations').style.display = 'none';
 }
 
 // ========== Search Functions ==========
@@ -69,7 +143,16 @@ async function searchAQI() {
         if (response.ok && !data.error) {
             // Check if this is nearest station data
             if (data.is_nearest && data.nearest_info) {
-                showNearestAlert(data.nearest_info.station_name, data.nearest_info.original_search);
+                showNearestAlert(
+                    data.nearest_info.station_name, 
+                    data.nearest_info.original_search,
+                    data.nearest_info.distance || data.distance_km
+                );
+            }
+            
+            // Show alternative stations if available
+            if (data.alternative_stations && data.alternative_stations.length > 0) {
+                showAlternativeStations(data.alternative_stations);
             }
             
             displayAQIData(data);
@@ -92,11 +175,18 @@ async function getCurrentLocation() {
     showLoading();
     hideNearestAlert();
 
+    // Options for geolocation
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+    };
+
     navigator.geolocation.getCurrentPosition(
         async (position) => {
             try {
                 const { latitude, longitude } = position.coords;
-                console.log(`Getting AQI for coordinates: ${latitude}, ${longitude}`);
+                console.log(`Getting AQI for coordinates: ${latitude.toFixed(3)}, ${longitude.toFixed(3)}`);
                 
                 const response = await fetch(`/api/aqi/geo?lat=${latitude}&lng=${longitude}`);
                 const data = await response.json();
@@ -104,7 +194,16 @@ async function getCurrentLocation() {
                 if (response.ok && !data.error) {
                     // Check if this is nearest station data
                     if (data.is_nearest && data.nearest_info) {
-                        showNearestAlert(data.nearest_info.station_name, 'your location');
+                        showNearestAlert(
+                            data.nearest_info.station_name, 
+                            data.nearest_info.original_search,
+                            data.nearest_info.distance || data.distance_km
+                        );
+                    }
+                    
+                    // Show alternative stations if available
+                    if (data.alternative_stations && data.alternative_stations.length > 0) {
+                        showAlternativeStations(data.alternative_stations);
                     }
                     
                     displayAQIData(data);
@@ -116,8 +215,7 @@ async function getCurrentLocation() {
                     
                     await fetchAIRecommendation(data.aqi);
                 } else {
-                    // If geo lookup fails, try to get city name and search
-                    showError(data.error || 'No air quality monitoring station found near your location. Try searching for your city name.');
+                    showError(data.error || 'No air quality monitoring station found near your location. AQI monitoring is not available in all areas. Try searching for a nearby major city.');
                 }
             } catch (error) {
                 showError('Failed to fetch air quality data for your location. Please try entering your city name manually.');
@@ -129,10 +227,10 @@ async function getCurrentLocation() {
             
             switch(error.code) {
                 case error.PERMISSION_DENIED:
-                    errorMessage += 'Please allow location access in your browser settings, or enter a city name manually.';
+                    errorMessage += 'Please allow location access in your browser settings. Click the 🔒 icon in your address bar to enable location permissions.';
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    errorMessage += 'Location information is unavailable. Please enter a city name manually.';
+                    errorMessage += 'Location information is unavailable. Please ensure GPS/location services are enabled on your device.';
                     break;
                 case error.TIMEOUT:
                     errorMessage += 'Location request timed out. Please try again or enter a city name manually.';
@@ -143,11 +241,7 @@ async function getCurrentLocation() {
             
             showError(errorMessage);
         },
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-        }
+        options
     );
 }
 
@@ -448,25 +542,30 @@ function displayWeatherInfo(iaqi, enhancedWeather) {
         return;
     }
 
+    const roundValue = (val, decimals = 1) => {
+        if (val === undefined || val === null) return 'N/A';
+        return typeof val === 'number' ? val.toFixed(decimals) : val;
+    };
+
     const weatherData = [
         { 
             label: 'Temperature', 
-            value: iaqi.t?.v !== undefined ? `${iaqi.t.v}°C` : 'N/A',
+            value: iaqi.t?.v !== undefined ? `${roundValue(iaqi.t.v, 1)}°C` : 'N/A',
             icon: '🌡️'
         },
         { 
             label: 'Humidity', 
-            value: iaqi.h?.v !== undefined ? `${iaqi.h.v}%` : 'N/A',
+            value: iaqi.h?.v !== undefined ? `${roundValue(iaqi.h.v, 1)}%` : 'N/A',
             icon: '💧'
         },
         { 
             label: 'Pressure', 
-            value: iaqi.p?.v !== undefined ? `${iaqi.p.v} hPa` : 'N/A',
+            value: iaqi.p?.v !== undefined ? `${roundValue(iaqi.p.v, 1)} hPa` : 'N/A',
             icon: '🔽'
         },
         { 
             label: 'Wind Speed', 
-            value: iaqi.w?.v !== undefined ? `${iaqi.w.v} m/s` : 'N/A',
+            value: iaqi.w?.v !== undefined ? `${roundValue(iaqi.w.v, 1)} m/s` : 'N/A',
             icon: '💨'
         }
     ];
@@ -500,6 +599,11 @@ function displayPollutants(iaqi) {
         return;
     }
 
+    const roundValue = (val, decimals = 1) => {
+        if (val === undefined || val === null) return 'N/A';
+        return typeof val === 'number' ? val.toFixed(decimals) : val;
+    };
+
     const pollutantMapping = {
         pm25: { name: 'PM2.5', unit: 'µg/m³', desc: 'Fine Particles' },
         pm10: { name: 'PM10', unit: 'µg/m³', desc: 'Coarse Particles' },
@@ -519,7 +623,7 @@ function displayPollutants(iaqi) {
             card.className = 'pollutant-card';
             card.innerHTML = `
                 <div class="pollutant-name">${pollutant.name}</div>
-                <div class="pollutant-value">${iaqi[key].v}</div>
+                <div class="pollutant-value">${roundValue(iaqi[key].v, 1)}</div>
                 <div class="pollutant-unit">${pollutant.unit}</div>
             `;
             card.title = pollutant.desc;

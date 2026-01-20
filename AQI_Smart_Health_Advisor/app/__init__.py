@@ -16,15 +16,15 @@ def create_app():
 # MySQL connection
     app.config['MYSQL_HOST'] = "localhost"
     app.config['MYSQL_USER'] = "root"
-    app.config['MYSQL_PASSWORD'] = "admin123"
-    app.config['MYSQL_DATABASE'] = "Student_Management_System_Database"
+    app.config['MYSQL_PASSWORD'] = "My@MySql8044"
+    app.config['MYSQL_DATABASE'] = "aqi_app_db"
 
 # Mail_Setup: Brevo SMTP config
     app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USE_TLS'] = True
     app.config['MAIL_USERNAME'] = '969fcc001@smtp-brevo.com'
-    app.config['MAIL_PASSWORD'] = '6za2MbPwpVrB04ch'
+    app.config['MAIL_PASSWORD'] = 'xsmtpsib-2d7e8d94c7a80158e62323dd015b24864969f5183eafae9b3752555f756e275d-diEpUbGSYI0AExBV'
     app.config['MAIL_DEFAULT_SENDER'] = 'pkthisisfor1234@gmail.com'
     mail.init_app(app)
 
@@ -33,6 +33,9 @@ def create_app():
 
 # Import routes
 #Import Blueprint directly from auth.py
+    from app.routes.auth_home import home_auth
+    app.register_blueprint(home_auth)
+    
     from app.routes.auth_login import login_auth
     app.register_blueprint(login_auth)
     
@@ -41,6 +44,12 @@ def create_app():
     
     from app.routes.auth_checkAqi import checkAqi_auth
     app.register_blueprint(checkAqi_auth)
+    
+    from app.routes.auth_learnMore import learnMore_auth
+    app.register_blueprint(learnMore_auth)
+    
+    from app.routes.auth_about import about_auth
+    app.register_blueprint(about_auth)
     
 # Import socketio events
 #    from app import socketio_events

@@ -3,117 +3,142 @@
 
   {%block style%}
   {{super()}}
+
   <link rel="stylesheet" href="{{url_for('static',filename='css/login.css')}}" />
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-  <!-- Font Awesome for icons -->
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   {%endblock%}
 
 {%block content%}
 
-    <div class="background"></div>
-    
+    <!-- Animated Background Particles -->
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
     <div class="container">
-        <!-- Illustration Section -->
-        <div class="illustration">
-            <img src="{{url_for('static',filename='images/Login_Image2.png')}}" alt="Welcome">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo-icon">🛡️</div>
+            <div class="logo-text">AQI Smart Health Advisor</div>
         </div>
-        
-        <!-- Form Section -->
+
         <div class="form-box">
             <!-- Login Form -->
             <form method="POST" action="{{ url_for('login_auth.login') }}">
-            <div class="form-container active" id="loginForm">
-                <h2>Welcome Back</h2>
-                
-                <div class="input-box">
-                    <i class="fas fa-user"></i>
-                    <input name="email" type="email" placeholder="Email" required>
-                </div>
-                
-                <div class="input-box">
-                    <i class="fas fa-lock"></i>
-                    <input name="password" type="password" placeholder="Password" required>
-                </div>
-                
-                <div class="remember">
-                    <label>
-                        <input type="checkbox" name="remember"> Remember me
-                    </label>
-                    <a href="#" style="color: #fff; text-decoration: none;">Forgot password?</a>
-                </div>
-                
-                <button type="submit" class="btn">Login</button>
-                
-                <div class="create">
-                    Don't have an account? <a href="#" onclick="toggleForm(event)">Sign Up</a>
-                </div>
-                
-                <div class="social-login">
-                    <p>Or login with</p>
-                    <div class="social-icons">
-                        <a href="#" class="fb"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="tw"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="gl"><i class="fab fa-google"></i></a>
+                <div class="form-container active" id="loginForm">
+                    <h2>Welcome Back</h2>
+                    <p class="form-subtitle">Sign in to monitor air quality and stay protected</p>
+                    
+                    <div class="input-box">
+                        <input name="email" type="email" placeholder="Email Address" required>
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    
+                    <div class="input-box">
+                        <input name="password" type="password" placeholder="Password" required>
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    
+                    <div class="remember">
+                        <label>
+                            <input type="checkbox" name="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn">Login</button>
+                    
+                    <div class="create">
+                        Don't have an account? <a href="#" onclick="toggleForm(event)">Sign Up</a>
+                    </div>
+                    
+                    <div class="social-login">
+                        <div class="divider">
+                            <span>Or login with</span>
+                        </div>
+                        <div class="social-icons">
+                            <a href="#" class="fb"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="tw"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="gl"><i class="fab fa-google"></i></a>
+                        </div>
                     </div>
                 </div>
-            </div>
             </form>
 
-            
             <!-- Signup Form -->
             <form method="POST" action="{{ url_for('login_auth.signup') }}">
-            <div class="form-container" id="signupForm">
-                <h2>Create Account</h2>
-                
-                <div class="input-box">
-                    <i class="fas fa-user"></i>
-                    <input name="username" type="text" placeholder="Full Name" required>
-                </div>
-                
-                <div class="input-box">
-                    <i class="fas fa-envelope"></i>
-                    <input name="email" type="email" placeholder="Email" required>
-                </div>
-                
-                <div class="input-box">
-                    <i class="fas fa-graduation-cap"></i>
-
-                    <input type="text" name="primary_location" id="primary_location" class="fas fa-graduation-cap" placeholder="Enter city"autocomplete="off">
-                    <ul id="suggestions"></ul>
-                </div>
-                
-                <div class="input-box">
-                    <i class="fas fa-lock"></i>
-                    <input name="password" type="password" placeholder="Password" required>
-                </div>
-                
-                <div class="input-box">
-                    <i class="fas fa-lock"></i>
-                    <input name="confirm_password" type="password" placeholder="Confirm Password" required>
-                </div>
-                
-                <button type="submit" class="btn">Sign Up</button>
-                
-                <div class="create">
-                    Already have an account? <a href="#" onclick="toggleForm(event)">Login</a>
-                </div>
-                
-                <div class="social-login">
-                    <p>Or sign up with</p>
-                    <div class="social-icons">
-                        <a href="#" class="fb"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="tw"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="gl"><i class="fab fa-google"></i></a>
+                <div class="form-container" id="signupForm">
+                    <h2>Create Account</h2>
+                    <p class="form-subtitle">Join us to start monitoring air quality</p>
+                    
+                    <div class="input-box">
+                        <input name="username" type="text" placeholder="Full Name" required>
+                        <i class="fas fa-user"></i>
+                    </div>
+                    
+                    <div class="input-box">
+                        <input name="email" type="email" placeholder="Email" required>
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    
+                    <div class="input-box">
+                        <input type="text" name="primary_location" id="primary_location" placeholder="Enter city" autocomplete="off">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <ul id="suggestions"></ul>
+                    </div>
+                    
+                    <div class="input-box">
+                        <input name="password" type="password" placeholder="Password" required>
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    
+                    <div class="input-box">
+                        <input name="confirm_password" type="password" placeholder="Confirm Password" required>
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    
+                    <button type="submit" class="btn">Sign Up</button>
+                    
+                    <div class="create">
+                        Already have an account? <a href="#" onclick="toggleForm(event)">Login</a>
+                    </div>
+                    
+                    <div class="social-login">
+                        <div class="divider">
+                            <span>Or sign up with</span>
+                        </div>
+                        <div class="social-icons">
+                            <a href="#" class="fb"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="tw"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="gl"><i class="fab fa-google"></i></a>
+                        </div>
                     </div>
                 </div>
-            </div>
             </form>
         </div>
     </div>
+
+
     
     <script>
+        // Set default form on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const defaultForm = '{{ default_form }}';
+            if (defaultForm === 'signup') {
+                const loginForm = document.getElementById('loginForm');
+                const signupForm = document.getElementById('signupForm');
+                loginForm.classList.remove('active');
+                signupForm.classList.add('active');
+            }
+        });
+
         function toggleForm(event) {
             event.preventDefault();
             const loginForm = document.getElementById('loginForm');
@@ -123,38 +148,38 @@
             signupForm.classList.toggle('active');
         }
 
-
-//------------location script---------------
-
+        //------------location script---------------
         const input = document.getElementById("primary_location");
         const suggestions = document.getElementById("suggestions");
 
         input.addEventListener("input", async () => {
-        const query = input.value;
-        if (query.length < 3) {
+            const query = input.value;
+            if (query.length < 3) {
+                suggestions.innerHTML = "";
+                return;
+            }
+
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${query}`
+            );
+
+            const data = await response.json();
             suggestions.innerHTML = "";
-            return;
-        }
 
-        const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${query}`
-        );
-
-        const data = await response.json();
-        suggestions.innerHTML = "";
-
-        data.slice(0, 5).forEach(place => {
-            const li = document.createElement("li");
-            li.textContent = place.display_name;
-            li.onclick = () => {
-            input.value = place.display_name;
-            suggestions.innerHTML = "";
-            };
-            suggestions.appendChild(li);
+            data.slice(0, 5).forEach(place => {
+                const li = document.createElement("li");
+                li.textContent = place.display_name;
+                li.onclick = () => {
+                    input.value = place.display_name;
+                    suggestions.innerHTML = "";
+                };
+                suggestions.appendChild(li);
+            });
         });
-        });
-
-
     </script>
 
 {%endblock%}
+
+
+
+

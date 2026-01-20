@@ -177,6 +177,7 @@ body {
     background: rgba(255,255,255,0.15);
     padding: 12px 24px;
     border-radius: 50px;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     transition: all 0.3s;
 }
@@ -311,7 +312,7 @@ body {
     margin-bottom: 20px;
     display: flex;
     gap: 15px;
-    align-items: center;
+    align-items: flex-start;
     animation: slideDown 0.4s ease-out;
 }
 
@@ -333,6 +334,94 @@ body {
 .alert-text strong {
     display: block;
     margin-bottom: 3px;
+}
+
+/* ========== Alternative Stations ========== */
+.alternative-stations {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 2px solid #86efac;
+    border-radius: var(--radius);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    animation: slideDown 0.4s ease-out;
+}
+
+.station-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.station-option:hover {
+    border-color: #10b981;
+    transform: translateX(5px);
+    box-shadow: var(--shadow-sm);
+}
+
+.station-option:last-child {
+    margin-bottom: 0;
+}
+
+.station-name {
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.station-distance {
+    color: #059669;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+/* ========== Alternative Stations ========== */
+.alternative-stations {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 2px solid #86efac;
+    border-radius: var(--radius);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    animation: slideDown 0.4s ease-out;
+}
+
+.station-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.station-option:hover {
+    border-color: #10b981;
+    transform: translateX(5px);
+    box-shadow: var(--shadow-sm);
+}
+
+.station-option:last-child {
+    margin-bottom: 0;
+}
+
+.station-name {
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.station-distance {
+    color: #059669;
+    font-weight: 600;
+    font-size: 0.9em;
 }
 
 /* ========== Location Options ========== */
@@ -902,6 +991,7 @@ body {
     padding: 20px;
     background: rgba(255,255,255,0.1);
     border-radius: var(--radius);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 

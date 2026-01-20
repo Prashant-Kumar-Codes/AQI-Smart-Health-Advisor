@@ -70,9 +70,18 @@
             <div class="nearest-alert" id="nearestAlert" style="display: none;">
                 <div class="alert-icon">ℹ️</div>
                 <div class="alert-text">
-                    <strong>Showing nearest station:</strong>
+                    <strong>Showing nearest monitoring station:</strong>
                     <span id="nearestStationInfo"></span>
+                    <div id="distanceInfo" style="margin-top: 8px; font-weight: 600;"></div>
                 </div>
+            </div>
+
+            <!-- Alternative Stations -->
+            <div class="alternative-stations" id="alternativeStations" style="display: none;">
+                <p style="font-weight: 600; margin-bottom: 10px; color: #1f2937;">
+                    📍 Other nearby monitoring stations:
+                </p>
+                <div id="alternativeStationsList"></div>
             </div>
 
             <!-- Quick Location Buttons -->
@@ -228,6 +237,8 @@
                             
                             <p style="margin-top: 15px;"><strong>How is it calculated?</strong></p>
                             <p>AQI considers major air pollutants including particulate matter (PM2.5, PM10), ozone (O₃), nitrogen dioxide (NO₂), sulfur dioxide (SO₂), and carbon monoxide (CO). The highest sub-index value determines the overall AQI.</p>
+                            
+                            <p style="color:rgb(119, 19, 212)"><a href="{{ url_for('learnMore_auth.learnMoreAqi') }}">Learn More</a></p>
                         </div>
                     </div>
                 </div>
@@ -309,7 +320,27 @@
     </div>
 
 {% block script %}
+
     <script src="{{ url_for('static', filename='js/checkAqi.js') }}"></script>
+    <script>
+    // Auto-fill user's city on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            const response = await fetch('/api/user/city');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.city) {
+                    document.getElementById('locationInput').value = data.city;
+                    // Optionally auto-search
+                    // searchAQI();
+                }
+            }
+        } catch (error) {
+            console.log('User not logged in or error fetching city');
+        }
+    });
+    </script>
+
 {% endblock %}
 
 {% endblock %}
