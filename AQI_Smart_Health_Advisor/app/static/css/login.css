@@ -139,7 +139,6 @@ body {
 .logo-icon {
     width: 70px;
     height: 70px;
-    background: var(--primary-gradient);
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
@@ -149,6 +148,17 @@ body {
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
     animation: pulse 2s ease-in-out infinite;
 }
+
+/* Logo Image Styling */
+.logo-image {
+    height: 70px;
+    width: auto;
+    border-radius: 100%;
+    object-fit: contain;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4); 
+    animation: pulse 2s ease-in-out infinite;
+}
+
 
 @keyframes pulse {
     0%, 100% {

@@ -3,7 +3,7 @@
 
 {% block style %}
     {{ super() }}
-    <link href="{{ url_for('static, filename='css/about.css') }}"
+    <link href="{{ url_for('static', filename='css/about.css') }}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
@@ -24,9 +24,9 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="{{ url_for(about_auth.about) }}" class="back-btn">
+            <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="back-btn">
                 <i class="fas fa-arrow-left"></i>
-                Back to Home
+                Back to AQI Status
             </a>
             <div class="nav-title">About Us</div>
         </div>
@@ -159,9 +159,7 @@
                              alt="Prashant Kumar" 
                              class="developer-photo">
                     -->
-                <img src="{{ url_for('static', filename='images/developer_photo.jpg') }}" 
-                alt="Prashant Kumar" 
-                class="developer-photo">
+                <img src="{{ url_for('static', filename='images/Developer_Photo.png') }}" alt="Prashant Kumar" class="developer-photo">
                 </div>
 
                 <div class="developer-info">
@@ -195,5 +193,4 @@
             </p>
         </div>
     </div>
-</body>
-</html>
+{% endblock %}

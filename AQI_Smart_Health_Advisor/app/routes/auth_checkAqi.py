@@ -1,25 +1,30 @@
 from .extensions import *
 from math import radians, sin, cos, sqrt, atan2
+import os
 
 checkAqi_auth = Blueprint('checkAqi_auth', '__name__')
 
 # AQI API Configuration
 WAQI_BASE_URL = 'https://api.waqi.info'
-# Note: 'demo' token has limitations - get your own token at https://aqicn.org/data-platform/token/
 WAQI_API_TOKEN = os.getenv('WAQI_API_TOKEN', '46797eab2434e3cb85537e21e9a80bcb309220e3')
 
 # OpenWeather API Configuration
 OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5'
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '6589ed49a6410165ea63662b113ed824')
 
+# OpenAI API Configuration
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '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')
 
-# AQI API Configuration
-WAQI_BASE_URL = 'https://api.waqi.info'
-WAQI_API_TOKEN = os.getenv('WAQI_API_TOKEN', '46797eab2434e3cb85537e21e9a80bcb309220e3')
-
-# OpenWeather API Configuration
-OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5'
-OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '6589ed49a6410165ea63662b113ed824')
+# Initialize OpenAI client with API key
+openai_client = None
+try:
+    from openai import OpenAI
+    openai_client = OpenAI(api_key=OPENAI_API_KEY)
+except ImportError:
+    openai_client = None
+except Exception as e:
+    print(f"Warning: OpenAI client initialization failed: {e}")
+    openai_client = None
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """Calculate distance between two coordinates in kilometers"""
@@ -47,8 +52,8 @@ def get_aqi_by_city(city):
         
         # Try multiple search strategies
         search_terms = [
-            city_cleaned,  # Full input
-            city_cleaned.split(',')[0].strip(),  # First part only
+            city_cleaned,
+            city_cleaned.split(',')[0].strip(),
         ]
         
         # Try direct lookup with each search term
@@ -70,7 +75,7 @@ def get_aqi_by_city(city):
         
         print("Direct lookup failed, searching stations...")
         
-        # Get coordinates from OpenWeather for any location format
+        # Get coordinates from OpenWeather
         user_lat, user_lon = None, None
         try:
             geocode_url = f'http://api.openweathermap.org/geo/1.0/direct?q={requests.utils.quote(city_cleaned)}&limit=5&appid={OPENWEATHER_API_KEY}'
@@ -85,7 +90,7 @@ def get_aqi_by_city(city):
         except Exception as e:
             print(f"Geocoding error: {e}")
         
-        # Search WAQI stations with each term
+        # Search WAQI stations
         all_stations = []
         for term in search_terms:
             try:
@@ -289,7 +294,7 @@ def get_aqi_by_station(uid):
 
 @checkAqi_auth.route('/api/aqi/ai-recommendation', methods=['POST'])
 def get_ai_recommendation():
-    """AI recommendation endpoint"""
+    """Basic AI recommendation endpoint"""
     try:
         data = request.get_json()
         aqi = data.get('aqi', 0)
@@ -317,3 +322,170 @@ def get_ai_recommendation():
         })
     except:
         return jsonify({'error': 'Failed to generate recommendation'}), 500
+
+@checkAqi_auth.route('/api/aqi/ai-personalized-advice', methods=['POST'])
+def get_ai_personalized_advice():
+    """Get personalized AI advice using GPT-4o-mini"""
+    try:
+        # Check if user is logged in - login part
+        if 'user_id' not in session:
+            return jsonify({'error': 'Please sign in to access AI Advisor'}), 401
+        
+        data = request.get_json()
+        aqi = data.get('aqi', 0)
+        age = data.get('age', 'adult')
+        conditions = data.get('conditions', [])
+        location = data.get('location', 'unknown location')
+        question = data.get('question', '')
+        
+        # Determine AQI category
+        if aqi <= 50:
+            aqi_category = 'Good'
+            health_concern = 'None'
+        elif aqi <= 100:
+            aqi_category = 'Moderate'
+            health_concern = 'Acceptable for most, unusually sensitive people should consider limiting prolonged outdoor exertion'
+        elif aqi <= 150:
+            aqi_category = 'Unhealthy for Sensitive Groups'
+            health_concern = 'Members of sensitive groups may experience health effects'
+        elif aqi <= 200:
+            aqi_category = 'Unhealthy'
+            health_concern = 'Everyone may begin to experience health effects'
+        elif aqi <= 300:
+            aqi_category = 'Very Unhealthy'
+            health_concern = 'Health alert: everyone may experience more serious health effects'
+        else:
+            aqi_category = 'Hazardous'
+            health_concern = 'Health warnings of emergency conditions'
+        
+        # Build context for AI
+        age_context = {
+            'child': 'a child (0-12 years old)',
+            'teen': 'a teenager (13-19 years old)',
+            'adult': 'an adult (20-60 years old)',
+            'senior': 'a senior (60+ years old)'
+        }
+        
+        age_text = age_context.get(age, 'a person')
+        
+        conditions_text = ''
+        if conditions and 'none' not in conditions:
+            conditions_list = ', '.join(conditions)
+            conditions_text = f" with {conditions_list}"
+        
+        # Create prompt for GPT-4o-mini
+        system_prompt = """You are a helpful AI health advisor specializing in air quality and public health. 
+Provide concise, actionable advice in 40 words or less. Be empathetic, clear, and focus on practical recommendations.
+Always prioritize health and safety."""
+        
+        if question:
+            user_prompt = f"""Location: {location}
+Current AQI: {aqi} ({aqi_category})
+Health Concern: {health_concern}
+Person: {age_text}{conditions_text}
+
+Question: {question}
+
+Provide a brief, helpful answer in 40 words or less."""
+        else:
+            user_prompt = f"""Location: {location}
+Current AQI: {aqi} ({aqi_category})
+Health Concern: {health_concern}
+Person: {age_text}{conditions_text}
+
+Provide personalized health advice for this air quality situation in 40 words or less."""
+        
+        # Call OpenAI API with GPT-4o-mini using new client
+        try:
+            if not openai_client:
+                raise ImportError("OpenAI package not installed. Install it with: pip install openai")
+            
+            response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                max_tokens=100,
+                temperature=0.7
+            )
+            
+            advice = response.choices[0].message.content.strip()
+            
+            # Ensure it's within 40 words
+            words = advice.split()
+            if len(words) > 40:
+                advice = ' '.join(words[:40]) + '...'
+            
+            return jsonify({
+                'advice': advice,
+                'aqi': aqi,
+                'category': aqi_category
+            })
+            
+        except Exception as e:
+            print(f"OpenAI API Error: {e}")
+            # Fallback to rule-based advice
+            return get_fallback_advice(aqi, age, conditions, question)
+            
+    except Exception as e:
+        print(f"ERROR in get_ai_personalized_advice: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to generate personalized advice'}), 500
+
+def get_fallback_advice(aqi, age, conditions, question):
+    """Fallback advice when AI API is unavailable"""
+    advice = ""
+    
+    if aqi <= 50:
+        advice = "Great air quality! Safe for all outdoor activities. Enjoy your time outside without restrictions."
+    elif aqi <= 100:
+        advice = "Air quality is acceptable. Most people can go outside normally. Sensitive individuals should monitor for symptoms."
+    elif aqi <= 150:
+        if 'asthma' in conditions or 'breathing' in conditions:
+            advice = "Limit prolonged outdoor activities. Keep rescue inhaler handy. Consider wearing an N95 mask outdoors."
+        elif age == 'child' or age == 'senior':
+            advice = "Reduce outdoor time. Watch for coughing or breathing difficulty. Stay indoors during peak pollution hours."
+        else:
+            advice = "Sensitive groups should limit outdoor exposure. Most others can maintain normal activities with caution."
+    elif aqi <= 200:
+        advice = "Unhealthy air for everyone. Stay indoors when possible. Wear N95 masks if you must go outside. Avoid strenuous activities."
+    elif aqi <= 300:
+        advice = "Very unhealthy air! Stay indoors. Keep windows closed. Run air purifiers. Seek medical attention if experiencing symptoms."
+    else:
+        advice = "Hazardous conditions! Emergency situation. Stay indoors with sealed windows. Evacuate if you have severe respiratory conditions."
+    
+    # Add specific advice based on question
+    if question and 'outside' in question.lower():
+        if aqi > 150:
+            advice = "Not recommended to go outside. Wait for air quality to improve. If urgent, wear N95 mask and minimize time outdoors."
+    elif question and 'time' in question.lower():
+        advice = "Best outdoor time is early morning (6-8 AM) when pollution is typically lowest. Check AQI before going out."
+    elif question and 'family' in question.lower():
+        advice = "Keep family indoors. Use air purifiers. Seal windows. Monitor health symptoms. Have masks and medications ready."
+    
+    return jsonify({
+        'advice': advice,
+        'aqi': aqi,
+        'category': 'Fallback'
+    })
+
+@checkAqi_auth.route('/api/user/check', methods=['GET'])
+def check_user_logged_in():
+    """Check if user is logged in"""
+    if 'user_id' in session:
+        return jsonify({'logged_in': True}), 200
+    return jsonify({'logged_in': False}), 401
+
+@checkAqi_auth.route('/api/user/city')
+def get_user_city():
+    """Get user's city from profile"""
+    try:
+        if 'user_id' in session:
+            # User model not available in this framework
+            # Implement your own user data retrieval logic here
+            return jsonify({'city': None}), 200
+        return jsonify({'city': None}), 200
+    except:
+        return jsonify({'city': None}), 200

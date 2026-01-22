@@ -1,12 +1,30 @@
 {% extends 'base.html' %}
-{% block title %}AQI Monitor - Real-time Air Quality Index{% endblock %}
+{% block title %}AQI Status - Real-time Air Quality Index{% endblock %}
 
 {% block style %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/checkAqi.css') }}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 {% endblock %}
 
 {% block content %}
+    <!-- Navigation Bar -->
+    <nav class="aqi-navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">AQI Status</span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link active">AQI Status</a>
+                <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
+                <a href="{{ url_for('learnMore_auth.learnMoreAqi') }}" class="nav-link">AQI Guide</a>
+                <a href="#" class="nav-link" onclick="openAIAdvisor(); return false;">AI Advisor</a>
+            </div>
+        </div>
+    </nav>
+
     <!-- Animated Background Particles -->
     <div class="bg-particles">
         <div class="particle"></div>
@@ -20,50 +38,82 @@
     </div>
 
     <div class="container">
-        <!-- Header Section -->
-        <div class="header">
-            <div class="header-content">
-                <h1>🌍 Air Quality Monitor</h1>
-                <p class="subtitle">Real-time Air Quality Index with AI-Powered Health Recommendations</p>
-                <div class="header-stats">
-                    <div class="stat-item">
-                        <span class="stat-icon">📍</span>
-                        <span class="stat-label">Global Coverage</span>
+        <!-- Professional Header Section -->
+        <div class="header-professional">
+            <div class="header-content-pro">
+                <h1 class="main-title">Air Quality Monitoring System</h1>
+                <p class="main-subtitle">Real-time environmental data with AI-powered health insights</p>
+                <div class="header-features">
+                    <div class="feature-badge">
+                        <span class="feature-icon">🌐</span>
+                        <div class="feature-info">
+                            <div class="feature-label">Coverage</div>
+                            <div class="feature-value">Global</div>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-icon">🔄</span>
-                        <span class="stat-label">Live Updates</span>
+                    <div class="feature-badge">
+                        <span class="feature-icon">⚡</span>
+                        <div class="feature-info">
+                            <div class="feature-label">Updates</div>
+                            <div class="feature-value">Real-time</div>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-icon">🤖</span>
-                        <span class="stat-label">AI Insights</span>
+                    <div class="feature-badge">
+                        <span class="feature-icon">🤖</span>
+                        <div class="feature-info">
+                            <div class="feature-label">AI Powered</div>
+                            <div class="feature-value">GPT-4</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Search Section -->
-        <div class="search-section">
-            <h3 class="section-title">Search for Air Quality Data</h3>
+        <!-- Professional Search Section -->
+        <div class="search-section-pro">
+            <div class="search-header">
+                <h2 class="search-title">Location Search</h2>
+                <p class="search-subtitle">Enter your location or use the map to check air quality</p>
+            </div>
             
-            <div class="search-box">
-                <div class="input-wrapper">
-                    <span class="search-icon">🔍</span>
+            <div class="search-controls">
+                <div class="input-group-pro">
+                    <span class="input-icon">📍</span>
                     <input 
                         type="text" 
                         id="locationInput" 
-                        placeholder="Enter city name or address (e.g., Delhi, New York, London)"
+                        class="input-pro"
+                        placeholder="Enter city, address, or coordinates"
                         autocomplete="off"
                     >
                 </div>
-                <button class="btn btn-primary" onclick="searchAQI()">
-                    <span class="btn-icon">🔍</span>
-                    Search
-                </button>
-                <button class="btn btn-secondary" onclick="getCurrentLocation()">
-                    <span class="btn-icon">📍</span>
-                    My Location
-                </button>
+                <div class="button-group">
+                    <button class="btn-pro btn-primary-pro" onclick="searchAQI()">
+                        <span class="btn-icon-pro">🔍</span>
+                        <span>Search</span>
+                    </button>
+                    <button class="btn-pro btn-secondary-pro" onclick="getCurrentLocation()">
+                        <span class="btn-icon-pro">📍</span>
+                        <span>Current Location</span>
+                    </button>
+                    <button class="btn-pro btn-map-pro" onclick="openMapSelector()">
+                        <span class="btn-icon-pro">🗺️</span>
+                        <span>Select on Map</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Access Cities -->
+            <div class="quick-access">
+                <span class="quick-label">Quick Access:</span>
+                <div class="city-chips">
+                    <button class="city-chip" onclick="quickSearch('Delhi')">🇮🇳 Delhi</button>
+                    <button class="city-chip" onclick="quickSearch('Mumbai')">🇮🇳 Mumbai</button>
+                    <button class="city-chip" onclick="quickSearch('Beijing')">🇨🇳 Beijing</button>
+                    <button class="city-chip" onclick="quickSearch('London')">🇬🇧 London</button>
+                    <button class="city-chip" onclick="quickSearch('New York')">🇺🇸 New York</button>
+                    <button class="city-chip" onclick="quickSearch('Tokyo')">🇯🇵 Tokyo</button>
+                </div>
             </div>
 
             <!-- Nearest Location Alert -->
@@ -84,37 +134,6 @@
                 <div id="alternativeStationsList"></div>
             </div>
 
-            <!-- Quick Location Buttons -->
-            <div class="location-section">
-                <p class="location-label">Popular Cities:</p>
-                <div class="location-options">
-                    <button class="quick-location" onclick="quickSearch('Delhi')">
-                        <span class="location-flag">🇮🇳</span> Delhi
-                    </button>
-                    <button class="quick-location" onclick="quickSearch('Mumbai')">
-                        <span class="location-flag">🇮🇳</span> Mumbai
-                    </button>
-                    <button class="quick-location" onclick="quickSearch('Beijing')">
-                        <span class="location-flag">🇨🇳</span> Beijing
-                    </button>
-                    <button class="quick-location" onclick="quickSearch('London')">
-                        <span class="location-flag">🇬🇧</span> London
-                    </button>
-                    <button class="quick-location" onclick="quickSearch('New York')">
-                        <span class="location-flag">🇺🇸</span> New York
-                    </button>
-                    <button class="quick-location" onclick="quickSearch('Tokyo')">
-                        <span class="location-flag">🇯🇵</span> Tokyo
-                    </button>
-                    <button class="quick-location" onclick="quickSearch('Paris')">
-                        <span class="location-flag">🇫🇷</span> Paris
-                    </button>
-                    <button class="quick-location" onclick="quickSearch('Sydney')">
-                        <span class="location-flag">🇦🇺</span> Sydney
-                    </button>
-                </div>
-            </div>
-
             <!-- Loading State -->
             <div class="loading" id="loading">
                 <div class="spinner"></div>
@@ -125,187 +144,279 @@
             <div class="error" id="error"></div>
         </div>
 
+        <!-- Map Overlay -->
+        <div class="map-overlay" id="mapOverlay" style="display: none;">
+            <div class="map-container-overlay">
+                <div class="map-header">
+                    <h3>Select Location on Map</h3>
+                    <button class="map-close-btn" onclick="closeMapSelector()">✕</button>
+                </div>
+                <div id="mapSelector" class="map-selector"></div>
+                <div class="map-footer">
+                    <p id="mapCoordinates">Click on the map to select a location</p>
+                    <button class="btn-pro btn-primary-pro" id="confirmLocationBtn" onclick="confirmMapLocation()" disabled>
+                        Confirm Location
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Advisor Overlay -->
+        <div class="ai-advisor-overlay" id="aiAdvisorOverlay" style="display: none;">
+            <div class="ai-advisor-container">
+                <div class="ai-advisor-header">
+                    <h3>🤖 AI Health Advisor</h3>
+                    <button class="advisor-close-btn" onclick="closeAIAdvisor()">✕</button>
+                </div>
+                
+                <div class="ai-advisor-content">
+                    <!-- Age Section -->
+                    <div class="advisor-section">
+                        <label class="advisor-label">Age Group</label>
+                        <div class="age-buttons">
+                            <button class="age-btn" data-age="child" onclick="selectAge('child')">Child (0-12)</button>
+                            <button class="age-btn" data-age="teen" onclick="selectAge('teen')">Teen (13-19)</button>
+                            <button class="age-btn" data-age="adult" onclick="selectAge('adult')">Adult (20-60)</button>
+                            <button class="age-btn" data-age="senior" onclick="selectAge('senior')">Senior (60+)</button>
+                        </div>
+                    </div>
+
+                    <!-- Health Conditions -->
+                    <div class="advisor-section">
+                        <label class="advisor-label">Health Conditions (Select all that apply)</label>
+                        <div class="condition-buttons">
+                            <button class="condition-btn" data-condition="asthma" onclick="toggleCondition('asthma')">😮‍💨 Asthma</button>
+                            <button class="condition-btn" data-condition="headache" onclick="toggleCondition('headache')">🤕 Headache</button>
+                            <button class="condition-btn" data-condition="breathing" onclick="toggleCondition('breathing')">😤 Breathing Issues</button>
+                            <button class="condition-btn" data-condition="heart" onclick="toggleCondition('heart')">❤️ Heart Condition</button>
+                            <button class="condition-btn" data-condition="allergy" onclick="toggleCondition('allergy')">🤧 Allergies</button>
+                            <button class="condition-btn" data-condition="none" onclick="toggleCondition('none')">✅ None</button>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="advisor-section">
+                        <label class="advisor-label">Location</label>
+                        <input type="text" id="aiAdvisorLocation" class="advisor-input" placeholder="Current location will be used">
+                    </div>
+
+                    <!-- Quick Questions -->
+                    <div class="advisor-section">
+                        <label class="advisor-label">Quick Questions</label>
+                        <div class="quick-questions">
+                            <button class="quick-q-btn" onclick="askQuickQuestion('Is it safe to go outside?')">Is it safe to go outside?</button>
+                            <button class="quick-q-btn" onclick="askQuickQuestion('Best time to go outside?')">Best time to go outside?</button>
+                            <button class="quick-q-btn" onclick="askQuickQuestion('How to protect my family?')">How to protect my family?</button>
+                            <button class="quick-q-btn" onclick="askQuickQuestion('Should I exercise outdoors?')">Should I exercise outdoors?</button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Question -->
+                    <div class="advisor-section">
+                        <label class="advisor-label">Ask Your Question (Max 30 words)</label>
+                        <div class="question-input-group">
+                            <textarea 
+                                id="customQuestion" 
+                                class="advisor-textarea" 
+                                placeholder="Type your question here..."
+                                maxlength="200"
+                                rows="3"
+                            ></textarea>
+                            <span class="word-count" id="wordCount">0/30 words</span>
+                        </div>
+                    </div>
+
+                    <!-- Get Advice Button -->
+                    <button class="btn-pro btn-primary-pro btn-get-advice" onclick="getAIAdvice()">
+                        <span class="btn-icon-pro">✨</span>
+                        Get AI Advice
+                    </button>
+
+                    <!-- AI Response -->
+                    <div class="ai-response" id="aiResponse" style="display: none;">
+                        <div class="response-header">
+                            <span class="response-icon">🤖</span>
+                            <span class="response-title">AI Health Recommendation</span>
+                        </div>
+                        <div class="response-content" id="aiResponseContent"></div>
+                    </div>
+                </div>
+
+                <div class="ai-advisor-footer">
+                    <button class="btn-pro btn-back-pro" onclick="closeAIAdvisor()">
+                        ← Back to Results
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Results Section -->
         <div class="results" id="results">
-            <div class="aqi-card">
+            <div class="aqi-card-pro">
                 <!-- AQI Header -->
-                <div class="aqi-header">
-                    <div class="location-info">
+                <div class="aqi-header-pro">
+                    <div class="location-info-pro">
                         <h2 id="cityName">-</h2>
-                        <p id="updateTime" class="update-time">
+                        <p id="updateTime" class="update-time-pro">
                             <span class="time-icon">🕒</span>
                             <span id="updateTimeText">-</span>
                         </p>
                     </div>
-                    <div class="aqi-display" id="aqiDisplay">
-                        <div class="aqi-badge">
-                            <div class="aqi-value" id="aqiValue">-</div>
-                            <div class="aqi-label" id="aqiLabel">AQI</div>
+                    <div class="aqi-display-pro" id="aqiDisplay">
+                        <div class="aqi-badge-pro">
+                            <div class="aqi-value-pro" id="aqiValue">-</div>
+                            <div class="aqi-label-pro">AQI</div>
                         </div>
-                        <div class="aqi-category" id="aqiCategory">-</div>
+                        <div class="aqi-category-pro" id="aqiCategory">-</div>
                     </div>
                 </div>
 
                 <!-- Weather Information -->
-                <div class="info-section">
-                    <h3 class="subsection-title">
+                <div class="info-section-pro">
+                    <h3 class="subsection-title-pro">
                         <span class="title-icon">🌡️</span>
                         Weather Conditions
                     </h3>
-                    <div class="weather-info" id="weatherInfo"></div>
+                    <div class="weather-info-pro" id="weatherInfo"></div>
                 </div>
 
                 <!-- Air Pollutants -->
-                <div class="info-section">
-                    <h3 class="subsection-title">
+                <div class="info-section-pro">
+                    <h3 class="subsection-title-pro">
                         <span class="title-icon">⚗️</span>
                         Air Pollutants
                     </h3>
-                    <div class="pollutants-grid" id="pollutantsGrid"></div>
+                    <div class="pollutants-grid-pro" id="pollutantsGrid"></div>
                 </div>
 
                 <!-- Dominant Pollutant Info -->
-                <div class="dominant-pollutant-card" id="dominantPollutantCard">
+                <div class="dominant-pollutant-card-pro" id="dominantPollutantCard">
                     <div class="info-icon">⚠️</div>
                     <p id="dominantPollutant"></p>
                 </div>
             </div>
 
             <!-- AI Health Recommendations Card -->
-            <div class="recommendations-card">
-                <h3 class="recommendations-title">
-                    <span class="title-icon">🤖</span>
-                    AI-Powered Health Recommendations
-                </h3>
+            <div class="recommendations-card-pro">
+                <div class="recommendations-header">
+                    <h3 class="recommendations-title-pro">
+                        <span class="title-icon">🤖</span>
+                        AI-Powered Health Recommendations
+                    </h3>
+                    <button class="btn-more-insights" onclick="openAIAdvisor()">
+                        ✨ More AI Insights
+                    </button>
+                </div>
                 
                 <!-- Custom AI Recommendation Section -->
-                <div class="ai-recommendation-box" id="aiRecommendationBox">
-                    <div class="ai-badge">
+                <div class="ai-recommendation-box-pro" id="aiRecommendationBox">
+                    <div class="ai-badge-pro">
                         <span class="ai-icon">✨</span>
                         <span>Personalized Insight</span>
                     </div>
-                    <p id="customRecommendation" class="custom-recommendation">
+                    <p id="customRecommendation" class="custom-recommendation-pro">
                         Loading personalized recommendations...
                     </p>
                 </div>
+                            <!-- Personalized AI Insights Card -->
+            <div class="personalized-ai-card-pro" id="personalizedAiCard" style="display: none;">
+                <div class="ai-insights-header">
+                    <h3 class="ai-insights-title">
+                        <span class="title-icon">🎯</span>
+                        Your Personalized AI Insights
+                    </h3>
+                    <button class="btn-customize-insights" onclick="openAIAdvisor()">
+                        ⚙️ Customize
+                    </button>
+                </div>
+                
+                <div class="ai-insights-content">
+                    <div class="insight-section" id="personalizedInsightContent">
 
-                <div class="recommendations" id="recommendations"></div>
-            </div>
-
-            <!-- Expandable Info Cards -->
-            <div class="expandable-cards-container">
-                <!-- Understanding AQI Card -->
-                <div class="expandable-card" id="aqiInfoCard">
-                    <div class="expandable-header" onclick="toggleCard('aqiInfoCard')">
-                        <div class="expandable-title">
-                            <div class="info-card-icon">📊</div>
-                            <h4>Understanding AQI</h4>
-                        </div>
-                        <span class="expand-icon">▼</span>
+                        <!-- AI response will be injected here -->
                     </div>
-                    <div class="expandable-content">
-                        <div class="expandable-inner">
-                            <p><strong>What is AQI?</strong></p>
-                            <p>The Air Quality Index (AQI) is a standardized indicator of air quality. It tells you how clean or polluted your air is, and what associated health effects might be a concern.</p>
-                            
-                            <div class="aqi-scale">
-                                <div class="scale-item" style="background: linear-gradient(135deg, #10b981, #059669);">
-                                    <strong>0-50</strong>
-                                    <span>Good</span>
-                                </div>
-                                <div class="scale-item" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
-                                    <strong>51-100</strong>
-                                    <span>Moderate</span>
-                                </div>
-                                <div class="scale-item" style="background: linear-gradient(135deg, #fb923c, #f97316);">
-                                    <strong>101-150</strong>
-                                    <span>Unhealthy for Sensitive</span>
-                                </div>
-                                <div class="scale-item" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
-                                    <strong>151-200</strong>
-                                    <span>Unhealthy</span>
-                                </div>
-                                <div class="scale-item" style="background: linear-gradient(135deg, #a855f7, #9333ea);">
-                                    <strong>201-300</strong>
-                                    <span>Very Unhealthy</span>
-                                </div>
-                                <div class="scale-item" style="background: linear-gradient(135deg, #7f1d1d, #991b1b);">
-                                    <strong>301+</strong>
-                                    <span>Hazardous</span>
-                                </div>
-                            </div>
-                            
-                            <p style="margin-top: 15px;"><strong>How is it calculated?</strong></p>
-                            <p>AQI considers major air pollutants including particulate matter (PM2.5, PM10), ozone (O₃), nitrogen dioxide (NO₂), sulfur dioxide (SO₂), and carbon monoxide (CO). The highest sub-index value determines the overall AQI.</p>
-                            
-                            <p style="color:rgb(119, 19, 212)"><a href="{{ url_for('learnMore_auth.learnMoreAqi') }}">Learn More</a></p>
-                        </div>
+                    
+                    <div class="insight-metadata">
+                        <span class="metadata-item">📍 <span id="insightLocation">-</span></span>
+                        <span class="metadata-item">👤 <span id="insightProfile">-</span></span>
                     </div>
                 </div>
+                
+                <button class="btn-refresh-insights" onclick="refreshPersonalizedInsights()">
+                    🔄 Update Insights
+                </button>
+            </div>
 
+                <div class="recommendations-pro" id="recommendations"></div>
+            </div>
+
+
+
+            <!-- Health Impact & Take Action Side by Side -->
+            <div class="action-cards-container">
                 <!-- Health Impact Card -->
-                <div class="expandable-card" id="healthImpactCard">
-                    <div class="expandable-header" onclick="toggleCard('healthImpactCard')">
-                        <div class="expandable-title">
+                <div class="expandable-card-pro health-impact-card">
+                    <div class="expandable-header-pro" onclick="toggleCard('healthImpactCard')">
+                        <div class="expandable-title-pro">
                             <div class="info-card-icon">🏥</div>
                             <h4>Health Impact</h4>
                         </div>
-                        <span class="expand-icon">▼</span>
+                        <span class="expand-icon-pro">▼</span>
                     </div>
-                    <div class="expandable-content">
-                        <div class="expandable-inner">
+                    <div class="expandable-content-pro" id="healthImpactCard">
+                        <div class="expandable-inner-pro">
                             <p><strong>Who is at Risk?</strong></p>
-                            <ul class="impact-list">
-                                <li><strong>👶 Children:</strong> Their lungs are still developing and they breathe more air per pound of body weight than adults.</li>
-                                <li><strong>👴 Elderly:</strong> More susceptible to particle pollution effects, especially those with existing heart or lung diseases.</li>
-                                <li><strong>🫁 Respiratory Conditions:</strong> People with asthma, COPD, or other lung diseases are highly sensitive to air pollution.</li>
-                                <li><strong>❤️ Heart Conditions:</strong> Air pollution can trigger heart attacks and arrhythmias in susceptible individuals.</li>
-                                <li><strong>🏃 Active Outdoors:</strong> Athletes and outdoor workers breathe more polluted air during physical activity.</li>
+                            <ul class="impact-list-pro">
+                                <li><strong>👶 Children:</strong> Developing lungs, breathe more air per body weight</li>
+                                <li><strong>👴 Elderly:</strong> Susceptible to particle pollution effects</li>
+                                <li><strong>🫁 Respiratory Conditions:</strong> Asthma, COPD patients highly sensitive</li>
+                                <li><strong>❤️ Heart Conditions:</strong> Risk of heart attacks and arrhythmias</li>
+                                <li><strong>🏃 Active Outdoors:</strong> Athletes breathe more polluted air</li>
                             </ul>
                             
                             <p style="margin-top: 15px;"><strong>Short-term Effects:</strong></p>
-                            <p>Eye, nose, and throat irritation, coughing, chest tightness, shortness of breath, reduced lung function, and aggravation of existing respiratory conditions.</p>
+                            <p>Eye, nose, throat irritation, coughing, chest tightness, shortness of breath, reduced lung function.</p>
                             
                             <p style="margin-top: 15px;"><strong>Long-term Effects:</strong></p>
-                            <p>Chronic exposure to poor air quality can lead to reduced lung function, development of respiratory diseases, cardiovascular problems, and increased risk of lung cancer.</p>
+                            <p>Chronic exposure can lead to reduced lung function, respiratory diseases, cardiovascular problems, and increased cancer risk.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Take Action Card -->
-                <div class="expandable-card" id="takeActionCard">
-                    <div class="expandable-header" onclick="toggleCard('takeActionCard')">
-                        <div class="expandable-title">
+                <div class="expandable-card-pro take-action-card">
+                    <div class="expandable-header-pro" onclick="toggleCard('takeActionCard')">
+                        <div class="expandable-title-pro">
                             <div class="info-card-icon">🌱</div>
                             <h4>Take Action</h4>
                         </div>
-                        <span class="expand-icon">▼</span>
+                        <span class="expand-icon-pro">▼</span>
                     </div>
-                    <div class="expandable-content">
-                        <div class="expandable-inner">
+                    <div class="expandable-content-pro" id="takeActionCard">
+                        <div class="expandable-inner-pro">
                             <p><strong>Individual Actions:</strong></p>
-                            <ul class="action-list">
-                                <li>🚌 Use public transportation, carpool, bike, or walk instead of driving alone</li>
-                                <li>💡 Conserve energy at home by turning off lights and electronics when not in use</li>
-                                <li>🌡️ Set thermostats to energy-efficient temperatures</li>
-                                <li>🚗 Maintain your vehicle properly and drive efficiently</li>
+                            <ul class="action-list-pro">
+                                <li>🚌 Use public transportation, carpool, or bike</li>
+                                <li>💡 Conserve energy at home</li>
+                                <li>🌡️ Use energy-efficient settings</li>
+                                <li>🚗 Maintain vehicle properly</li>
                                 <li>🔥 Avoid burning wood or trash</li>
-                                <li>🌳 Plant trees and support green spaces in your community</li>
-                                <li>♻️ Reduce, reuse, and recycle to minimize waste</li>
+                                <li>🌳 Plant trees and support green spaces</li>
+                                <li>♻️ Reduce, reuse, and recycle</li>
                             </ul>
                             
                             <p style="margin-top: 15px;"><strong>Protect Yourself:</strong></p>
-                            <ul class="action-list">
-                                <li>📱 Monitor air quality regularly using this tool</li>
-                                <li>😷 Keep N95 or KN95 masks available for poor air quality days</li>
-                                <li>💨 Use HEPA air purifiers in your home, especially in bedrooms</li>
-                                <li>🏃 Plan outdoor activities when air quality is better (usually morning)</li>
-                                <li>🪟 Keep windows closed on high pollution days</li>
-                                <li>💊 Keep medications updated if you have respiratory conditions</li>
+                            <ul class="action-list-pro">
+                                <li>📱 Monitor air quality regularly</li>
+                                <li>😷 Keep N95/KN95 masks available</li>
+                                <li>💨 Use HEPA air purifiers at home</li>
+                                <li>🏃 Plan outdoor activities wisely</li>
+                                <li>🪟 Keep windows closed on bad days</li>
+                                <li>💊 Keep medications updated</li>
                             </ul>
                             
                             <p style="margin-top: 15px;"><strong>Community Action:</strong></p>
-                            <p>Support clean air initiatives, advocate for stricter emission standards, participate in tree-planting drives, and encourage your workplace or school to adopt air quality monitoring and protection measures.</p>
+                            <p>Support clean air initiatives, advocate for stricter emissions, participate in tree-planting, and encourage workplace air quality measures.</p>
                         </div>
                     </div>
                 </div>
@@ -313,14 +424,14 @@
         </div>
 
         <!-- Attribution -->
-        <div class="attribution">
-            <p>Data provided by <a href="https://aqicn.org" target="_blank" rel="noopener">World Air Quality Index Project</a> & <a href="https://openweathermap.org" target="_blank" rel="noopener">OpenWeather</a></p>
-            <p class="attribution-note">Data updated in real-time from global monitoring stations</p>
+        <div class="attribution-pro">
+            <p>Data provided by <a href="https://aqicn.org" target="_blank">World Air Quality Index Project</a> & <a href="https://openweathermap.org" target="_blank">OpenWeather</a></p>
+            <p class="attribution-note-pro">Real-time data from global monitoring stations</p>
         </div>
     </div>
 
 {% block script %}
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{{ url_for('static', filename='js/checkAqi.js') }}"></script>
     <script>
     // Auto-fill user's city on page load
@@ -331,8 +442,7 @@
                 const data = await response.json();
                 if (data.city) {
                     document.getElementById('locationInput').value = data.city;
-                    // Optionally auto-search
-                    // searchAQI();
+                    document.getElementById('aiAdvisorLocation').value = data.city;
                 }
             }
         } catch (error) {
@@ -340,7 +450,6 @@
         }
     });
     </script>
-
 {% endblock %}
 
 {% endblock %}

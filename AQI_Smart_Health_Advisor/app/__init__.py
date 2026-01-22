@@ -39,9 +39,6 @@ def create_app():
     from app.routes.auth_login import login_auth
     app.register_blueprint(login_auth)
     
-    from app.routes.auth_dash import dash_auth
-    app.register_blueprint(dash_auth)
-    
     from app.routes.auth_checkAqi import checkAqi_auth
     app.register_blueprint(checkAqi_auth)
     

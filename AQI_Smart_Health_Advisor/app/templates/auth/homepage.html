@@ -22,16 +22,21 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="logo-section">
-            <div class="logo-icon">🛡️</div>
+            <!-- 
+                LOGO IMAGE PLACEHOLDER
+                Add your logo here. Recommended size: 120x40px or 150x50px
+                Format: PNG with transparency
+                Example: < imgsrc="{{ url_for('static', filename='images/logo.png') }}" alt="AQI Logo" class="logo-image">
+            -->
+            <img src="{{ url_for('static', filename='images/app_logo.png') }}" alt="AQI Logo" class="logo-image">
             <div class="logo-text">AQI Smart Health Advisor</div>
         </div>
         <div class="nav-buttons">
             <a href="{{ url_for('login_auth.login_signup_page') }}">
-            <button class="btn-login" type="button">Login</button>
+                <button class="btn-login" type="button">Login</button>
             </a>
-
             <a href="{{ url_for('login_auth.login_signup_page', form='signup') }}">
-            <button class="btn-signup" type="button">Sign Up</button>
+                <button class="btn-signup" type="button">Sign Up</button>
             </a>
         </div>
     </nav>
@@ -51,10 +56,12 @@
                 </p>
                 
                 <div class="hero-buttons">
-                    <a href="{{ url_for('checkAqi_auth.check_aqi') }}" style="text-decoration: none; color: inherit; "><button class="btn btn-primary">
-                        <span>🔍</span>
-                        Check Air Quality Now
-                    </button></a>
+                    <a href="{{ url_for('checkAqi_auth.check_aqi') }}" style="text-decoration: none; color: inherit;">
+                        <button class="btn btn-primary">
+                            <span>🔍</span>
+                            Check Air Quality Now
+                        </button>
+                    </a>
                     <button class="btn btn-secondary" onclick="scrollToSection('features-section')">
                         <span>✨</span>
                         Learn More
@@ -127,49 +134,79 @@
         </div>
     </section>
 
+    <!-- What is AQI Section -->
+    <section class="what-is-aqi-section">
+        <div class="what-is-aqi-container">
+            <div class="aqi-explanation-card">
+                <h2>What is AQI?</h2>
+                <p>AQI (Air Quality Index) is a number that shows how clean or polluted the air is around you. It helps you understand whether the air is safe to breathe and how it may affect your health. A lower AQI means cleaner air, while a higher AQI means more pollution and higher health risk—especially for children, elderly people, and those with breathing or heart conditions.</p>
+            </div>
+            <div class="aqi-visual">
+                <!-- 
+                    AQI MOBILE IMAGE PLACEHOLDER
+                    Add the mobile/phone image showing AQI interface here
+                    Recommended size: 400x500px
+                    Format: PNG with transparency
+                    Example: <img src="{{ url_for('static', filename='images/aqi_mobile.png') }}" alt="AQI Mobile Interface" class="aqi-mobile-image">
+                -->
+                <div class="aqi-image-placeholder">
+                   <img src="{{ url_for('static', filename='images/aqi_meter.png') }}" alt="AQI Mobile Interface" class="aqi-mobile-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Features Section -->
     <section class="features-section" id="features-section">
         <div class="features-container">
-            <div class="section-header">
-                <h2 class="section-title">Why Choose AQI Smart Health Advisor?</h2>
-                <p class="section-subtitle">Comprehensive air quality monitoring and health protection in one platform</p>
+            <!-- 
+                HAND WITH GLOBE IMAGE PLACEHOLDER
+                Add the hand holding globe image here (left side)
+                Recommended size: 500x600px
+                Format: PNG with transparency
+                Example: <img src="{{ url_for('static', filename='images/hand_globe.png') }}" alt="Sustainable Future" class="hand-globe-image">
+            -->
+            <div class="features-visual">
+                <div class="hand-image-placeholder">
+                   <img src="{{ url_for('static', filename='images/mother_earth.png') }}" alt="AQI Mobile Interface" class="aqi-mobile-image">
+                </div>
             </div>
 
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
-                    <h3 class="feature-title">Global Coverage</h3>
-                    <p class="feature-description">Access real-time air quality data from over 10,000 cities worldwide with hourly updates.</p>
+            <div class="features-content">
+                <div class="section-header">
+                    <h2 class="section-title-dark">Features</h2>
                 </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
-                    <h3 class="feature-title">AI-Powered Insights</h3>
-                    <p class="feature-description">Get personalized health recommendations based on current air quality and your specific conditions.</p>
-                </div>
+                <div class="features-list">
+                    <div class="feature-item-horizontal">
+                        <div class="feature-icon-circle">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>User-friendly</h3>
+                            <p>Easy-to-use interface that lets anyone check air quality and health advice in seconds.</p>
+                        </div>
+                    </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3 class="feature-title">Detailed Analytics</h3>
-                    <p class="feature-description">Track pollutant levels including PM2.5, PM10, CO, NO2, SO2, and O3 with comprehensive breakdowns.</p>
-                </div>
+                    <div class="feature-item-horizontal">
+                        <div class="feature-icon-circle">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Seamless integration</h3>
+                            <p>Effortlessly integrates real-time AQI data and AI health insights into one unified platform.</p>
+                        </div>
+                    </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">⚠️</div>
-                    <h3 class="feature-title">Health Alerts</h3>
-                    <p class="feature-description">Receive instant notifications when air quality deteriorates to protect yourself and your loved ones.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">🏥</div>
-                    <h3 class="feature-title">Health Predictions</h3>
-                    <p class="feature-description">Understand potential health impacts and get proactive recommendations before conditions worsen.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">📱</div>
-                    <h3 class="feature-title">Easy to Use</h3>
-                    <p class="feature-description">Simple, intuitive interface designed for everyone. Check air quality in seconds, anywhere.</p>
+                    <div class="feature-item-horizontal">
+                        <div class="feature-icon-circle">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="feature-text">
+                            <h3>Secure & safe</h3>
+                            <p>Designed to protect user data while delivering reliable health insights.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -182,10 +219,10 @@
             <p class="cta-description">
                 Join thousands of users who trust AQI Smart Health Advisor to keep them safe and informed about air quality in their area.
             </p>
-            <a href="{{ url_for('login_auth.login_signup_page', form='signup') }}" style="text-decoration: none; color: inherit; ">
-            <button class="cta-button">
-                Get Started Now →
-            </button>
+            <a href="{{ url_for('login_auth.login_signup_page', form='signup') }}" style="text-decoration: none; color: inherit;">
+                <button class="cta-button">
+                    Get Started Now →
+                </button>
             </a>
         </div>
     </section>
