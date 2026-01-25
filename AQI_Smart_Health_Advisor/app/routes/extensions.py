@@ -3,6 +3,8 @@ import requests
 import mysql.connector
 from flask_mail import Message
 from app import mail
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import random
 import os
+import json

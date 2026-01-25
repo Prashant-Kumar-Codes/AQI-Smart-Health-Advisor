@@ -258,8 +258,7 @@ function openMapSelector() {
             
             // Use English-labeled tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                language: 'en'
+                attribution: '© OpenStreetMap contributors'
             }).addTo(map);
             
             map.on('click', async function(e) {
@@ -267,16 +266,23 @@ function openMapSelector() {
                 
                 // Fetch location name in English immediately
                 try {
-                    const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&accept-language=en`;
+                    // Using Nominatim API with explicit English language parameter
+                    const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&accept-language=en&addressdetails=1`;
                     const response = await fetch(geocodeUrl);
                     const data = await response.json();
                     
-                    const locationName = data.address?.city || 
-                                       data.address?.town || 
-                                       data.address?.village || 
-                                       data.address?.state || 
-                                       data.address?.county ||
-                                       'Selected Location';
+                    // Extract location name in English, prioritizing city/town/village
+                    let locationName = data.address?.city || 
+                                      data.address?.town || 
+                                      data.address?.village || 
+                                      data.address?.municipality ||
+                                      data.address?.county ||
+                                      data.address?.state || 
+                                      data.address?.country ||
+                                      'Selected Location';
+                    
+                    // Store the English name
+                    selectedLatLng.englishName = locationName;
                     
                     if (window.mapMarker) {
                         map.removeLayer(window.mapMarker);
@@ -318,25 +324,29 @@ async function confirmMapLocation() {
     hideNearestAlert();
     
     try {
-        // First, reverse geocode to get English location name
-        const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedLatLng.lat}&lon=${selectedLatLng.lng}&accept-language=en`;
+        // Get English location name - use stored one or fetch fresh
+        let locationName = selectedLatLng.englishName || '';
         
-        let locationName = '';
-        try {
-            const geoResponse = await fetch(geocodeUrl);
-            const geoData = await geoResponse.json();
-            
-            // Extract city name in English
-            locationName = geoData.address?.city || 
-                          geoData.address?.town || 
-                          geoData.address?.village || 
-                          geoData.address?.state || 
-                          geoData.address?.county ||
-                          geoData.display_name?.split(',')[0] || 
-                          'Selected Location';
-        } catch (geoError) {
-            console.log('Geocoding error:', geoError);
-            locationName = 'Selected Location';
+        if (!locationName) {
+            try {
+                const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedLatLng.lat}&lon=${selectedLatLng.lng}&accept-language=en&addressdetails=1`;
+                const geoResponse = await fetch(geocodeUrl);
+                const geoData = await geoResponse.json();
+                
+                // Extract city name in English with multiple fallback options
+                locationName = geoData.address?.city || 
+                              geoData.address?.town || 
+                              geoData.address?.village || 
+                              geoData.address?.municipality ||
+                              geoData.address?.county ||
+                              geoData.address?.state || 
+                              geoData.address?.country ||
+                              geoData.display_name?.split(',')[0] || 
+                              'Selected Location';
+            } catch (geoError) {
+                console.log('Geocoding error:', geoError);
+                locationName = 'Selected Location';
+            }
         }
         
         const response = await fetch(`/api/aqi/geo?lat=${selectedLatLng.lat}&lng=${selectedLatLng.lng}`);
@@ -357,7 +367,7 @@ async function confirmMapLocation() {
             
             displayAQIData(data);
             
-            // Update location inputs with English name
+            // Update location inputs with English name - prefer API name, fallback to geocoded name
             const displayName = data.city?.name || locationName;
             document.getElementById('locationInput').value = displayName;
             document.getElementById('aiAdvisorLocation').value = displayName;
@@ -373,310 +383,6 @@ async function confirmMapLocation() {
     }
 }
 
-// ========== AI Advisor Functions ==========
-function openAIAdvisor() {
-    // Check if user is logged in
-    fetch('/api/user/check', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-            'Accept': 'application/json'
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Not authenticated');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // User is logged in
-            const locationInput = document.getElementById('locationInput').value;
-            if (locationInput) {
-                document.getElementById('aiAdvisorLocation').value = locationInput;
-                aiAdvisorData.location = locationInput;
-            }
-            
-            document.getElementById('aiAdvisorOverlay').style.display = 'flex';
-            document.getElementById('aiResponse').style.display = 'none';
-        })
-        .catch(error => {
-            console.error('Authentication error:', error);
-            alert('Please log in to access AI Advisor');
-            setTimeout(() => {
-                window.location.href = '/login';
-            }, 1000);
-        });
-}
-
-function closeAIAdvisor() {
-    document.getElementById('aiAdvisorOverlay').style.display = 'none';
-}
-
-function selectAge(age) {
-    document.querySelectorAll('.age-btn').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    event.target.classList.add('selected');
-    aiAdvisorData.age = age;
-}
-
-function toggleCondition(condition) {
-    const btn = event.target;
-    
-    if (condition === 'none') {
-        document.querySelectorAll('.condition-btn').forEach(b => {
-            b.classList.remove('selected');
-        });
-        btn.classList.add('selected');
-        aiAdvisorData.conditions = ['none'];
-    } else {
-        document.querySelector('[data-condition="none"]').classList.remove('selected');
-        btn.classList.toggle('selected');
-        
-        aiAdvisorData.conditions = Array.from(document.querySelectorAll('.condition-btn.selected'))
-            .map(b => b.dataset.condition)
-            .filter(c => c !== 'none');
-    }
-}
-
-function askQuickQuestion(question) {
-    const textarea = document.getElementById('customQuestion');
-    textarea.value = question;
-    aiAdvisorData.customQuestion = question;
-    updateWordCount();
-}
-
-function updateWordCount() {
-    const text = document.getElementById('customQuestion').value;
-    const words = text.trim().split(/\s+/).filter(w => w.length > 0);
-    const count = words.length;
-    document.getElementById('wordCount').textContent = `${count}/30 words`;
-    
-    if (count > 30) {
-        document.getElementById('wordCount').style.color = '#dc2626';
-    } else {
-        document.getElementById('wordCount').style.color = '#6b7280';
-    }
-    
-    // Update the data object
-    aiAdvisorData.customQuestion = text;
-}
-
-async function getAIAdvice() {
-    const customQ = document.getElementById('customQuestion').value.trim();
-    const words = customQ.split(/\s+/).filter(w => w.length > 0);
-    
-    if (words.length > 30) {
-        alert('Please limit your question to 30 words or less');
-        return;
-    }
-    
-    if (!customQ && aiAdvisorData.conditions.length === 0) {
-        alert('Please select health conditions or ask a question');
-        return;
-    }
-    
-    // Get location from input field
-    const location = document.getElementById('aiAdvisorLocation').value.trim() || aiAdvisorData.location || 'unknown location';
-    
-    // Prepare comprehensive request data with all AQI information
-    const requestData = {
-        aqi: currentAQIData ? currentAQIData.aqi : 0,
-        aqi_category: currentAQIData ? getAQICategory(currentAQIData.aqi).category : 'Unknown',
-        pollutants: {
-            pm25: currentAQIData?.iaqi?.pm25?.v || null,
-            pm10: currentAQIData?.iaqi?.pm10?.v || null,
-            o3: currentAQIData?.iaqi?.o3?.v || null,
-            no2: currentAQIData?.iaqi?.no2?.v || null,
-            so2: currentAQIData?.iaqi?.so2?.v || null,
-            co: currentAQIData?.iaqi?.co?.v || null
-        },
-        dominant_pollutant: currentAQIData?.dominentpol || null,
-        weather: {
-            temperature: currentAQIData?.iaqi?.t?.v || null,
-            humidity: currentAQIData?.iaqi?.h?.v || null,
-            pressure: currentAQIData?.iaqi?.p?.v || null,
-            wind_speed: currentAQIData?.iaqi?.w?.v || null,
-            conditions: currentAQIData?.enhanced_weather?.description || null
-        },
-        city_name: currentAQIData?.city?.name || location,
-        station_name: currentAQIData?.city?.name || null,
-        age: aiAdvisorData.age,
-        conditions: aiAdvisorData.conditions,
-        location: location,
-        question: customQ
-    };
-    
-    try {
-        // Show loading state
-        const responseContent = document.getElementById('aiResponseContent');
-        responseContent.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="spinner"></div><p>Getting personalized advice...</p></div>';
-        document.getElementById('aiResponse').style.display = 'block';
-        
-        const response = await fetch('/api/aqi/ai-personalized-advice', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify(requestData)
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            
-            // Display in modal
-            document.getElementById('aiResponseContent').textContent = data.advice;
-            document.getElementById('aiResponse').style.display = 'block';
-            
-            // ALSO display on main page
-            displayPersonalizedInsightOnMainPage(
-                data.advice,
-                location,
-                aiAdvisorData.age,
-                aiAdvisorData.conditions
-            );
-            
-            document.getElementById('aiResponse').scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest'
-            });
-        } else {
-            const errorData = await response.json();
-            document.getElementById('aiResponseContent').textContent = 
-                'Failed to get AI advice: ' + (errorData.error || 'Unknown error. Please try again.');
-        }
-    } catch (error) {
-        console.error('AI Advice error:', error);
-        document.getElementById('aiResponseContent').textContent = 
-            'Failed to get AI advice. Please check your connection and try again.';
-    }
-}
-
-// ========== Personalized Insights Display Functions ==========
-function displayPersonalizedInsightOnMainPage(advice, location, age, conditions) {
-    const card = document.getElementById('personalizedAiCard');
-    
-    if (!card) {
-        console.warn('Personalized AI card element not found in HTML');
-        return;
-    }
-    
-    const content = document.getElementById('personalizedInsightContent');
-    const locationSpan = document.getElementById('insightLocation');
-    const profileSpan = document.getElementById('insightProfile');
-    
-    // Format the advice with HTML structure
-    const formattedAdvice = formatAIAdviceForDisplay(advice);
-    content.innerHTML = formattedAdvice;
-    
-    // Update metadata
-    locationSpan.textContent = location || 'Your location';
-    
-    let profileText = '';
-    if (age) profileText += age.charAt(0).toUpperCase() + age.slice(1);
-    if (conditions && conditions.length > 0 && !conditions.includes('none')) {
-        const conditionLabels = {
-            'asthma': 'Asthma',
-            'headache': 'Headache',
-            'breathing': 'Breathing Issues',
-            'heart': 'Heart Condition',
-            'allergy': 'Allergies'
-        };
-        const formattedConditions = conditions.map(c => conditionLabels[c] || c).join(', ');
-        profileText += (profileText ? ' • ' : '') + formattedConditions;
-    }
-    profileSpan.textContent = profileText || 'General advice';
-    
-    // Show the card
-    card.style.display = 'block';
-    
-    // Scroll to it
-    setTimeout(() => {
-        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 300);
-}
-
-function formatAIAdviceForDisplay(advice) {
-    if (!advice) return '<p>No advice available</p>';
-    
-    // Try to parse structured advice
-    let formatted = '<div class="ai-advice-formatted">';
-    
-    // Check if the advice has numbered sections (1. **Header**, 2. **Header**, etc.)
-    const sectionPattern = /\d+\.\s*\*\*([^*]+)\*\*\s*([^]*?)(?=\d+\.\s*\*\*|$)/g;
-    const sections = [];
-    let match;
-    
-    while ((match = sectionPattern.exec(advice)) !== null) {
-        sections.push({
-            title: match[1].trim(),
-            content: match[2].trim()
-        });
-    }
-    
-    if (sections.length > 0) {
-        // Structured format detected
-        sections.forEach(section => {
-            formatted += `<div class="advice-section">`;
-            formatted += `<h4 class="advice-section-title">${section.title}</h4>`;
-            
-            // Parse bullet points if present
-            const content = section.content.replace(/^[•\-*]\s+/gm, '<li>');
-            if (content.includes('<li>')) {
-                formatted += `<ul class="advice-list">${content}</ul>`;
-            } else {
-                formatted += `<p class="advice-section-text">${content}</p>`;
-            }
-            
-            formatted += `</div>`;
-        });
-    } else {
-        // Fallback: Split by paragraphs and format
-        const paragraphs = advice.split('\n\n').filter(p => p.trim());
-        
-        paragraphs.forEach(para => {
-            const trimmed = para.trim();
-            
-            // Check if it's a header (bold text)
-            if (trimmed.includes('**')) {
-                const headerMatch = trimmed.match(/\*\*([^*]+)\*\*/);
-                if (headerMatch) {
-                    const headerText = headerMatch[1];
-                    const remainingText = trimmed.replace(/\*\*[^*]+\*\*/, '').trim();
-                    
-                    formatted += `<div class="advice-section">`;
-                    formatted += `<h4 class="advice-section-title">${headerText}</h4>`;
-                    if (remainingText) {
-                        formatted += `<p class="advice-section-text">${remainingText}</p>`;
-                    }
-                    formatted += `</div>`;
-                } else {
-                    formatted += `<p class="advice-text">${trimmed}</p>`;
-                }
-            } else if (trimmed.match(/^[•\-*]\s+/)) {
-                // Bullet point
-                formatted += `<ul class="advice-list"><li>${trimmed.replace(/^[•\-*]\s+/, '')}</li></ul>`;
-            } else {
-                formatted += `<p class="advice-text">${trimmed}</p>`;
-            }
-        });
-    }
-    
-    formatted += '</div>';
-    return formatted;
-}
-
-function refreshPersonalizedInsights() {
-    if (!aiAdvisorData.age && aiAdvisorData.conditions.length === 0) {
-        // Open the advisor to set preferences
-        openAIAdvisor();
-    } else {
-        // Re-fetch with current settings
-        getAIAdvice();
-    }
-}
 
 // ========== AI Recommendation Functions ==========
 async function fetchAIRecommendation(aqi) {
@@ -717,16 +423,15 @@ function getDefaultRecommendation(aqi) {
     } else if (aqi <= 100) {
         return "👍 Air quality is acceptable for most people. You can proceed with normal outdoor activities.";
     } else if (aqi <= 150) {
-        return "⚠️ Sensitive individuals should take precautions. Consider reducing prolonged outdoor activities.";
+    return "⚠️ Sensitive individuals should take precautions. Consider reducing prolonged outdoor activities.";
     } else if (aqi <= 200) {
-        return "🚨 Air quality is unhealthy for everyone. Reduce outdoor activities and consider wearing masks.";
+    return "🚨 Air quality is unhealthy for everyone. Reduce outdoor activities and consider wearing masks.";
     } else if (aqi <= 300) {
-        return "⛔ Very unhealthy air! Everyone should minimize outdoor exposure. Use air purifiers indoors.";
+    return "⛔ Very unhealthy air! Everyone should minimize outdoor exposure. Use air purifiers indoors.";
     } else {
-        return "☠️ HAZARDOUS CONDITIONS - Health emergency! Stay indoors with sealed windows. Seek medical help if needed.";
+    return "☠️ HAZARDOUS CONDITIONS - Health emergency! Stay indoors with sealed windows. Seek medical help if needed.";
     }
 }
-
 // ========== AQI Category Functions ==========
 function getAQICategory(aqi) {
     if (aqi <= 50) return { category: 'Good', class: 'aqi-good' };
@@ -736,11 +441,9 @@ function getAQICategory(aqi) {
     if (aqi <= 300) return { category: 'Very Unhealthy', class: 'aqi-very-unhealthy' };
     return { category: 'Hazardous', class: 'aqi-hazardous' };
 }
-
 function updateBodyBackground(aqiClass) {
     const body = document.body;
     body.className = '';
-    
     if (aqiClass === 'aqi-good') {
         body.classList.add('aqi-good-bg');
     } else if (aqiClass === 'aqi-moderate') {
@@ -755,247 +458,264 @@ function updateBodyBackground(aqiClass) {
         body.classList.add('aqi-hazardous-bg');
     }
 }
-
 function getRecommendations(aqi) {
     if (aqi <= 50) {
         return [
-            { icon: '✅', title: 'Excellent Air Quality', desc: 'Perfect time to enjoy the outdoors!' },
-            { icon: '🏃', title: 'Perfect for Outdoor Activities', desc: 'Great conditions for exercise and sports.' },
-            { icon: '🪟', title: 'Fresh Air Ventilation', desc: 'Open windows to circulate fresh air.' },
-            { icon: '👨‍👩‍👧‍👦', title: 'Safe for Everyone', desc: 'Air quality poses no risk to any groups.' }
+        { icon: '✅', title: 'Excellent Air Quality', desc: 'Perfect time to enjoy the outdoors!' },
+        { icon: '🏃', title: 'Perfect for Outdoor Activities', desc: 'Great conditions for exercise and sports.' },
+        { icon: '🪟', title: 'Fresh Air Ventilation', desc: 'Open windows to circulate fresh air.' },
+        { icon: '👨‍👩‍👧‍👦', title: 'Safe for Everyone', desc: 'Air quality poses no risk to any groups.' }
         ];
     } else if (aqi <= 100) {
         return [
-            { icon: '⚠️', title: 'Moderate Air Quality', desc: 'Acceptable for most people.' },
-            { icon: '🏃', title: 'Generally Safe Activities', desc: 'Most can enjoy normal outdoor activities.' },
-            { icon: '👶', title: 'Sensitive Groups Monitor', desc: 'Watch for symptoms if sensitive.' },
-            { icon: '🪟', title: 'Moderate Ventilation', desc: 'Safe to open windows moderately.' }
+        { icon: '⚠️', title: 'Moderate Air Quality', desc: 'Acceptable for most people.' },
+        { icon: '🏃', title: 'Generally Safe Activities', desc: 'Most can enjoy normal outdoor activities.' },
+        { icon: '👶', title: 'Sensitive Groups Monitor', desc: 'Watch for symptoms if sensitive.' },
+        { icon: '🪟', title: 'Moderate Ventilation', desc: 'Safe to open windows moderately.' }
         ];
     } else if (aqi <= 150) {
         return [
-            { icon: '⚠️', title: 'Unhealthy for Sensitive Groups', desc: 'Vulnerable groups may experience effects.' },
-            { icon: '😷', title: 'Masks Recommended', desc: 'Sensitive individuals should wear N95 masks.' },
-            { icon: '🏠', title: 'Limit Outdoor Exposure',desc: 'Reduce prolonged outdoor activities.' },
-            { icon: '🪟', title: 'Keep Windows Closed', desc: 'Prevent outdoor air from entering.' },
-            { icon: '💊', title: 'Monitor Symptoms', desc: 'Have rescue medications available.' }
-            ];
-            } else if (aqi <= 200) {
-            return [
-            { icon: '🚨', title: 'Unhealthy Air Quality', desc: 'Everyone may experience health effects.' },
-            { icon: '😷', title: 'Masks Essential Outdoors', desc: 'Everyone should wear N95/KN95 masks.' },
-            { icon: '🏠', title: 'Stay Indoors', desc: 'Avoid all outdoor activities.' },
-            { icon: '💨', title: 'Use Air Purifiers', desc: 'Run HEPA purifiers indoors.' },
-            { icon: '🚫', title: 'Cancel Outdoor Events', desc: 'Postpone outdoor activities.' },
-            { icon: '💊', title: 'Health Monitoring', desc: 'Watch for respiratory symptoms.' }
-            ];
-            } else if (aqi <= 300) {
-            return [
-            { icon: '🚨', title: 'Very Unhealthy Air', desc: 'Significant health risk for everyone.' },
-            { icon: '🏠', title: 'Mandatory Indoor Stay', desc: 'Everyone should stay indoors.' },
-            { icon: '😷', title: 'N95/N99 Masks Required', desc: 'Proper respirators essential if outside.' },
-            { icon: '💨', title: 'Air Purification Critical', desc: 'Keep purifiers running continuously.' },
-            { icon: '🏥', title: 'Health Vigilance', desc: 'Monitor for severe symptoms.' },
-            { icon: '🚗', title: 'Avoid Vehicle Emissions', desc: 'Limit driving to reduce pollution.' },
-            { icon: '📞', title: 'Emergency Contacts Ready', desc: 'Have medical contacts available.' }
-            ];
-            } else {
-            return [
-            { icon: '☠️', title: 'Hazardous - Emergency', desc: 'Severe health warning for everyone.' },
-            { icon: '🚫', title: 'Do NOT Go Outside', desc: 'Public health emergency - stay indoors!' },
-            { icon: '💨', title: 'Maximum Air Purification', desc: 'Run multiple HEPA purifiers.' },
-            { icon: '😷', title: 'Emergency Masks Only', desc: 'N95/N99/P100 respirators if evacuation needed.' },
-            { icon: '🏥', title: 'Medical Emergency Protocol', desc: 'Seek immediate help for symptoms.' },
-            { icon: '📞', title: 'Emergency Services', desc: 'Consider evacuation if high-risk.' },
-            { icon: '🚨', title: 'Follow Official Guidance', desc: 'Monitor emergency broadcasts.' },
-            { icon: '👥', title: 'Check on Vulnerable People', desc: 'Ensure neighbors have protection.' }
-            ];
-            }
+        { icon: '⚠️', title: 'Unhealthy for Sensitive Groups', desc: 'Vulnerable groups may experience effects.' },
+        { icon: '😷', title: 'Masks Recommended', desc: 'Sensitive individuals should wear N95 masks.' },
+        { icon: '🏠', title: 'Limit Outdoor Exposure', desc: 'Reduce prolonged outdoor activities.' },
+        { icon: '🪟', title: 'Keep Windows Closed', desc: 'Prevent outdoor air from entering.' },
+        { icon: '💊', title: 'Monitor Symptoms', desc: 'Have rescue medications available.' }
+        ];
+    } else if (aqi <= 200) {
+        return [
+        { icon: '🚨', title: 'Unhealthy Air Quality', desc: 'Everyone may experience health effects.' },
+        { icon: '😷', title: 'Masks Essential Outdoors', desc: 'Everyone should wear N95/KN95 masks.' },
+        { icon: '🏠', title: 'Stay Indoors', desc: 'Avoid all outdoor activities.' },
+        { icon: '💨', title: 'Use Air Purifiers', desc: 'Run HEPA purifiers indoors.' },
+        { icon: '🚫', title: 'Cancel Outdoor Events', desc: 'Postpone outdoor activities.' },
+        { icon: '💊', title: 'Health Monitoring', desc: 'Watch for respiratory symptoms.' }
+        ];
+    } else if (aqi <= 300) {
+        return [
+        { icon: '🚨', title: 'Very Unhealthy Air', desc: 'Significant health risk for everyone.' },
+        { icon: '🏠', title: 'Mandatory Indoor Stay', desc: 'Everyone should stay indoors.' },
+        { icon: '😷', title: 'N95/N99 Masks Required', desc: 'Proper respirators essential if outside.' },
+        { icon: '💨', title: 'Air Purification Critical', desc: 'Keep purifiers running continuously.' },
+        { icon: '🏥', title: 'Health Vigilance', desc: 'Monitor for severe symptoms.' },
+        { icon: '🚗', title: 'Avoid Vehicle Emissions', desc: 'Limit driving to reduce pollution.' },
+        { icon: '📞', title: 'Emergency Contacts Ready', desc: 'Have medical contacts available.' }
+        ];
+    } else {
+        return [
+        { icon: '☠️', title: 'Hazardous - Emergency', desc: 'Severe health warning for everyone.' },
+        { icon: '🚫', title: 'Do NOT Go Outside', desc: 'Public health emergency - stay indoors!' },
+        { icon: '💨', title: 'Maximum Air Purification', desc: 'Run multiple HEPA purifiers.' },
+        { icon: '😷', title: 'Emergency Masks Only', desc: 'N95/N99/P100 respirators if evacuation needed.' },
+        { icon: '🏥', title: 'Medical Emergency Protocol', desc: 'Seek immediate help for symptoms.' },
+        { icon: '📞', title: 'Emergency Services', desc: 'Consider evacuation if high-risk.' },
+        { icon: '🚨', title: 'Follow Official Guidance', desc: 'Monitor emergency broadcasts.' },
+        { icon: '👥', title: 'Check on Vulnerable People', desc: 'Ensure neighbors have protection.' }
+        ];
+    }
 }
 // ========== Data Display Functions ==========
 function displayAQIData(data) {
-currentAQIData = data;
-const cityName = data.city?.name || 'Unknown Location';
-document.getElementById('cityName').textContent = cityName;
+    currentAQIData = data;
+    const cityName = data.city?.name || 'Unknown Location';
+    document.getElementById('cityName').textContent = cityName;
 
-const updateTime = data.time?.s || 'Unknown';
-document.getElementById('updateTimeText').textContent = `Updated: ${updateTime}`;
+    const updateTime = data.time?.s || 'Unknown';
+    document.getElementById('updateTimeText').textContent = `Updated: ${updateTime}`;
 
-const aqi = data.aqi || 0;
-const aqiInfo = getAQICategory(aqi);
+    const aqi = data.aqi || 0;
+    const aqiInfo = getAQICategory(aqi);
 
-const aqiDisplay = document.getElementById('aqiDisplay');
-aqiDisplay.className = `aqi-display-pro ${aqiInfo.class}`;
-document.getElementById('aqiValue').textContent = aqi;
-document.getElementById('aqiCategory').textContent = aqiInfo.category;
+    const aqiDisplay = document.getElementById('aqiDisplay');
+    aqiDisplay.className = `aqi-display-pro ${aqiInfo.class}`;
+    document.getElementById('aqiValue').textContent = aqi;
+    document.getElementById('aqiCategory').textContent = aqiInfo.category;
 
-updateBodyBackground(aqiInfo.class);
+    updateBodyBackground(aqiInfo.class);
 
-displayWeatherInfo(data.iaqi, data.enhanced_weather);
-displayPollutants(data.iaqi);
-displayDominantPollutant(data.dominentpol);
-displayRecommendations(aqi);
+    displayWeatherInfo(data.iaqi, data.enhanced_weather);
+    displayPollutants(data.iaqi);
+    displayDominantPollutant(data.dominentpol);
+    displayRecommendations(aqi);
 
-showSuccess();
+    showSuccess();
 }
 function displayWeatherInfo(iaqi, enhancedWeather) {
-const weatherInfo = document.getElementById('weatherInfo');
-weatherInfo.innerHTML = '';
-if (!iaqi) {
-    weatherInfo.innerHTML = '<p style="text-align: center; color: #6b7280;">Weather data not available</p>';
-    return;
-}
+    const weatherInfo = document.getElementById('weatherInfo');
+    weatherInfo.innerHTML = '';
+    if (!iaqi) {
+        weatherInfo.innerHTML = '<p style="text-align: center; color: #6b7280;">Weather data not available</p>';
+        return;
+    }
 
-const roundValue = (val, decimals = 1) => {
-    if (val === undefined || val === null) return 'N/A';
-    return typeof val === 'number' ? val.toFixed(decimals) : val;
-};
+    const roundValue = (val, decimals = 1) => {
+        if (val === undefined || val === null) return 'N/A';
+        return typeof val === 'number' ? val.toFixed(decimals) : val;
+    };
 
-const weatherData = [
-    { label: 'Temperature', value: iaqi.t?.v !== undefined ? `${roundValue(iaqi.t.v, 1)}°C` : 'N/A', icon: '🌡️' },
-    { label: 'Humidity', value: iaqi.h?.v !== undefined ? `${roundValue(iaqi.h.v, 1)}%` : 'N/A', icon: '💧' },
-    { label: 'Pressure', value: iaqi.p?.v !== undefined ? `${roundValue(iaqi.p.v, 1)} hPa` : 'N/A', icon: '📽' },
-    { label: 'Wind Speed', value: iaqi.w?.v !== undefined ? `${roundValue(iaqi.w.v, 1)} m/s` : 'N/A', icon: '💨' }
-];
+    const weatherData = [
+        { label: 'Temperature', value: iaqi.t?.v !== undefined ? `${roundValue(iaqi.t.v, 1)}°C` : 'N/A', icon: '🌡️' },
+        { label: 'Humidity', value: iaqi.h?.v !== undefined ? `${roundValue(iaqi.h.v, 1)}%` : 'N/A', icon: '💧' },
+        { label: 'Pressure', value: iaqi.p?.v !== undefined ? `${roundValue(iaqi.p.v, 1)} hPa` : 'N/A', icon: '📽' },
+        { label: 'Wind Speed', value: iaqi.w?.v !== undefined ? `${roundValue(iaqi.w.v, 1)} m/s` : 'N/A', icon: '💨' }
+    ];
 
-if (enhancedWeather && enhancedWeather.description) {
-    weatherData.push({
-        label: 'Conditions',
-        value: enhancedWeather.description.charAt(0).toUpperCase() + enhancedWeather.description.slice(1),
-        icon: '🌤️'
+    if (enhancedWeather && enhancedWeather.description) {
+        weatherData.push({
+            label: 'Conditions',
+            value: enhancedWeather.description.charAt(0).toUpperCase() + enhancedWeather.description.slice(1),
+            icon: '🌤️'
+        });
+    }
+
+    weatherData.forEach(item => {
+        const weatherItem = document.createElement('div');
+        weatherItem.className = 'weather-item';
+        weatherItem.innerHTML = `
+            <div class="weather-item-label">${item.icon} ${item.label}</div>
+            <div class="weather-item-value">${item.value}</div>
+        `;
+        weatherInfo.appendChild(weatherItem);
     });
 }
 
-weatherData.forEach(item => {
-    const weatherItem = document.createElement('div');
-    weatherItem.className = 'weather-item';
-    weatherItem.innerHTML = `
-        <div class="weather-item-label">${item.icon} ${item.label}</div>
-        <div class="weather-item-value">${item.value}</div>
-    `;
-    weatherInfo.appendChild(weatherItem);
-});
-}
 function displayPollutants(iaqi) {
-const pollutantsGrid = document.getElementById('pollutantsGrid');
-pollutantsGrid.innerHTML = '';
-if (!iaqi) {
-    pollutantsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Pollutant data not available</p>';
-    return;
-}
-
-const roundValue = (val, decimals = 1) => {
-    if (val === undefined || val === null) return 'N/A';
-    return typeof val === 'number' ? val.toFixed(decimals) : val;
-};
-
-const pollutantMapping = {
-    pm25: { name: 'PM2.5', unit: 'µg/m³', desc: 'Fine Particles' },
-    pm10: { name: 'PM10', unit: 'µg/m³', desc: 'Coarse Particles' },
-    o3: { name: 'O₃', unit: 'ppb', desc: 'Ozone' },
-    no2: { name: 'NO₂', unit: 'ppb', desc: 'Nitrogen Dioxide' },
-    so2: { name: 'SO₂', unit: 'ppb', desc: 'Sulfur Dioxide' },
-    co: { name: 'CO', unit: 'ppm', desc: 'Carbon Monoxide' }
-};
-
-let hasData = false;
-
-Object.keys(pollutantMapping).forEach(key => {
-    if (iaqi[key]?.v !== undefined) {
-        hasData = true;
-        const pollutant = pollutantMapping[key];
-        const card = document.createElement('div');
-        card.className = 'pollutant-card';
-        card.innerHTML = `
-            <div class="pollutant-name">${pollutant.name}</div>
-            <div class="pollutant-value">${roundValue(iaqi[key].v, 1)}</div>
-            <div class="pollutant-unit">${pollutant.unit}</div>
-        `;
-        card.title = pollutant.desc;
-        pollutantsGrid.appendChild(card);
+    const pollutantsGrid = document.getElementById('pollutantsGrid');
+    pollutantsGrid.innerHTML = '';
+    if (!iaqi) {
+        pollutantsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Pollutant data not available</p>';
+        return;
     }
-});
 
-if (!hasData) {
-    pollutantsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Detailed pollutant data not available</p>';
+    const roundValue = (val, decimals = 1) => {
+        if (val === undefined || val === null) return 'N/A';
+        return typeof val === 'number' ? val.toFixed(decimals) : val;
+    };
+
+    const pollutantMapping = {
+        pm25: { name: 'PM2.5', unit: 'µg/m³', desc: 'Fine Particles' },
+        pm10: { name: 'PM10', unit: 'µg/m³', desc: 'Coarse Particles' },
+        o3: { name: 'O₃', unit: 'ppb', desc: 'Ozone' },
+        no2: { name: 'NO₂', unit: 'ppb', desc: 'Nitrogen Dioxide' },
+        so2: { name: 'SO₂', unit: 'ppb', desc: 'Sulfur Dioxide' },
+        co: { name: 'CO', unit: 'ppm', desc: 'Carbon Monoxide' }
+    };
+
+    let hasData = false;
+
+    Object.keys(pollutantMapping).forEach(key => {
+        if (iaqi[key]?.v !== undefined) {
+            hasData = true;
+            const pollutant = pollutantMapping[key];
+            const card = document.createElement('div');
+            card.className = 'pollutant-card';
+            card.innerHTML = `
+                <div class="pollutant-name">${pollutant.name}</div>
+                <div class="pollutant-value">${roundValue(iaqi[key].v, 1)}</div>
+                <div class="pollutant-unit">${pollutant.unit}</div>
+            `;
+            card.title = pollutant.desc;
+            pollutantsGrid.appendChild(card);
+        }
+    });
+
+    if (!hasData) {
+        pollutantsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Detailed pollutant data not available</p>';
+    }
+
 }
-}
+
 function displayDominantPollutant(dominentpol) {
-const pollutantCard = document.getElementById('dominantPollutantCard');
-const pollutantText = document.getElementById('dominantPollutant');
-if (!dominentpol) {
-    pollutantCard.style.display = 'none';
-    return;
+    const pollutantCard = document.getElementById('dominantPollutantCard');
+    const pollutantText = document.getElementById('dominantPollutant');
+    if (!dominentpol) {
+        pollutantCard.style.display = 'none';
+        return;
+    }
+
+    const pollutantNames = {
+        pm25: 'PM2.5 (Fine Particulate Matter)',
+        pm10: 'PM10 (Coarse Particulate Matter)',
+        o3: 'Ozone (O₃)',
+        no2: 'Nitrogen Dioxide (NO₂)',
+        so2: 'Sulfur Dioxide (SO₂)',
+        co: 'Carbon Monoxide (CO)'
+    };
+
+    const pollutantName = pollutantNames[dominentpol] || dominentpol.toUpperCase();
+
+    pollutantCard.style.display = 'flex';
+    pollutantText.innerHTML = `<strong>Primary Pollutant:</strong> ${pollutantName} is the dominant contributor to the current Air Quality Index.`;
 }
 
-const pollutantNames = {
-    pm25: 'PM2.5 (Fine Particulate Matter)',
-    pm10: 'PM10 (Coarse Particulate Matter)',
-    o3: 'Ozone (O₃)',
-    no2: 'Nitrogen Dioxide (NO₂)',
-    so2: 'Sulfur Dioxide (SO₂)',
-    co: 'Carbon Monoxide (CO)'
-};
-
-const pollutantName = pollutantNames[dominentpol] || dominentpol.toUpperCase();
-
-pollutantCard.style.display = 'flex';
-pollutantText.innerHTML = `<strong>Primary Pollutant:</strong> ${pollutantName} is the dominant contributor to the current Air Quality Index.`;
-}
 function displayRecommendations(aqi) {
-const recommendations = getRecommendations(aqi);
-const recommendationsDiv = document.getElementById('recommendations');
-recommendationsDiv.innerHTML = '';
-recommendations.forEach(rec => {
-    const item = document.createElement('div');
-    item.className = 'recommendation-item';
-    item.innerHTML = `
-        <div class="recommendation-icon">${rec.icon}</div>
-        <div class="recommendation-text">
-            <h4>${rec.title}</h4>
-            <p>${rec.desc}</p>
-        </div>
-    `;
-    recommendationsDiv.appendChild(item);
-});
+    const recommendations = getRecommendations(aqi);
+    const recommendationsDiv = document.getElementById('recommendations');
+    recommendationsDiv.innerHTML = '';
+    recommendations.forEach(rec => {
+        const item = document.createElement('div');
+        item.className = 'recommendation-item';
+        item.innerHTML = `
+            <div class="recommendation-icon">${rec.icon}</div>
+            <div class="recommendation-text">
+                <h4>${rec.title}</h4>
+                <p>${rec.desc}</p>
+            </div>
+        `;
+        recommendationsDiv.appendChild(item);
+    });
+    }
+    // ========== Expandable Card Functions ==========
+    function toggleCard(cardId) {
+    const card = document.getElementById(cardId).parentElement;
+    card.classList.toggle('expanded');
 }
-// ========== Expandable Card Functions ==========
-function toggleCard(cardId) {
-const card = document.getElementById(cardId).parentElement;
-card.classList.toggle('expanded');
-}
+
 // ========== Event Listeners ==========
 document.addEventListener('DOMContentLoaded', function() {
-const locationInput = document.getElementById('locationInput');
-const aiAdvisorLocationInput = document.getElementById('aiAdvisorLocation');
-// Enter key to search
-locationInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        searchAQI();
-    }
-});
-
-// Sync location input changes
-locationInput.addEventListener('input', function() {
-    const value = this.value;
-    if (aiAdvisorLocationInput) {
-        aiAdvisorLocationInput.value = value;
-        aiAdvisorData.location = value;
-    }
-});
-
-// Sync AI Advisor location input
-if (aiAdvisorLocationInput) {
-    aiAdvisorLocationInput.addEventListener('input', function() {
-        aiAdvisorData.location = this.value;
+    const locationInput = document.getElementById('locationInput');
+    const aiAdvisorLocationInput = document.getElementById('aiAdvisorLocation');
+    const aiAdvisorAgeInput = document.getElementById('aiAdvisorAge');
+    // Enter key to search
+    locationInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchAQI();
+        }
     });
-}
 
-// Word count for custom question
-const customQuestion = document.getElementById('customQuestion');
-if (customQuestion) {
-    customQuestion.addEventListener('input', updateWordCount);
-}
+    // Sync location input changes between main input and AI advisor input
+    locationInput.addEventListener('input', function() {
+        const value = this.value;
+        if (aiAdvisorLocationInput) {
+            aiAdvisorLocationInput.value = value;
+            aiAdvisorData.location = value;
+        }
+    });
 
-locationInput.focus();
+    // Sync AI Advisor location input back to main
+    if (aiAdvisorLocationInput) {
+        aiAdvisorLocationInput.addEventListener('input', function() {
+            const value = this.value;
+            locationInput.value = value;
+            aiAdvisorData.location = value;
+        });
+    }
+
+    // Update age in data object when changed
+    if (aiAdvisorAgeInput) {
+        aiAdvisorAgeInput.addEventListener('input', function() {
+            const age = parseInt(this.value);
+            if (age && age >= 1 && age <= 120) {
+                aiAdvisorData.age = age;
+            }
+        });
+    }
+
+    // Word count for custom question
+    const customQuestion = document.getElementById('customQuestion');
+    if (customQuestion) {
+        customQuestion.addEventListener('input', updateWordCount);
+    }
+
+    locationInput.focus();
 });

@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block title %}AQI SMART HEALTH ADVISOR - HOMEPAGE{% endblock %}
+
+{% block style %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}" />
+{% endblock %}
+
+{% block content %}
+    <!-- Animated Background Particles -->
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo-section">
+            <div class="logo-icon">🛡️</div>
+            <div class="logo-text">AQI Smart Health Advisor</div>
+        </div>
+        <div class="nav-buttons">
+            <a href="{{ url_for('login_auth.login_signup_page') }}">
+            <button class="btn-login" type="button">Login</button>
+            </a>
+
+            <a href="{{ url_for('login_auth.login_signup_page', form='signup') }}">
+            <button class="btn-signup" type="button">Sign Up</button>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Monitor air quality.<br>
+                    Predict health risks.<br>
+                    <span class="highlight-text">Stay protected.</span>
+                </h1>
+                
+                <p class="hero-description">
+                    Real-time air quality monitoring with AI-powered health recommendations tailored to your location and conditions.
+                </p>
+                
+                <div class="hero-buttons">
+                    <a href="{{ url_for('checkAqi_auth.check_aqi') }}" style="text-decoration: none; color: inherit; "><button class="btn btn-primary">
+                        <span>🔍</span>
+                        Check Air Quality Now
+                    </button></a>
+                    <button class="btn btn-secondary" onclick="scrollToSection('features-section')">
+                        <span>✨</span>
+                        Learn More
+                    </button>
+                </div>
+
+                <div class="trust-indicators">
+                    <div class="trust-item">
+                        <span class="trust-icon">🌍</span>
+                        <div class="trust-text">
+                            <strong>Global Coverage</strong>
+                            <span>10,000+ Cities</span>
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">⚡</span>
+                        <div class="trust-text">
+                            <strong>Real-Time Data</strong>
+                            <span>Updated Hourly</span>
+                        </div>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">🤖</span>
+                        <div class="trust-text">
+                            <strong>AI-Powered</strong>
+                            <span>Smart Insights</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="shield-container">
+                    <div class="floating-card card-1">
+                        <div class="mini-aqi-display aqi-good">
+                            <div class="mini-aqi-value">42</div>
+                            <div class="mini-aqi-label">Good</div>
+                        </div>
+                        <div class="card-location">📍 San Francisco</div>
+                    </div>
+                    
+                    <div class="floating-card card-2">
+                        <div class="mini-aqi-display aqi-moderate">
+                            <div class="mini-aqi-value">87</div>
+                            <div class="mini-aqi-label">Moderate</div>
+                        </div>
+                        <div class="card-location">📍 New York</div>
+                    </div>
+                    
+                    <div class="floating-card card-3">
+                        <div class="mini-aqi-display aqi-unhealthy">
+                            <div class="mini-aqi-value">165</div>
+                            <div class="mini-aqi-label">Unhealthy</div>
+                        </div>
+                        <div class="card-location">📍 Delhi</div>
+                    </div>
+
+                    <svg class="shield-icon" width="300" height="360" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 10 L180 50 L180 130 Q180 180 100 230 Q20 180 20 130 L20 50 Z" fill="url(#shieldGradient)" stroke="white" stroke-width="4"/>
+                        <path d="M70 120 L90 140 L135 95" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.9" />
+                                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:0.9" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features-section">
+        <div class="features-container">
+            <div class="section-header">
+                <h2 class="section-title">Why Choose AQI Smart Health Advisor?</h2>
+                <p class="section-subtitle">Comprehensive air quality monitoring and health protection in one platform</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3 class="feature-title">Global Coverage</h3>
+                    <p class="feature-description">Access real-time air quality data from over 10,000 cities worldwide with hourly updates.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">AI-Powered Insights</h3>
+                    <p class="feature-description">Get personalized health recommendations based on current air quality and your specific conditions.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Detailed Analytics</h3>
+                    <p class="feature-description">Track pollutant levels including PM2.5, PM10, CO, NO2, SO2, and O3 with comprehensive breakdowns.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚠️</div>
+                    <h3 class="feature-title">Health Alerts</h3>
+                    <p class="feature-description">Receive instant notifications when air quality deteriorates to protect yourself and your loved ones.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🏥</div>
+                    <h3 class="feature-title">Health Predictions</h3>
+                    <p class="feature-description">Understand potential health impacts and get proactive recommendations before conditions worsen.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">Easy to Use</h3>
+                    <p class="feature-description">Simple, intuitive interface designed for everyone. Check air quality in seconds, anywhere.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready to Breathe Easier?</h2>
+            <p class="cta-description">
+                Join thousands of users who trust AQI Smart Health Advisor to keep them safe and informed about air quality in their area.
+            </p>
+            <a href="{{ url_for('login_auth.login_signup_page', form='signup') }}" style="text-decoration: none; color: inherit; ">
+            <button class="cta-button">
+                Get Started Now →
+            </button>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 AQI Smart Health Advisor. All rights reserved.</p>
+        <p>Data provided by <a href="https://aqicn.org" target="_blank" rel="noopener">World Air Quality Index Project</a> & <a href="https://openweathermap.org" target="_blank" rel="noopener">OpenWeather</a></p>
+    </footer>
+
+    <script>
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    </script>
+
+{%endblock%}

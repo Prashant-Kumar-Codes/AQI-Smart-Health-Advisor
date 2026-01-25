@@ -354,9 +354,8 @@ section {
     align-items: center;
 }
 
-/* change-reduce heading by 15% */
 .hero-title {
-    font-size: 3.57em;
+    font-size: 4.2em;
     color: white;
     line-height: 1.1;
     margin-bottom: 30px;
@@ -373,9 +372,8 @@ section {
     display: inline-block;
 }
 
-/* change-reduce text by 5% */
 .hero-description {
-    font-size: 1.28em;
+    font-size: 1.35em;
     color: rgba(255, 255, 255, 0.95);
     line-height: 1.7;
     margin-bottom: 45px;
@@ -588,17 +586,15 @@ section {
     padding: 60px;
 }
 
-/* change-reduce heading by 15% */
 .aqi-explanation-card h2 {
-    font-size: 2.975em;
+    font-size: 3.5em;
     color: white;
     margin-bottom: 30px;
     font-weight: 700;
 }
 
-/* change-reduce text by 5% */
 .aqi-explanation-card p {
-    font-size: 1.14em;
+    font-size: 1.2em;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.9;
 }
@@ -633,9 +629,8 @@ section {
     margin-bottom: 70px;
 }
 
-/* change-reduce headings by 15% */
 .section-title-white, .section-title-dark {
-    font-size: 2.975em;
+    font-size: 3.5em;
     margin-bottom: 20px;
     font-weight: 700;
 }
@@ -648,9 +643,8 @@ section {
     color: #1f2937;
 }
 
-/* change-reduce text by 5% */
 .section-subtitle-white, .section-subtitle-dark {
-    font-size: 1.235em;
+    font-size: 1.3em;
     font-weight: 300;
 }
 
@@ -688,19 +682,17 @@ section {
     margin-bottom: 25px;
 }
 
-/* change-reduce heading by 15% */
 .impact-card h3 {
-    font-size: 1.275em;
+    font-size: 1.5em;
     color: #1f2937;
     margin-bottom: 15px;
     font-weight: 700;
 }
 
-/* change-reduce text by 5% */
 .impact-card p {
     color: #6b7280;
     line-height: 1.7;
-    font-size: 0.9975em;
+    font-size: 1.05em;
 }
 
 /* ========== Features Section ========== */
@@ -774,17 +766,15 @@ section {
     color: white;
 }
 
-/* change-reduce heading by 15% */
 .feature-text h3 {
-    font-size: 1.36em;
+    font-size: 1.6em;
     color: white;
     margin-bottom: 12px;
     font-weight: 700;
 }
 
-/* change-reduce text by 5% */
 .feature-text p {
-    font-size: 1.045em;
+    font-size: 1.1em;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.8;
 }
@@ -807,7 +797,6 @@ section {
     align-items: center;
 }
 
-/* change-fix step card width and text overflow */
 .step-card {
     grid-column: span 1;
     background: linear-gradient(135deg, #f8f9fa, #ffffff);
@@ -817,8 +806,6 @@ section {
     text-align: center;
     transition: all 0.4s;
     position: relative;
-    min-width: 0;
-    overflow: hidden;
 }
 
 .step-card:hover {
@@ -848,21 +835,17 @@ section {
     margin: 20px 0;
 }
 
-/* change-reduce heading by 15% */
 .step-card h3 {
-    font-size: 1.105em;
+    font-size: 1.3em;
     color: #1f2937;
     margin-bottom: 15px;
     font-weight: 700;
-    word-wrap: break-word;
 }
 
-/* change-reduce text by 5% */
 .step-card p {
     color: #6b7280;
     line-height: 1.7;
-    font-size: 0.95em;
-    word-wrap: break-word;
+    font-size: 1em;
 }
 
 .step-arrow {
@@ -912,9 +895,8 @@ section {
     margin-bottom: 20px;
 }
 
-/* change-reduce text by 5% */
 .testimonial-text {
-    font-size: 1.0925em;
+    font-size: 1.15em;
     color: rgba(255, 255, 255, 0.95);
     line-height: 1.8;
     margin-bottom: 30px;
@@ -940,17 +922,15 @@ section {
     font-size: 1.5em;
 }
 
-/* change-reduce heading by 15% */
 .author-info h4 {
     color: white;
-    font-size: 0.935em;
+    font-size: 1.1em;
     margin-bottom: 3px;
 }
 
-/* change-reduce text by 5% */
 .author-info span {
     color: rgba(255, 255, 255, 0.7);
-    font-size: 0.855em;
+    font-size: 0.9em;
 }
 
 /* ========== Stats Section ========== */
@@ -981,9 +961,8 @@ section {
     margin-bottom: 10px;
 }
 
-/* change-reduce text by 5% */
 .stat-label {
-    font-size: 1.14em;
+    font-size: 1.2em;
     color: #6b7280;
     font-weight: 500;
 }
@@ -1010,17 +989,15 @@ section {
     text-align: center;
 }
 
-/* change-reduce heading by 15% */
 .cta-title {
-    font-size: 2.55em;
+    font-size: 3em;
     color: #1f2937;
     margin-bottom: 25px;
     font-weight: 700;
 }
 
-/* change-reduce text by 5% */
 .cta-description {
-    font-size: 1.235em;
+    font-size: 1.3em;
     color: #6b7280;
     margin-bottom: 45px;
     line-height: 1.7;
@@ -1060,22 +1037,19 @@ section {
     margin-bottom: 40px;
 }
 
-/* change-reduce headings by 15% */
 .footer-section h3 {
-    font-size: 1.275em;
+    font-size: 1.5em;
     margin-bottom: 20px;
 }
 
-/* change-reduce text by 5% */
 .footer-section p {
     color: rgba(255, 255, 255, 0.7);
     line-height: 1.7;
-    font-size: 0.9975em;
+    font-size: 1.05em;
 }
 
-/* change-reduce heading by 15% */
 .footer-section h4 {
-    font-size: 1.02em;
+    font-size: 1.2em;
     margin-bottom: 20px;
     color: white;
 }
@@ -1088,12 +1062,11 @@ section {
     margin-bottom: 12px;
 }
 
-/* change-reduce text by 5% */
 .footer-section ul li a {
     color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
     transition: color 0.3s;
-    font-size: 0.9975em;
+    font-size: 1.05em;
 }
 
 .footer-section ul li a:hover {
@@ -1144,14 +1117,12 @@ section {
         gap: 60px;
     }
     
-    /* change-adjust hero title for tablet */
     .hero-title {
-        font-size: 2.72em;
+        font-size: 3.2em;
     }
     
-    /* change-adjust hero description for tablet */
     .hero-description {
-        font-size: 1.0925em;
+        font-size: 1.15em;
     }
     
     .what-is-aqi-section,
@@ -1171,15 +1142,13 @@ section {
         padding: 40px;
     }
     
-    /* change-adjust aqi heading for tablet */
     .aqi-explanation-card h2 {
-        font-size: 2.38em;
+        font-size: 2.8em;
     }
     
-    /* change-adjust section titles for tablet */
     .section-title-white,
     .section-title-dark {
-        font-size: 2.38em;
+        font-size: 2.8em;
     }
     
     .impact-grid {
@@ -1270,15 +1239,13 @@ section {
         gap: 50px;
     }
     
-    /* change-adjust hero title for mobile tablet */
     .hero-title {
-        font-size: 2.125em;
+        font-size: 2.5em;
         text-align: center;
     }
     
-    /* change-adjust hero description for mobile tablet */
     .hero-description {
-        font-size: 1.045em;
+        font-size: 1.1em;
         text-align: center;
     }
     
@@ -1339,15 +1306,13 @@ section {
         padding: 35px;
     }
     
-    /* change-adjust aqi card for mobile tablet */
     .aqi-explanation-card h2 {
-        font-size: 1.87em;
+        font-size: 2.2em;
         text-align: center;
     }
     
-    /* change-adjust aqi card text for mobile tablet */
     .aqi-explanation-card p {
-        font-size: 1.045em;
+        font-size: 1.1em;
         text-align: center;
     }
     
@@ -1366,16 +1331,14 @@ section {
         margin-bottom: 50px;
     }
     
-    /* change-adjust section titles for mobile tablet */
     .section-title-white,
     .section-title-dark {
-        font-size: 1.87em;
+        font-size: 2.2em;
     }
     
-    /* change-adjust section subtitles for mobile tablet */
     .section-subtitle-white,
     .section-subtitle-dark {
-        font-size: 1.045em;
+        font-size: 1.1em;
     }
     
     .impact-grid {
@@ -1440,14 +1403,12 @@ section {
         gap: 35px;
     }
     
-    /* change-adjust stat number for mobile tablet */
     .stat-number {
-        font-size: 2.975em;
+        font-size: 3.5em;
     }
     
-    /* change-adjust stat label for mobile tablet */
     .stat-label {
-        font-size: 1.045em;
+        font-size: 1.1em;
     }
     
     .cta-section {
@@ -1458,14 +1419,12 @@ section {
         padding: 40px 30px;
     }
     
-    /* change-adjust cta title for mobile tablet */
     .cta-title {
-        font-size: 1.87em;
+        font-size: 2.2em;
     }
     
-    /* change-adjust cta description for mobile tablet */
     .cta-description {
-        font-size: 1.0925em;
+        font-size: 1.15em;
     }
     
     .cta-button {
@@ -1516,15 +1475,13 @@ section {
         padding: 90px 20px 50px;
     }
     
-    /* change-adjust hero title for mobile */
     .hero-title {
-        font-size: 1.7em;
+        font-size: 2em;
         letter-spacing: -1px;
     }
     
-    /* change-adjust hero description for mobile */
     .hero-description {
-        font-size: 0.95em;
+        font-size: 1em;
         margin-bottom: 35px;
     }
     
@@ -1566,14 +1523,12 @@ section {
         padding: 30px 20px;
     }
     
-    /* change-adjust aqi card for mobile */
     .aqi-explanation-card h2 {
-        font-size: 1.53em;
+        font-size: 1.8em;
     }
     
-    /* change-adjust aqi text for mobile */
     .aqi-explanation-card p {
-        font-size: 0.95em;
+        font-size: 1em;
     }
     
     .aqi-mobile-image,
@@ -1585,16 +1540,14 @@ section {
         margin-bottom: 40px;
     }
     
-    /* change-adjust section titles for mobile */
     .section-title-white,
     .section-title-dark {
-        font-size: 1.53em;
+        font-size: 1.8em;
     }
     
-    /* change-adjust section subtitles for mobile */
     .section-subtitle-white,
     .section-subtitle-dark {
-        font-size: 0.95em;
+        font-size: 1em;
     }
     
     .impact-card {
@@ -1606,14 +1559,12 @@ section {
         margin-bottom: 20px;
     }
     
-    /* change-adjust impact card heading for mobile */
     .impact-card h3 {
-        font-size: 1.105em;
+        font-size: 1.3em;
     }
     
-    /* change-adjust impact card text for mobile */
     .impact-card p {
-        font-size: 0.95em;
+        font-size: 1em;
     }
     
     .section-header {
@@ -1631,14 +1582,12 @@ section {
         font-size: 1.8em;
     }
     
-    /* change-adjust feature text for mobile */
     .feature-text h3 {
-        font-size: 1.105em;
+        font-size: 1.3em;
     }
     
-    /* change-adjust feature text for mobile */
     .feature-text p {
-        font-size: 0.95em;
+        font-size: 1em;
     }
     
     /* change-vertical steps layout for mobile */
@@ -1674,9 +1623,8 @@ section {
         font-size: 3em;
     }
     
-    /* change-adjust testimonial text for mobile */
     .testimonial-text {
-        font-size: 0.95em;
+        font-size: 1em;
         margin-bottom: 25px;
     }
     
@@ -1686,28 +1634,24 @@ section {
         font-size: 1.3em;
     }
     
-    /* change-adjust author info for mobile */
     .author-info h4 {
-        font-size: 0.85em;
+        font-size: 1em;
     }
     
-    /* change-adjust author info for mobile */
     .author-info span {
-        font-size: 0.8075em;
+        font-size: 0.85em;
     }
     
     .stats-section {
         padding: 50px 20px;
     }
     
-    /* change-adjust stat number for mobile */
     .stat-number {
-        font-size: 2.38em;
+        font-size: 2.8em;
     }
     
-    /* change-adjust stat label for mobile */
     .stat-label {
-        font-size: 0.95em;
+        font-size: 1em;
     }
     
     .cta-section {
@@ -1718,14 +1662,12 @@ section {
         padding: 35px 25px;
     }
     
-    /* change-adjust cta title for mobile */
     .cta-title {
-        font-size: 1.53em;
+        font-size: 1.8em;
     }
     
-    /* change-adjust cta description for mobile */
     .cta-description {
-        font-size: 0.95em;
+        font-size: 1em;
         margin-bottom: 35px;
     }
     
@@ -1743,26 +1685,22 @@ section {
         margin-bottom: 30px;
     }
     
-    /* change-adjust footer headings for mobile */
     .footer-section h3 {
-        font-size: 1.105em;
+        font-size: 1.3em;
         margin-bottom: 15px;
     }
     
-    /* change-adjust footer text for mobile */
     .footer-section p {
-        font-size: 0.9025em;
+        font-size: 0.95em;
     }
     
-    /* change-adjust footer h4 for mobile */
     .footer-section h4 {
-        font-size: 0.935em;
+        font-size: 1.1em;
         margin-bottom: 15px;
     }
     
-    /* change-adjust footer links for mobile */
     .footer-section ul li a {
-        font-size: 0.9025em;
+        font-size: 0.95em;
     }
     
     .footer-bottom {

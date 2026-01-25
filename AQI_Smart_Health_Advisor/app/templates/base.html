@@ -12,28 +12,136 @@
 
     {%block style%}
         <style>
-            .flash {
+            .flash-container {
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: #333;
-                color: #fff;
-                padding: 12px 18px;
-                border-radius: 8px;
-                box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
-                opacity: 0.9;
                 z-index: 9999;
-                animation: fadeOut 5s forwards;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                max-width: 400px;
             }
 
-            .flash.success { background: green; }
-            .flash.danger { background: red; }
-            .flash.warning { background: orange; }
+            .flash {
+                background: #333;
+                color: #fff;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+                opacity: 0;
+                transform: translateX(400px);
+                animation: slideIn 0.3s forwards, fadeOut 4s 0.3s forwards;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-size: 14px;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .flash.success { 
+                background: linear-gradient(135deg, #10b981, #059669);
+            }
+            
+            .flash.error,
+            .flash.danger { 
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+            }
+            
+            .flash.warning { 
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+            }
+
+            .flash.info { 
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+            }
+
+            .flash::before {
+                content: '';
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+            }
+
+            .flash.success::before {
+                content: '✓';
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            }
+
+            .flash.error::before,
+            .flash.danger::before {
+                content: '✕';
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            }
+
+            .flash.warning::before {
+                content: '⚠';
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            }
+
+            .flash.info::before {
+                content: 'ℹ';
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(400px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
 
             @keyframes fadeOut {
-                0% { opacity: 0.9; }
-                80% { opacity: 0.9; }
-                100% { opacity: 0; display: none; }
+                0% { opacity: 1; }
+                70% { opacity: 1; }
+                100% { 
+                    opacity: 0; 
+                    transform: translateX(400px);
+                }
+            }
+
+            /* Hide flash messages on AJAX pages */
+            body.ajax-page .flash-container {
+                display: none !important;
+            }
+
+            @media (max-width: 768px) {
+                .flash-container {
+                    top: 10px;
+                    right: 10px;
+                    left: 10px;
+                    max-width: none;
+                }
+
+                .flash {
+                    padding: 12px 16px;
+                    font-size: 13px;
+                }
             }
         </style>
     {%endblock%}
@@ -43,11 +151,20 @@
 <body>
         {% with pop_messages = get_flashed_messages(with_categories=true) %}
         {% if pop_messages %}
-            <div id="flash-messages">
+            <div class="flash-container" id="flash-messages">
                 {% for category, msg in pop_messages %}
                     <div class="flash {{ category }}">{{ msg }}</div>
                 {% endfor %}
             </div>
+            <script>
+                // Auto-remove flash messages after animation
+                setTimeout(() => {
+                    const flashContainer = document.getElementById('flash-messages');
+                    if (flashContainer) {
+                        flashContainer.remove();
+                    }
+                }, 4500);
+            </script>
         {% endif %}
         {% endwith %}
 
@@ -55,6 +172,12 @@
 
     {% block script%}
         <!-- <script></script> -->
+         <!-- In the <head> section, before other scripts -->
+        <script src="{{ url_for('static', filename='js/messageManager.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/cookieSessionManager.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/locationService.js') }}"></script>
     {%endblock%}
 
 </body>
+
+</html>

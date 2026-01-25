@@ -1,338 +1,368 @@
-from .extensions import *
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from flask_mail import Message
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
+import mysql.connector
+import random
 
 login_auth = Blueprint('login_auth', __name__)
 
-# Database connection
-mycon_obj = mysql.connector.connect(
-    host='localhost',
-    user='root',
-    password='My@MySql8044',
-    database='Aqi_app_db'
-)
+# Database connection function
+def get_db_connection():
+    return mysql.connector.connect(
+        host='localhost',
+        user='root',
+        password='My@MySql8044',
+        database='Aqi_app_db'
+    )
 
-cursor_login_auth = mycon_obj.cursor(dictionary=True)
-
-# Constants
-OTP_EXPIRY = 60
-RESEND_INTERVAL = 60
-STALE_ACCOUNT_SECONDS = 3600
-
-# Cleanup function
-def cleanup_stale_unverified():
-    cutoff = datetime.now() - timedelta(seconds=STALE_ACCOUNT_SECONDS)
-    try:
-        cursor_login_auth.execute(
-            "DELETE FROM login_data WHERE is_verified=0 AND otp_created_at IS NOT NULL AND otp_created_at < %s",
-            (cutoff,)
-        )
-        mycon_obj.commit()
-    except Exception:
-        pass
-
-def parse_db_datetime(val):
-    """Return a datetime from DB value (handles str or datetime)."""
-    if val is None:
-        return None
-    if isinstance(val, datetime):
-        return val
-    try:
-        return datetime.strptime(val, "%Y-%m-%d %H:%M:%S")
-    except Exception:
-        try:
-            return datetime.strptime(val.split('.')[0], "%Y-%m-%d %H:%M:%S")
-        except Exception:
-            return None
-
-# Main route - render SPA
 @login_auth.route('/login_signup', methods=['GET'])
 def login_signup_page():
-    """Render the single-page login application"""
+    """Display login/signup page and capture redirect parameter"""
+    redirect_to = request.args.get('redirect', '')
     default_form = request.args.get('form', 'login')
-    return render_template('auth/login.html', default_form=default_form)
-
-# Signup route (API endpoint)
-@login_auth.route('/signup', methods=['POST'])
-def signup():
-    try:
-        username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
-        city = request.form.get('primary_location', '').strip()
-        password = request.form.get('password', '').strip()
-        confirm_password = request.form.get('confirm_password', '').strip()
-
-        # Validate inputs
-        if not all([username, email, city, password, confirm_password]):
-            flash("All fields are required.", "danger")
-            return redirect(url_for('login_auth.login_signup_page'))
-
-        # Check password match
-        if password != confirm_password:
-            flash("Passwords do not match.", "danger")
-            return redirect(url_for('login_auth.login_signup_page'))
-
-        # Check password strength (optional)
-        if len(password) < 6:
-            flash("Password must be at least 6 characters long.", "danger")
-            return redirect(url_for('login_auth.login_signup_page'))
-
-        # Check if email already exists
-        cursor_login_auth.execute('SELECT email, is_verified FROM login_data WHERE email=%s', (email,))
-        existing_user = cursor_login_auth.fetchone()
-
-        if existing_user:
-            if existing_user['is_verified'] == 0:
-                # Delete unverified account and allow re-signup
-                cursor_login_auth.execute("DELETE FROM login_data WHERE email=%s", (email,))
-                mycon_obj.commit()
-                flash('Previous attempt was incomplete. Please try again.', "info")
-            else:
-                flash("Email already registered. Please login.", "warning")
-                return redirect(url_for('login_auth.login_signup_page'))
-
-        # Generate OTP
-        otp = str(random.randint(100000, 999999))
-        now = datetime.utcnow()
-
-        try:
-            # Send OTP via email
-            msg = Message(
-                'Your OTP Verification Code - AQI Smart Health Advisor',
-                sender='pkthisisfor1234@gmail.com',
-                recipients=[email]
-            )
-            msg.html = f'''
-            <html>
-                <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-                    <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                        <h2 style="color: #667eea; text-align: center;">🛡️ AQI Smart Health Advisor</h2>
-                        <h3 style="color: #333;">Welcome {username}!</h3>
-                        <p style="color: #666; font-size: 16px;">Thank you for signing up. Please verify your email address using the OTP below:</p>
-                        
-                        <div style="background-color: #f0f4ff; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-                            <h1 style="color: #667eea; font-size: 36px; margin: 0; letter-spacing: 8px;">{otp}</h1>
-                        </div>
-                        
-                        <p style="color: #999; font-size: 14px; text-align: center;">⏱️ This OTP will expire in 60 seconds</p>
-                        
-                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                            <p style="color: #666; font-size: 14px;">Your registered location: <strong>{city}</strong></p>
-                            <p style="color: #999; font-size: 12px; text-align: center;">If you didn't request this, please ignore this email.</p>
-                        </div>
-                    </div>
-                </body>
-            </html>
-            '''
-            mail.send(msg)
-
-            # Insert into database
-            cursor_login_auth.execute(
-                "INSERT INTO login_data (username, email, city, password, otp, otp_created_at, is_verified) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                (username, email, city, password, otp, now, 0)
-            )
-            mycon_obj.commit()
-
-            session['user_email'] = email
-            flash("OTP sent to your email. Please verify.", "success")
-            return redirect(url_for('login_auth.verify'))
-
-        except Exception as e:
-            flash(f"Error sending OTP: {str(e)}", "danger")
-            return redirect(url_for('login_auth.login_signup_page'))
-
-    except Exception as e:
-        flash(f"Signup error: {str(e)}", "danger")
-        return redirect(url_for('login_auth.login_signup_page'))
+    
+    # CRITICAL: Clear ALL flash messages for this AJAX-based page
+    # Flash messages don't work with AJAX forms - we use JSON responses instead
+    if '_flashes' in session:
+        session.pop('_flashes', None)
+    
+    # Also clear on render to be absolutely sure
+    from flask import get_flashed_messages
+    get_flashed_messages()  # This consumes and clears them
+    
+    return render_template('auth/login_signup.html', redirect_to=redirect_to, default_form=default_form)
 
 
-# Login route (API endpoint)
-@login_auth.route('/login', methods=['POST'])
-def login():
-    try:
-        email = request.form.get('email', '').strip()
-        password = request.form.get('password', '').strip()
-
-        if not email or not password:
-            flash("Email and password are required.", "danger")
-            return redirect(url_for('login_auth.login_signup_page'))
-
-        # Check if user exists and password matches
-        cursor_login_auth.execute(
-            "SELECT * FROM login_data WHERE email=%s AND password=%s",
-            (email, password)
-        )
-        user = cursor_login_auth.fetchone()
-
-        if user:
-            if user['is_verified'] == 1:
-                # Set session variables
-                session['user_email'] = user['email']
-                session['username'] = user['username']
-                session['user_city'] = user['city']
-                session['user_id'] = user['id']
-
-                flash(f"Welcome back, {user['username']}!", "success")
-                
-                # Redirect to AQI check page or dashboard
-                return redirect(url_for('checkAqi_auth.check_aqi'))
-                
-            else:
-                flash("Please verify your account first.", "warning")
-                session['user_email'] = email
-                return redirect(url_for('login_auth.verify'))
-        else:
-            flash("Invalid email or password.", "danger")
-            return redirect(url_for('login_auth.login_signup_page'))
-
-    except Exception as e:
-        flash(f"Login error: {str(e)}", "danger")
-        return redirect(url_for('login_auth.login_signup_page'))
-
-# Verify route
-@login_auth.route('/verify', methods=['GET', 'POST'])
-def verify():
-    email = session.get('user_email')
-    if not email:
-        flash("Session expired. Please sign up again.", "danger")
-        cleanup_stale_unverified()
-        return redirect(url_for('login_auth.login_signup_page'))
-
-    if request.method == 'POST':
-        entered_otp = request.form.get('otp', '').strip()
-        if not entered_otp:
-            flash("Please enter the OTP.", "danger")
-            return redirect(url_for('login_auth.verify'))
-
-        cursor_login_auth.execute("SELECT * FROM login_data WHERE email=%s", (email,))
-        user = cursor_login_auth.fetchone()
-
-        if not user or not user.get('otp') or not user.get('otp_created_at'):
-            flash("Invalid OTP or session. Please request a new one.", "danger")
-            return redirect(url_for('login_auth.resend_otp'))
-
-        try:
-            # Parse OTP creation time
-            otp_created_at = parse_db_datetime(user['otp_created_at'])
-            if not otp_created_at:
-                flash("Invalid OTP timestamp. Please request a new one.", "danger")
-                return redirect(url_for('login_auth.resend_otp'))
-
-            expiry_time = otp_created_at + timedelta(seconds=OTP_EXPIRY)
-
-            if datetime.utcnow() > expiry_time:
-                flash("OTP expired. Please request a new one.", "warning")
-                return redirect(url_for('login_auth.resend_otp'))
-
-            if user['otp'] == entered_otp:
-                cursor_login_auth.execute(
-                    "UPDATE login_data SET is_verified = 1, otp = NULL, otp_created_at = NULL WHERE email = %s",
-                    (email,)
-                )
-                mycon_obj.commit()
-                flash("Account verified successfully! You can now log in.", "success")
-                session.pop('user_email', None)
-                return redirect(url_for('login_auth.login_signup_page'))
-            else:
-                flash("Invalid OTP. Please try again.", "danger")
-                return redirect(url_for('login_auth.verify'))
-
-        except Exception as e:
-            flash("An error occurred during verification. Please try again.", "danger")
-            return redirect(url_for('login_auth.verify'))
-
-    # GET request - show verify page
-    remaining = 0
-    try:
-        cursor_login_auth.execute("SELECT otp_created_at FROM login_data WHERE email=%s", (email,))
-        data = cursor_login_auth.fetchone()
-        if data and data['otp_created_at']:
-            otp_created_at = parse_db_datetime(data['otp_created_at'])
-            if otp_created_at:
-                expiry_time = otp_created_at + timedelta(seconds=OTP_EXPIRY)
-                remaining = max(0, int((expiry_time - datetime.utcnow()).total_seconds()))
-    except Exception:
-        remaining = 0
-        cleanup_stale_unverified()
-
+@login_auth.route('/verify', methods=['GET'])
+def verify_page():
+    """Display OTP verification page"""
+    # Check if user has verification email in session
+    if 'verification_email' not in session:
+        flash('Please sign up first to verify your email', 'error')
+        return redirect(url_for('login_auth.login_signup_page', form='signup'))
+    
+    # Calculate remaining time
+    email = session['verification_email']
+    
+    mycon = get_db_connection()
+    cursor = mycon.cursor()
+    cursor.execute("SELECT otp_created_at FROM login_data WHERE email = %s", (email,))
+    result = cursor.fetchone()
+    cursor.close()
+    mycon.close()
+    
+    remaining = 600  # Default 10 minutes
+    if result and result[0]:
+        otp_created_at = result[0]
+        elapsed = (datetime.now() - otp_created_at).total_seconds()
+        remaining = max(0, 600 - int(elapsed))  # 600 seconds = 10 minutes
+    
     return render_template('auth/verify.html', remaining=remaining)
 
-# Resend OTP route
-@login_auth.route('/resend_otp', methods=['GET', 'POST'])
-def resend_otp():
-    email = session.get('user_email')
-    if not email:
-        flash("Session expired. Please sign up again.", "danger")
+
+@login_auth.route('/verify', methods=['POST'])
+def verify():
+    """Handle OTP verification from form submission"""
+    try:
+        # Get email from session
+        email = session.get('verification_email')
+        
+        if not email:
+            flash('Session expired. Please sign up again.', 'error')
+            return redirect(url_for('login_auth.login_signup_page', form='signup'))
+        
+        # Get OTP from form
+        otp = request.form.get('otp', '').strip()
+        
+        if not otp or len(otp) != 6:
+            flash('Please enter a valid 6-digit OTP', 'error')
+            return redirect(url_for('login_auth.verify_page'))
+        
+        mycon = get_db_connection()
+        cursor = mycon.cursor()
+        cursor.execute(
+            "SELECT otp, otp_created_at FROM login_data WHERE email = %s",
+            (email,)
+        )
+        result = cursor.fetchone()
+        
+        if not result:
+            cursor.close()
+            mycon.close()
+            flash('User not found. Please sign up again.', 'error')
+            return redirect(url_for('login_auth.login_signup_page', form='signup'))
+        
+        stored_otp, otp_created_at = result
+        
+        # Check if OTP is expired (10 minutes)
+        if datetime.now() - otp_created_at > timedelta(minutes=10):
+            cursor.close()
+            mycon.close()
+            flash('OTP has expired. Please request a new code.', 'error')
+            return redirect(url_for('login_auth.verify_page'))
+        
+        # Verify OTP
+        if stored_otp != otp:
+            cursor.close()
+            mycon.close()
+            flash('Invalid OTP. Please try again.', 'error')
+            return redirect(url_for('login_auth.verify_page'))
+        
+        # Mark as verified
+        cursor.execute(
+            "UPDATE login_data SET is_verified = 1, otp = NULL WHERE email = %s",
+            (email,)
+        )
+        mycon.commit()
+        cursor.close()
+        mycon.close()
+        
+        # Clear verification session
+        session.pop('verification_email', None)
+        session.pop('verification_username', None)
+        
+        flash('Email verified successfully! You can now log in.', 'success')
         return redirect(url_for('login_auth.login_signup_page'))
+        
+    except Exception as e:
+        print(f"❌ Verification error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('An error occurred during verification. Please try again.', 'error')
+        return redirect(url_for('login_auth.verify_page'))
 
-    cursor_login_auth.execute("SELECT username, otp_created_at FROM login_data WHERE email=%s", (email,))
-    data = cursor_login_auth.fetchone()
 
-    if data and data['otp_created_at']:
-        otp_created_at = parse_db_datetime(data['otp_created_at'])
-        if otp_created_at:
-            resend_time = otp_created_at + timedelta(seconds=RESEND_INTERVAL)
-            if datetime.utcnow() < resend_time:
-                wait_seconds = int((resend_time - datetime.utcnow()).total_seconds())
-                flash(f"Please wait {wait_seconds} seconds before requesting a new OTP.", "warning")
-                return redirect(url_for('login_auth.verify'))
+@login_auth.route('/resend_otp', methods=['POST'])
+def resend_otp():
+    """Resend OTP to user's email"""
+    try:
+        email = session.get('verification_email')
+        username = session.get('verification_username', 'User')
+        
+        if not email:
+            flash('Session expired. Please sign up again.', 'error')
+            return redirect(url_for('login_auth.login_signup_page', form='signup'))
+        
+        # Generate new OTP
+        otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        
+        mycon = get_db_connection()
+        cursor = mycon.cursor()
+        cursor.execute(
+            "UPDATE login_data SET otp = %s, otp_created_at = NOW() WHERE email = %s",
+            (otp, email)
+        )
+        mycon.commit()
+        cursor.close()
+        mycon.close()
+        
+        # Send OTP email
+        try:
+            send_otp_email(email, otp, username)
+            print(f"✓ OTP resent to {email}")
+            flash('New OTP sent to your email!', 'success')
+        except Exception as e:
+            print(f"⚠ Failed to send OTP email: {e}")
+            flash('Failed to send email. Please try again.', 'error')
+        
+        return redirect(url_for('login_auth.verify_page'))
+        
+    except Exception as e:
+        print(f"❌ Resend OTP error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash('An error occurred. Please try again.', 'error')
+        return redirect(url_for('login_auth.verify_page'))
 
-    # Generate and save new OTP
-    otp = str(random.randint(100000, 999999))
-    otp_created_at = datetime.utcnow()
+
+@login_auth.route('/login', methods=['POST', 'GET'])
+def login():
+    """Handle login request with proper redirect"""
+    # Handle GET request (direct access to /login URL)
+    if request.method == 'GET':
+        return redirect(url_for('login_auth.login_signup_page'))
     
     try:
-        cursor_login_auth.execute(
-            "UPDATE login_data SET otp=%s, otp_created_at=%s WHERE email=%s",
-            (otp, otp_created_at, email)
-        )
-        mycon_obj.commit()
-
-        username = data['username'] if data else 'User'
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        redirect_to = data.get('redirect_to', '')
         
-        msg = Message(
-            'Your New OTP Code - AQI Smart Health Advisor',
-            sender='pkthisisfor1234@gmail.com',
-            recipients=[email]
-        )
-        msg.html = f'''
-        <html>
-            <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-                <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <h2 style="color: #667eea; text-align: center;">🛡️ AQI Smart Health Advisor</h2>
-                    <h3 style="color: #333;">Hello {username}!</h3>
-                    <p style="color: #666; font-size: 16px;">Here's your new OTP code:</p>
-                    
-                    <div style="background-color: #f0f4ff; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-                        <h1 style="color: #667eea; font-size: 36px; margin: 0; letter-spacing: 8px;">{otp}</h1>
-                    </div>
-                    
-                    <p style="color: #999; font-size: 14px; text-align: center;">⏱️ This OTP will expire in 60 seconds</p>
-                    
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <p style="color: #999; font-size: 12px; text-align: center;">If you didn't request this, please ignore this email.</p>
-                    </div>
-                </div>
-            </body>
-        </html>
-        '''
-        mail.send(msg)
-
-        flash("New OTP sent successfully!", "success")
+        print(f"Login attempt for: {email}, redirect_to: {redirect_to}")
+        
+        if not email or not password:
+            return jsonify({'success': False, 'message': 'Email and password are required'}), 400
+        
+        mycon = get_db_connection()
+        cursor = mycon.cursor()
+        cursor.execute("SELECT id, username, email, age, gender, city, password, is_verified FROM login_data WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        cursor.close()
+        mycon.close()
+        
+        if not user:
+            return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
+        
+        user_id, username, user_email, age, gender, city, hashed_password, is_verified = user
+        
+        # Verify password
+        if not check_password_hash(hashed_password, password):
+            return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
+        
+        # Check if email is verified
+        if not is_verified:
+            # Store email in session for verify page
+            session['verification_email'] = email
+            return jsonify({
+                'success': False, 
+                'message': 'Please verify your email before logging in',
+                'redirect_to_verify': True
+            }), 403
+        
+        # Set session data with permanent session
+        session.permanent = True
+        session['user_id'] = user_id
+        session['username'] = username
+        session['user_email'] = user_email
+        session['user_age'] = age
+        session['user_gender'] = gender
+        session['user_city'] = city
+        
+        # After successful login, before return
+        session.permanent = True  # Make session permanent
+        
+        print(f"✓ Session created for user: {username} (ID: {user_id})")
+        
+        # Determine redirect URL
+        if redirect_to:
+            redirect_map = {
+                'live_track': '/live_track',
+                'ai_advisor': '/ai_advisor',
+                'check_aqi': '/check_aqi',
+                'home': '/aqi_homepage'
+            }
+            redirect_url = redirect_map.get(redirect_to, '/aqi_homepage')
+        else:
+            redirect_url = '/aqi_homepage'
+        
+        print(f"✓ Redirecting to: {redirect_url}")
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Welcome back, {username}!',
+            'redirect': redirect_url,
+            'user': {
+                'username': username,
+                'email': user_email
+            }
+        }), 200
+        
     except Exception as e:
-        flash(f"Failed to send new OTP: {str(e)}", "danger")
+        print(f"❌ Login error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': 'An error occurred during login'}), 500
 
-    return redirect(url_for('login_auth.verify'))
 
-# Logout route
-@login_auth.route('/logout')
+@login_auth.route('/signup', methods=['POST'])
+def signup():
+    """Handle signup request"""
+    try:
+        data = request.get_json()
+        
+        username = data.get('username')
+        email = data.get('email')
+        age = data.get('age')
+        gender = data.get('gender')
+        city = data.get('city')
+        password = data.get('password')
+        
+        if not all([username, email, age, gender, city, password]):
+            return jsonify({'success': False, 'message': 'All fields are required'}), 400
+        
+        # Hash password
+        hashed_password = generate_password_hash(password)
+        
+        # Generate OTP
+        otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        
+        mycon = get_db_connection()
+        cursor = mycon.cursor()
+        
+        # Check if email already exists
+        cursor.execute("SELECT email FROM login_data WHERE email = %s", (email,))
+        if cursor.fetchone():
+            cursor.close()
+            mycon.close()
+            return jsonify({'success': False, 'message': 'Email already registered'}), 409
+        
+        # Insert user
+        cursor.execute(
+            """INSERT INTO login_data (username, email, age, gender, city, password, otp, otp_created_at, is_verified) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), 0)""",
+            (username, email, age, gender, city, hashed_password, otp)
+        )
+        mycon.commit()
+        cursor.close()
+        mycon.close()
+        
+        # Store email in session for verify page
+        session['verification_email'] = email
+        session['verification_username'] = username
+        
+        # Send OTP email
+        try:
+            send_otp_email(email, otp, username)
+            print(f"✓ OTP sent to {email}")
+        except Exception as e:
+            print(f"⚠ Failed to send OTP email: {e}")
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Registration successful! Please check your email for OTP.'
+        }), 201
+        
+    except Exception as e:
+        print(f"❌ Signup error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'message': 'An error occurred during registration'}), 500
+
+
+@login_auth.route('/logout', methods=['POST', 'GET'])
 def logout():
+    """Handle logout"""
     session.clear()
-    flash("Logged out successfully.", "info")
     return redirect(url_for('login_auth.login_signup_page'))
 
-# Get user city for AQI check (API endpoint)
-@login_auth.route('/api/user/city', methods=['GET'])
-def get_user_city():
-    """Return logged-in user's city"""
-    if 'user_city' in session:
-        return jsonify({'city': session['user_city']})
-    return jsonify({'error': 'Not logged in'}), 401
+
+def send_otp_email(email, otp, username):
+    """Send OTP email using Flask-Mail"""
+    from flask_mail import Message
+    from flask import current_app
+    from app import mail
+    
+    try:
+        msg = Message(
+            subject="Your OTP for AQI App Verification",
+            recipients=[email],
+            html=f"""
+            <html>
+            <body style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2>Welcome to AQI Smart Health Advisor!</h2>
+                <p>Hello {username},</p>
+                <p>Your OTP for email verification is:</p>
+                <h1 style="color: #667eea; font-size: 36px; letter-spacing: 5px;">{otp}</h1>
+                <p>This OTP is valid for 10 minutes.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+                <br>
+                <p>Best regards,<br>AQI Smart Health Advisor Team</p>
+            </body>
+            </html>
+            """
+        )
+        mail.send(msg)
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        raise

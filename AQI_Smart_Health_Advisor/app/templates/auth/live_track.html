@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block title %}Live AQI Tracker - Real-time Air Quality Monitoring{% endblock %}
+
+{% block style %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/live_track.css') }}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Navigation Bar -->
+<nav class="aqi-navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <span class="brand-icon">📍</span>
+            <span class="brand-text">Live AQI Tracker</span>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
+            <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link">AQI Status</a>
+            <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link">AI Advisor</a>
+            <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link active">Live Tracker</a>
+            <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
+            <a href="{{ url_for('learnMore_auth.learnMoreAqi') }}" class="nav-link">AQI Guide</a>
+            <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Animated Air Flow Background -->
+<div class="air-flow-container">
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+</div>
+
+<div class="container">
+    <!-- Professional Header Section -->
+    <div class="header-professional">
+        <div class="header-content-pro">
+            <h1 class="main-title">📍 Live AQI Tracker</h1>
+            <p class="main-subtitle">Real-time air quality monitoring with automatic alerts for location and AQI changes</p>
+            <div class="header-features">
+                <div class="feature-badge">
+                    <span class="feature-icon">🌍</span>
+                    <div class="feature-info">
+                        <div class="feature-label">Tracking</div>
+                        <div class="feature-value" id="trackingStatus">Inactive</div>
+                    </div>
+                </div>
+                <div class="feature-badge">
+                    <span class="feature-icon">📊</span>
+                    <div class="feature-info">
+                        <div class="feature-label">Current AQI</div>
+                        <div class="feature-value" id="currentAQI">--</div>
+                    </div>
+                </div>
+                <div class="feature-badge">
+                    <span class="feature-icon">📧</span>
+                    <div class="feature-info">
+                        <div class="feature-label">Alerts Sent</div>
+                        <div class="feature-value" id="alertCount">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking Control Panel -->
+    <div class="tracking-control-panel">
+        <div class="control-card">
+            <div class="control-header">
+                <h2>🎮 Tracking Control</h2>
+            </div>
+            <div class="control-content">
+                <div class="current-location-display" id="currentLocationDisplay">
+                    <div class="location-icon">📍</div>
+                    <div class="location-details">
+                        <div class="location-label">Current Location</div>
+                        <div class="location-value" id="locationName">Not tracking</div>
+                        <div class="location-coords" id="locationCoords"></div>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="btn-control btn-start" id="startTrackingBtn" onclick="startTracking()">
+                        <span class="btn-icon">▶️</span>
+                        Start Tracking
+                    </button>
+                    <button class="btn-control btn-stop" id="stopTrackingBtn" onclick="stopTracking()" style="display: none;">
+                        <span class="btn-icon">⏹️</span>
+                        Stop Tracking
+                    </button>
+                </div>
+
+                <div class="tracking-info" id="trackingInfo" style="display: none;">
+                    <div class="info-item">
+                        <span class="info-label">Last Update:</span>
+                        <span class="info-value" id="lastUpdate">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Distance Threshold:</span>
+                        <span class="info-value">10 km</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">AQI Change Threshold:</span>
+                        <span class="info-value">±50</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current AQI Status -->
+        <div class="current-aqi-card" id="currentAQICard" style="display: none;">
+            <div class="aqi-card-header">
+                <h3>🌡️ Current Air Quality</h3>
+            </div>
+            <div class="aqi-display">
+                <div class="aqi-value-large" id="aqiValueLarge">--</div>
+                <div class="aqi-category" id="aqiCategory">Unknown</div>
+            </div>
+            <div class="aqi-details" id="aqiDetails">
+                <!-- Pollutant details will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert History -->
+    <div class="alert-history-section">
+        <div class="section-header">
+            <h2>📜 Alert History</h2>
+            <button class="btn-clear-history" onclick="clearHistory()">
+                <span class="btn-icon">🗑️</span>
+                Clear History
+            </button>
+        </div>
+        
+        <div class="alert-timeline" id="alertTimeline">
+            <div class="no-alerts" id="noAlerts">
+                <div class="no-alerts-icon">📭</div>
+                <p>No alerts yet. Start tracking to receive alerts!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Information Cards -->
+    <div class="info-cards-container">
+        <div class="info-card">
+            <div class="info-card-icon">📍</div>
+            <h3>Location Tracking</h3>
+            <p>Automatically monitors your location and sends alerts when you move 10km or more</p>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon">📊</div>
+            <h3>AQI Monitoring</h3>
+            <p>Tracks air quality changes and alerts you when AQI changes by ±50 points</p>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon">📧</div>
+            <h3>Email Alerts</h3>
+            <p>Receive email notifications with personalized health recommendations</p>
+        </div>
+    </div>
+
+    <!-- Attribution -->
+    <div class="attribution-pro">
+        <p>Live AQI Tracker | Air quality data from <a href="https://aqicn.org" target="_blank">WAQI</a></p>
+        <p class="attribution-note-pro">Real-time monitoring with intelligent alert system</p>
+    </div>
+</div>
+
+{% block script %}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/live_track.js') }}"></script>
+{% endblock %}
+
+{% endblock %}

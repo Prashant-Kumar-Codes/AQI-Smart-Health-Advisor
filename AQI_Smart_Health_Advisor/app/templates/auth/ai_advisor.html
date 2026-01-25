@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+{% block title %}AI Health Advisor - Personalized Air Quality Guidance{% endblock %}
+
+{% block style %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_advisor.css') }}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Navigation Bar -->
+<nav class="aqi-navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            <span class="brand-icon">🌍</span>
+            <span class="brand-text">AI Health Advisor</span>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
+            <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link">AQI Status</a>
+            <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link active">AI Advisor</a>
+            <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link">Live Tracker</a>
+            <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
+            <a href="{{ url_for('learnMore_auth.learnMoreAqi') }}" class="nav-link">AQI Guide</a>
+            <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Animated Air Flow Background -->
+<div class="air-flow-container">
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+    <div class="air-particle"></div>
+</div>
+
+<div class="container">
+    <!-- Professional Header Section -->
+    <div class="header-professional">
+        <div class="header-content-pro">
+            <h1 class="main-title">🤖 AI Health Advisor</h1>
+            <p class="main-subtitle">Get personalized health recommendations based on current air quality conditions</p>
+            <div class="header-features">
+                <div class="feature-badge">
+                    <span class="feature-icon">🧠</span>
+                    <div class="feature-info">
+                        <div class="feature-label">AI Powered</div>
+                        <div class="feature-value">GPT-4</div>
+                    </div>
+                </div>
+                <div class="feature-badge">
+                    <span class="feature-icon">🎯</span>
+                    <div class="feature-info">
+                        <div class="feature-label">Advice Type</div>
+                        <div class="feature-value">Personalized</div>
+                    </div>
+                </div>
+                <div class="feature-badge">
+                    <span class="feature-icon">⚡</span>
+                    <div class="feature-info">
+                        <div class="feature-label">Response Time</div>
+                        <div class="feature-value">Instant</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Advisor Form -->
+    <div class="ai-advisor-form-container">
+        <div class="ai-advisor-card">
+            <div class="ai-advisor-content">
+                
+                <!-- Location Section -->
+                <div class="advisor-section">
+                    <label class="advisor-label">📍 Location</label>
+                    <p class="advisor-hint">Enter your location to get air quality data</p>
+                    <div class="location-input-group">
+                        <input 
+                            type="text" 
+                            id="aiAdvisorLocation" 
+                            class="advisor-input"
+                            placeholder="Enter city name or location"
+                        >
+                        <button class="btn-location" onclick="getCurrentLocationAI()" title="Use current location">
+                            <span class="btn-icon">📍</span>
+                            Current Location
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Age Section -->
+                <div class="advisor-section">
+                    <label class="advisor-label">👤 Age</label>
+                    <p class="advisor-hint">Select your age group or enter specific age</p>
+                    <div class="age-input-container">
+                        <div class="age-buttons">
+                            <button class="age-btn" data-age="child" onclick="selectAgeGroup('child', '0-12')">
+                                👶 Child<br><span class="age-range">(0-12)</span>
+                            </button>
+                            <button class="age-btn" data-age="teen" onclick="selectAgeGroup('teen', '13-19')">
+                                🧒 Teen<br><span class="age-range">(13-19)</span>
+                            </button>
+                            <button class="age-btn" data-age="adult" onclick="selectAgeGroup('adult', '20-60')">
+                                🧑 Adult<br><span class="age-range">(20-60)</span>
+                            </button>
+                            <button class="age-btn" data-age="senior" onclick="selectAgeGroup('senior', '60+')">
+                                👴 Senior<br><span class="age-range">(60+)</span>
+                            </button>
+                        </div>
+                        <div class="age-input-divider">
+                            <span>OR</span>
+                        </div>
+                        <div class="specific-age-input">
+                            <label for="specificAge" class="specific-age-label">Enter specific age:</label>
+                            <input 
+                                type="number" 
+                                id="specificAge" 
+                                class="advisor-input-small"
+                                placeholder="e.g., 25"
+                                min="1"
+                                max="120"
+                                oninput="clearAgeGroupSelection()"
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gender Section -->
+                <div class="advisor-section">
+                    <label class="advisor-label">⚧ Gender</label>
+                    <p class="advisor-hint">Select your gender for personalized health advice</p>
+                    <div class="gender-buttons">
+                        <button class="gender-btn" data-gender="male" onclick="selectGender('male')">
+                            ♂️ Male
+                        </button>
+                        <button class="gender-btn" data-gender="female" onclick="selectGender('female')">
+                            ♀️ Female
+                        </button>
+                        <button class="gender-btn" data-gender="other" onclick="selectGender('other')">
+                            ⚧ Other
+                        </button>
+                        <button class="gender-btn" data-gender="prefer-not-to-say" onclick="selectGender('prefer-not-to-say')">
+                            🚫 Prefer not to say
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Time Spent Outside Section -->
+                <div class="advisor-section">
+                    <label class="advisor-label">⏰ Daily Time Spent Outside</label>
+                    <p class="advisor-hint">How much time do you typically spend outdoors per day?</p>
+                    <div class="time-outside-buttons">
+                        <button class="time-btn" data-time="1-2" onclick="selectTimeOutside('1-2')">
+                            <span class="time-icon">🕐</span>
+                            <span class="time-text">1-2 hours</span>
+                        </button>
+                        <button class="time-btn" data-time="3-4" onclick="selectTimeOutside('3-4')">
+                            <span class="time-icon">🕒</span>
+                            <span class="time-text">3-4 hours</span>
+                        </button>
+                        <button class="time-btn" data-time="5-6" onclick="selectTimeOutside('5-6')">
+                            <span class="time-icon">🕔</span>
+                            <span class="time-text">5-6 hours</span>
+                        </button>
+                        <button class="time-btn" data-time="7+" onclick="selectTimeOutside('7+')">
+                            <span class="time-icon">🕗</span>
+                            <span class="time-text">7+ hours</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Health Conditions -->
+                <div class="advisor-section">
+                    <label class="advisor-label">🏥 Health Conditions</label>
+                    <p class="advisor-hint">Select all health conditions that apply to you</p>
+                    <div class="condition-buttons">
+                        <button class="condition-btn" data-condition="asthma" onclick="toggleCondition('asthma')">
+                            😮‍💨 Asthma
+                        </button>
+                        <button class="condition-btn" data-condition="headache" onclick="toggleCondition('headache')">
+                            🤕 Chronic Headaches
+                        </button>
+                        <button class="condition-btn" data-condition="breathing" onclick="toggleCondition('breathing')">
+                            😤 Breathing Issues
+                        </button>
+                        <button class="condition-btn" data-condition="heart" onclick="toggleCondition('heart')">
+                            ❤️ Heart Condition
+                        </button>
+                        <button class="condition-btn" data-condition="allergy" onclick="toggleCondition('allergy')">
+                            🤧 Allergies
+                        </button>
+                        <button class="condition-btn" data-condition="copd" onclick="toggleCondition('copd')">
+                            🫁 COPD
+                        </button>
+                        <button class="condition-btn" data-condition="none" onclick="toggleCondition('none')">
+                            ✅ None
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Questions -->
+                <div class="advisor-section">
+                    <label class="advisor-label">💬 Quick Questions</label>
+                    <p class="advisor-hint">Select a common question or ask your own below</p>
+                    <div class="quick-questions">
+                        <button class="quick-q-btn" onclick="askQuickQuestion('Is it safe to go outside?')">
+                            ❓ Is it safe to go outside?
+                        </button>
+                        <button class="quick-q-btn" onclick="askQuickQuestion('What is the best time to go outside today?')">
+                            ⏰ Best time to go outside?
+                        </button>
+                        <button class="quick-q-btn" onclick="askQuickQuestion('How can I protect my family from air pollution?')">
+                            👨‍👩‍👧‍👦 How to protect my family?
+                        </button>
+                        <button class="quick-q-btn" onclick="askQuickQuestion('Should I exercise outdoors today?')">
+                            🏃 Should I exercise outdoors?
+                        </button>
+                        <button class="quick-q-btn" onclick="askQuickQuestion('Do I need to wear a mask outside?')">
+                            😷 Do I need a mask?
+                        </button>
+                        <button class="quick-q-btn" onclick="askQuickQuestion('Is it safe for my children to play outside?')">
+                            👶 Safe for children?
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Question -->
+                <div class="advisor-section">
+                    <label class="advisor-label">✍️ Ask Your Question</label>
+                    <p class="advisor-hint">Type your specific question (Maximum 30 words)</p>
+                    <div class="question-input-group">
+                        <textarea 
+                            id="customQuestion" 
+                            class="advisor-textarea" 
+                            placeholder="Type your question here... e.g., Is it safe to exercise outdoors today?"
+                            maxlength="250"
+                            rows="4"
+                        ></textarea>
+                        <span class="word-count" id="wordCount">0/30 words</span>
+                    </div>
+                </div>
+
+                <!-- Get Advice Button -->
+                <button class="btn-pro btn-primary-pro btn-get-advice" onclick="getAIAdvice()">
+                    <span class="btn-icon-pro">✨</span>
+                    Get Personalized AI Advice
+                </button>
+
+                <!-- AI Response -->
+                <div class="ai-response" id="aiResponse" style="display: none;">
+                    <div class="response-header">
+                        <span class="response-icon">🤖</span>
+                        <span class="response-title">AI Health Recommendation</span>
+                    </div>
+                    <div class="response-content" id="aiResponseContent"></div>
+                    
+                    <!-- AQI Summary in Response -->
+                    <div class="aqi-summary" id="aqiSummary" style="display: none;">
+                        <div class="aqi-summary-header">📊 Current Air Quality Data</div>
+                        <div class="aqi-summary-content" id="aqiSummaryContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Information Cards -->
+    <div class="info-cards-container">
+        <div class="info-card">
+            <div class="info-card-icon">🎯</div>
+            <h3>Personalized Advice</h3>
+            <p>Get health recommendations tailored to your age, health conditions, and lifestyle</p>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon">🌡️</div>
+            <h3>Real-time Data</h3>
+            <p>Advice based on current air quality levels in your specific location</p>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon">🤖</div>
+            <h3>AI-Powered</h3>
+            <p>Advanced AI analyzes multiple factors to provide accurate guidance</p>
+        </div>
+    </div>
+
+    <!-- Attribution -->
+    <div class="attribution-pro">
+        <p>AI Health Advisor powered by GPT-4 | Air quality data from <a href="https://aqicn.org" target="_blank">WAQI</a></p>
+        <p class="attribution-note-pro">Personalized health recommendations based on real-time environmental data</p>
+    </div>
+</div>
+
+{% block script %}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/ai_advisor.js') }}"></script>
+    <script>
+    // Auto-fill user's location on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            const response = await fetch('/api/user/check');
+            if (response.ok) {
+                const data = await response.json();
+                // Try to get user's city from session
+                const cityResponse = await fetch('/api/user/city');
+                if (cityResponse.ok) {
+                    const cityData = await cityResponse.json();
+                    if (cityData.city) {
+                        document.getElementById('aiAdvisorLocation').value = cityData.city;
+                        aiAdvisorData.location = cityData.city;
+                    }
+                }
+                // Try to get user's age from session (will be added later)
+                if (data.age) {
+                    document.getElementById('specificAge').value = data.age;
+                    aiAdvisorData.age = data.age;
+                }
+                // Try to get user's gender from session (will be added later)
+                if (data.gender) {
+                    selectGender(data.gender);
+                }
+            }
+        } catch (error) {
+            console.log('User data not available or error fetching data');
+        }
+    });
+    </script>
+{% endblock %}
+
+{% endblock %}
