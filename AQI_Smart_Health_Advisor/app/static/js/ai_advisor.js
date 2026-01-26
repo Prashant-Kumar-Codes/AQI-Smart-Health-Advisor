@@ -11,112 +11,68 @@ let aiAdvisorData = {
 };
 let isUserLoggedIn = false; // Track login status
 
-// ========== Location Functions ==========
+// ========== Location Functions (Using Centralized LocationService) ==========
 async function getCurrentLocationAI() {
-    if (!navigator.geolocation) {
-        showValidationError('Geolocation is not supported by your browser. Please enter location manually.');
-        return;
-    }
-
     const locationInput = document.getElementById('aiAdvisorLocation');
     const originalValue = locationInput.value;
-    locationInput.value = 'Getting your location...';
-    locationInput.disabled = true;
-
-    const options = {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-    };
-
-    navigator.geolocation.getCurrentPosition(
-        async (position) => {
-            try {
-                const { latitude, longitude } = position.coords;
-                
-                const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=en&addressdetails=1`;
-                const geoResponse = await fetch(geocodeUrl);
-                const geoData = await geoResponse.json();
-                
-                const cityName = geoData.address?.city || 
-                                geoData.address?.town || 
-                                geoData.address?.village || 
-                                geoData.address?.municipality ||
-                                geoData.address?.county ||
-                                geoData.address?.state || 
-                                'Current Location';
-                
-                locationInput.value = cityName;
-                aiAdvisorData.location = cityName;
-                locationInput.disabled = false;
-                
-                console.log('Current location set to:', cityName);
-                
-            } catch (error) {
-                console.error('Geocoding error:', error);
-                locationInput.value = originalValue;
-                locationInput.disabled = false;
-                showValidationError('Failed to get location. Please enter manually.');
-            }
-        },
-        (error) => {
-            locationInput.value = originalValue;
-            locationInput.disabled = false;
-            
-            let errorMessage = 'Unable to retrieve your location. ';
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    errorMessage += 'Please allow location access.';
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    errorMessage += 'Location unavailable.';
-                    break;
-                case error.TIMEOUT:
-                    errorMessage += 'Request timed out.';
-                    break;
-                default:
-                    errorMessage += 'Unknown error.';
-            }
-            showValidationError(errorMessage);
-        },
-        options
-    );
+    
+    try {
+        locationInput.value = 'Getting your location...';
+        locationInput.disabled = true;
+        
+        console.log('🔍 Using centralized LocationService for current location');
+        
+        // ✅ Use centralized LocationService
+        const result = await LocationService.getCurrentLocation();
+        
+        locationInput.value = result.displayName;
+        aiAdvisorData.location = result.displayName;
+        locationInput.disabled = false;
+        
+        MessageManager.show(`Location detected: ${result.displayName}`, 'success');
+        console.log('✅ Current location set to:', result.displayName);
+        
+    } catch (error) {
+        console.error('❌ Location error:', error);
+        locationInput.value = originalValue;
+        locationInput.disabled = false;
+        MessageManager.show(error.message, 'error');
+    }
 }
 
 async function fetchAQIForLocation(cityName, lat, lng) {
     try {
-        let response;
+        console.log('🌡️ Fetching AQI using centralized LocationService');
         
+        let result;
+        
+        // ✅ Use centralized LocationService
         if (lat && lng) {
-            response = await fetch(`/api/aqi/geo?lat=${lat}&lng=${lng}`);
+            result = await LocationService.getAQIFromCurrentLocation();
         } else {
-            response = await fetch(`/api/aqi/city/${encodeURIComponent(cityName)}`);
+            result = await LocationService.getAQIFromLocationName(cityName);
         }
         
-        if (response.ok) {
-            const data = await response.json();
-            currentAQIData = data;
-            console.log('AQI data fetched:', data);
-            displayAQISummary(data);
-            return data;
-        } else {
-            console.warn('Could not fetch AQI data for location');
-            return null;
-        }
+        currentAQIData = result.aqiData;
+        console.log('✅ AQI data fetched:', result.aqiData);
+        displayAQISummary(result.aqiData, result.location.displayName);
+        return result.aqiData;
+        
     } catch (error) {
-        console.error('Error fetching AQI data:', error);
+        console.error('❌ Error fetching AQI data:', error);
+        MessageManager.show(error.message || 'Could not fetch AQI data', 'error');
         return null;
     }
 }
 
-function displayAQISummary(data) {
+function displayAQISummary(data, locationName) {
     const summaryDiv = document.getElementById('aqiSummary');
     const summaryContent = document.getElementById('aqiSummaryContent');
     
     if (!summaryDiv || !summaryContent) return;
     
     const aqi = data.aqi || 0;
-    const cityName = data.city?.name || aiAdvisorData.location || 'Selected Location';
+    const cityName = locationName || data.city?.name || aiAdvisorData.location || 'Selected Location';
     const category = getAQICategory(aqi).category;
     
     let summaryHTML = `
@@ -357,7 +313,7 @@ window.getAIAdvice = async function() {
     }
     
     // User is logged in - proceed with validation and API call
-    console.log('✓ User is logged in - proceeding with AI advice');
+    console.log('✔ User is logged in - proceeding with AI advice');
     
     // Validate location
     const locationInput = document.getElementById('aiAdvisorLocation');
@@ -368,7 +324,7 @@ window.getAIAdvice = async function() {
     
     const location = locationInput.value.trim();
     if (!location) {
-        showValidationError('Please enter a location first');
+        MessageManager.show('Please enter a location first', 'warning');
         return;
     }
 
@@ -403,7 +359,8 @@ window.getAIAdvice = async function() {
     const aqiData = await fetchAQIForLocation(location);
 
     if (!aqiData) {
-        showValidationError('Unable to fetch air quality data for this location. Please try another location.');
+        MessageManager.show('Unable to fetch air quality data for this location. Please try another location.', 'error');
+        responseDiv.style.display = 'none';
         return;
     }
 
@@ -430,13 +387,13 @@ window.getAIAdvice = async function() {
     const words = customQ.split(/\s+/).filter(w => w.length > 0);
 
     if (words.length > 30) {
-        showValidationError('Please limit your question to 30 words or less');
+        MessageManager.show('Please limit your question to 30 words or less', 'warning');
         return;
     }
 
     // Validate minimum input
     if (!customQ && aiAdvisorData.conditions.length === 0 && !age && !ageGroup && !aiAdvisorData.gender && !aiAdvisorData.timeOutside) {
-        showValidationError('Please provide at least one input: select health conditions, enter age, select gender, time outside, or ask a question');
+        MessageManager.show('Please provide at least one input: select health conditions, enter age, select gender, time outside, or ask a question', 'warning');
         return;
     }
 
@@ -512,7 +469,9 @@ window.getAIAdvice = async function() {
             responseContent.innerHTML = formatAIAdviceForDisplay(data.advice);
             responseDiv.style.display = 'block';
             
-            displayAQISummary(currentAQIData);
+            displayAQISummary(currentAQIData, data.location);
+            
+            MessageManager.show('AI advice generated successfully!', 'success');
             
             setTimeout(() => {
                 responseDiv.scrollIntoView({
@@ -526,8 +485,6 @@ window.getAIAdvice = async function() {
             const errorData = await response.json();
             console.error('Server returned 401 - not logged in:', errorData);
             
-            // This shouldn't happen if our client-side check works
-            // But handle it anyway
             const userConfirmed = confirm(
                 'You need to login to use Personalized AI Advice.\n\n' +
                 'Click OK to go to login page, or Cancel to stay here.'
@@ -542,13 +499,13 @@ window.getAIAdvice = async function() {
         } else {
             const errorData = await response.json();
             console.error('Error response:', errorData);
-            responseContent.innerHTML = 
-                `<div class="error-message">Failed to get AI advice: ${errorData.error || 'Unknown error. Please try again.'}</div>`;
+            MessageManager.show(errorData.error || 'Failed to get AI advice. Please try again.', 'error');
+            responseDiv.style.display = 'none';
         }
     } catch (error) {
         console.error('AI Advice error:', error);
-        responseContent.innerHTML = 
-            '<div class="error-message">Failed to get AI advice. Please check your connection and try again.</div>';
+        MessageManager.show('Failed to get AI advice. Please check your connection and try again.', 'error');
+        responseDiv.style.display = 'none';
     }
 };
 
@@ -666,29 +623,6 @@ function formatAIAdviceForDisplay(advice) {
     return formatted;
 }
 
-// ========== Validation Error Display ==========
-function showValidationError(message) {
-    const responseDiv = document.getElementById('aiResponse');
-    const responseContent = document.getElementById('aiResponseContent');
-    
-    if (!responseDiv || !responseContent) return;
-    
-    responseContent.innerHTML = `<div class="validation-error">⚠️ ${message}</div>`;
-    responseDiv.style.display = 'block';
-    
-    setTimeout(() => {
-        responseDiv.scrollIntoView({
-            behavior: 'smooth',
-            block: 'nearest'
-        });
-    }, 100);
-
-    // Auto-hide after 4 seconds
-    setTimeout(() => {
-        responseDiv.style.display = 'none';
-    }, 4000);
-}
-
 // ========== Initialize on page load ==========
 window.getCurrentLocationAI = getCurrentLocationAI;
 
@@ -721,18 +655,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize word count
     updateWordCount();
     
-    // Check login status and load user data
+    // Check login status and load user data (including from cookies)
     checkLoginAndLoadData();
     
     console.log('=== Initialization complete ===');
 });
 
-// ========== Check Login Status and Load User Data ==========
+// ========== Check Login Status and Load User Data (with Cookie Support) ==========
 async function checkLoginAndLoadData() {
     try {
         console.log('Checking login status...');
         
-        const response = await fetch('/api/user/check');
+        // ✅ First check cookies for saved session
+        const savedSession = CookieSessionManager.loadUserSession();
+        if (savedSession) {
+            console.log('📦 Found saved session in cookies:', savedSession);
+        }
+        
+        // Verify with server
+        const response = await fetch('/api/user/check', {
+            credentials: 'include'
+        });
         
         if (response.ok) {
             const data = await response.json();
@@ -741,6 +684,16 @@ async function checkLoginAndLoadData() {
                 // User IS logged in
                 isUserLoggedIn = true;
                 console.log('✓ User is logged in:', data);
+                
+                // ✅ Save session to cookies
+                CookieSessionManager.saveUserSession({
+                    user_id: data.user_id,
+                    username: data.username,
+                    email: data.email,
+                    age: data.age,
+                    gender: data.gender,
+                    city: data.city
+                });
                 
                 // Auto-fill user data from database
                 if (data.city) {
@@ -768,11 +721,13 @@ async function checkLoginAndLoadData() {
             } else {
                 // User is NOT logged in
                 isUserLoggedIn = false;
+                CookieSessionManager.clearUserSession();
                 console.log('⚠ User is not logged in');
             }
         } else {
             // API returned error - user not logged in
             isUserLoggedIn = false;
+            CookieSessionManager.clearUserSession();
             console.log('⚠ User not logged in (API error)');
         }
     } catch (error) {

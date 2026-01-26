@@ -2,9 +2,8 @@
 <html lang="en">
 
 <head>
-
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>
         {% block title %}AQI_SMART_HEALTH_ADVISOR{% endblock %}
@@ -145,39 +144,36 @@
             }
         </style>
     {%endblock%}
-
 </head>
 
 <body>
-        {% with pop_messages = get_flashed_messages(with_categories=true) %}
-        {% if pop_messages %}
-            <div class="flash-container" id="flash-messages">
-                {% for category, msg in pop_messages %}
-                    <div class="flash {{ category }}">{{ msg }}</div>
-                {% endfor %}
-            </div>
-            <script>
-                // Auto-remove flash messages after animation
-                setTimeout(() => {
-                    const flashContainer = document.getElementById('flash-messages');
-                    if (flashContainer) {
-                        flashContainer.remove();
-                    }
-                }, 4500);
-            </script>
-        {% endif %}
-        {% endwith %}
+    {% with pop_messages = get_flashed_messages(with_categories=true) %}
+    {% if pop_messages %}
+        <div class="flash-container" id="flash-messages">
+            {% for category, msg in pop_messages %}
+                <div class="flash {{ category }}">{{ msg }}</div>
+            {% endfor %}
+        </div>
+        <script>
+            // Auto-remove flash messages after animation
+            setTimeout(() => {
+                const flashContainer = document.getElementById('flash-messages');
+                if (flashContainer) {
+                    flashContainer.remove();
+                }
+            }, 4500);
+        </script>
+    {% endif %}
+    {% endwith %}
 
     {% block content %}{%endblock%}
 
+    <!-- ✅ Scripts go here at BOTTOM, just before </body> -->
     {% block script%}
-        <!-- <script></script> -->
-         <!-- In the <head> section, before other scripts -->
+        <!-- Common scripts for all pages -->
         <script src="{{ url_for('static', filename='js/messageManager.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/cookieSessionManager.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/locationService.js') }}"></script>
+        <!-- Page-specific scripts will be added by child templates -->
     {%endblock%}
 
 </body>
-
 </html>

@@ -21,7 +21,7 @@ def create_app():
     app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
     app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to session cookie
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
-    app.config['SESSION_REFRESH_EACH_REQUEST'] = True  # Refresh session on each request
+    #app.config['SESSION_REFRESH_EACH_REQUEST'] = True  # Refresh session on each request
     
     # ========== MYSQL CONFIGURATION ==========
     app.config['MYSQL_HOST'] = "localhost"

@@ -15,11 +15,9 @@
         display: none !important;
     }
 </style>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 /* Cookie Consent Banner */
 .cookie-consent {
@@ -273,349 +271,349 @@
 <div id="auth-message" style="display: none;"></div>
 
 {% block script %}
+    <!-- 1. Message Manager from the base file -->
+    {{super()}}
 
-<script>
-(function() {
-    'use strict';
-    
-    // ========== Cookie Consent ==========
-    window.acceptCookies = function() {
-        try {
-            localStorage.setItem('cookieConsent', 'accepted');
-        } catch (e) {
-            console.log('LocalStorage not available');
-        }
-        document.getElementById('cookieConsent').classList.remove('show');
-    };
-    
-    window.declineCookies = function() {
-        try {
-            localStorage.setItem('cookieConsent', 'declined');
-        } catch (e) {
-            console.log('LocalStorage not available');
-        }
-        document.getElementById('cookieConsent').classList.remove('show');
-        showMessage('You can still use the site, but some features may be limited.', 'info');
-    };
-    
-    function checkCookieConsent() {
-        try {
-            const consent = localStorage.getItem('cookieConsent');
-            if (!consent) {
-                setTimeout(() => {
-                    document.getElementById('cookieConsent').classList.add('show');
-                }, 1000);
-            }
-        } catch (e) {
-            // If localStorage is blocked, show consent banner
-            setTimeout(() => {
-                document.getElementById('cookieConsent').classList.add('show');
-            }, 1000);
-        }
-    }
-    
-    // ========== Toggle Form Function ==========
-    window.toggleForm = function(event) {
-        event.preventDefault();
-        const loginForm = document.getElementById('loginForm');
-        const signupForm = document.getElementById('signupForm');
-        
-        loginForm.classList.toggle('active');
-        signupForm.classList.toggle('active');
-    };
+    <!-- 2. Cookie Session Manager -->
+    <script src="{{ url_for('static', filename='js/cookiesSessionManager.js') }}"></script>
 
-    // ========== Get Redirect Parameter ==========
-    function getRedirectParameter() {
-        const redirectInput = document.getElementById('redirect_to');
-        if (redirectInput && redirectInput.value) {
-            return redirectInput.value;
-        }
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('redirect') || '';
-    }
-
-    // ========== Login Handler ==========
-    window.handleLogin = async function(event) {
-        event.preventDefault();
-        
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const redirectTo = getRedirectParameter();
-        
-        if (!email || !password) {
-            showMessage('Please fill in all fields', 'error');
-            return;
-        }
-
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Logging in...';
-        submitBtn.disabled = true;
-        
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    email: email,
-                    password: password,
-                    redirect_to: redirectTo
-                })
-            });
+    <!-- 3. Script for this specific file -->
+    <script>
+        (function() {
+            'use strict';
             
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Server returned non-JSON response');
-            }
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                showMessage(data.message, 'success');
-                setTimeout(() => {
-                    window.location.href = data.redirect;
-                }, 500);
-            } else {
-                // Check if user needs to verify email
-                if (data.redirect_to_verify) {
-                    showMessage(data.message, 'error');
-                    setTimeout(() => {
-                        window.location.href = '/verify';
-                    }, 2000);
+            // ========== Cookie Consent (Using CookieSessionManager if available) ==========
+            window.acceptCookies = function() {
+                if (window.CookieSessionManager) {
+                    CookieSessionManager.acceptCookies();
                 } else {
-                    showMessage(data.message, 'error');
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
+                    // Fallback if CookieSessionManager not loaded
+                    try {
+                        localStorage.setItem('cookieConsent', 'accepted');
+                    } catch (e) {
+                        console.log('LocalStorage not available');
+                    }
+                }
+                document.getElementById('cookieConsent').classList.remove('show');
+            };
+            
+            window.declineCookies = function() {
+                if (window.CookieSessionManager) {
+                    CookieSessionManager.declineCookies();
+                } else {
+                    try {
+                        localStorage.setItem('cookieConsent', 'declined');
+                    } catch (e) {
+                        console.log('LocalStorage not available');
+                    }
+                }
+                document.getElementById('cookieConsent').classList.remove('show');
+                
+                // Use MessageManager
+                if (window.MessageManager) {
+                    MessageManager.show('You can still use the site, but some features may be limited.', 'info');
+                }
+            };
+            
+            function checkCookieConsent() {
+                let consent = null;
+                
+                if (window.CookieSessionManager) {
+                    consent = CookieSessionManager.getCookie('cookieConsent');
+                } else {
+                    try {
+                        consent = localStorage.getItem('cookieConsent');
+                    } catch (e) {
+                        // LocalStorage blocked
+                    }
+                }
+                
+                if (!consent) {
+                    setTimeout(() => {
+                        document.getElementById('cookieConsent').classList.add('show');
+                    }, 1000);
                 }
             }
-        } catch (error) {
-            console.error('Login error:', error);
-            showMessage('An error occurred. Please try again.', 'error');
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }
-    };
-
-    // ========== Signup Handler ==========
-    window.handleSignup = async function(event) {
-        event.preventDefault();
-        
-        const username = document.getElementById('signup-username').value;
-        const email = document.getElementById('signup-email').value;
-        const age = document.getElementById('signup-age').value;
-        const gender = document.getElementById('signup-gender').value;
-        const city = document.getElementById('signup-city').value;
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-confirm-password').value;
-        
-        if (!username || !email || !age || !gender || !city || !password || !confirmPassword) {
-            showMessage('Please fill in all fields', 'error');
-            return;
-        }
-        
-        if (password !== confirmPassword) {
-            showMessage('Passwords do not match', 'error');
-            return;
-        }
-        
-        if (password.length < 6) {
-            showMessage('Password must be at least 6 characters', 'error');
-            return;
-        }
-
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Creating account...';
-        submitBtn.disabled = true;
-        
-        try {
-            const response = await fetch('/signup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: username,
-                    email: email,
-                    age: parseInt(age),
-                    gender: gender,
-                    city: city,
-                    password: password
-                })
-            });
             
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Server returned non-JSON response');
-            }
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                showMessage(data.message, 'success');
-                setTimeout(() => {
-                    window.location.href = '/verify';
-                }, 1000);
-            } else {
-                showMessage(data.message, 'error');
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
-        } catch (error) {
-            console.error('Signup error:', error);
-            showMessage('An error occurred. Please try again.', 'error');
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }
-    };
-
-    // ========== Show Message Function ==========
-    function showMessage(message, type) {
-        let messageEl = document.getElementById('auth-message');
-        
-        if (!messageEl) {
-            messageEl = document.createElement('div');
-            messageEl.id = 'auth-message';
-            messageEl.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 25px;
-                border-radius: 8px;
-                font-weight: 600;
-                z-index: 10000;
-                animation: slideInRight 0.3s ease-out;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            `;
-            document.body.appendChild(messageEl);
-        }
-        
-        messageEl.textContent = message;
-        
-        if (type === 'success') {
-            messageEl.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            messageEl.style.color = 'white';
-        } else if (type === 'info') {
-            messageEl.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)';
-            messageEl.style.color = 'white';
-        } else {
-            messageEl.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
-            messageEl.style.color = 'white';
-        }
-        
-        messageEl.style.display = 'block';
-        
-        setTimeout(() => {
-            messageEl.style.display = 'none';
-        }, 4000);
-    }
-
-    // ========== Location Autocomplete ==========
-    function initLocationAutocomplete() {
-        const input = document.getElementById("signup-city");
-        const suggestionsList = document.getElementById("suggestions");
-
-        if (input && suggestionsList) {
-            let debounceTimer;
-            
-            input.addEventListener("input", async () => {
-                clearTimeout(debounceTimer);
+            // ========== Toggle Form Function ==========
+            window.toggleForm = function(event) {
+                event.preventDefault();
+                const loginForm = document.getElementById('loginForm');
+                const signupForm = document.getElementById('signupForm');
                 
-                const query = input.value;
-                if (query.length < 3) {
-                    suggestionsList.innerHTML = "";
+                loginForm.classList.toggle('active');
+                signupForm.classList.toggle('active');
+            };
+
+            // ========== Get Redirect Parameter ==========
+            function getRedirectParameter() {
+                const redirectInput = document.getElementById('redirect_to');
+                if (redirectInput && redirectInput.value) {
+                    return redirectInput.value;
+                }
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('redirect') || '';
+            }
+
+            // ========== Login Handler ==========
+            window.handleLogin = async function(event) {
+                event.preventDefault();
+                
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const redirectTo = getRedirectParameter();
+                
+                if (!email || !password) {
+                    // ✅ Use MessageManager instead of custom showMessage
+                    if (window.MessageManager) {
+                        MessageManager.show('Please fill in all fields', 'warning');
+                    }
                     return;
                 }
 
-                debounceTimer = setTimeout(async () => {
-                    try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`,
-                            {
-                                headers: {
-                                    'User-Agent': 'AQI_Smart_Health_Advisor/1.0'
-                                }
-                            }
-                        );
-                        
-                        if (!response.ok) {
-                            return;
+                const submitBtn = event.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Logging in...';
+                submitBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            email: email,
+                            password: password,
+                            redirect_to: redirectTo
+                        })
+                    });
+                    
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // ✅ Use MessageManager
+                        if (window.MessageManager) {
+                            MessageManager.show(data.message || 'Login successful!', 'success');
                         }
                         
-                        const data = await response.json();
-                        suggestionsList.innerHTML = "";
-
-                        data.forEach(place => {
-                            const li = document.createElement("li");
-                            li.textContent = place.display_name;
-                            li.onclick = () => {
-                                input.value = place.display_name;
-                                suggestionsList.innerHTML = "";
-                            };
-                            suggestionsList.appendChild(li);
-                        });
-                    } catch (error) {
-                        console.error('Location search error:', error);
+                        // ✅ Save session to cookies using CookieSessionManager
+                        if (window.CookieSessionManager && data.user) {
+                            CookieSessionManager.saveUserSession(data.user);
+                        }
+                        
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 500);
+                    } else {
+                        // Check if user needs to verify email
+                        if (data.redirect_to_verify) {
+                            if (window.MessageManager) {
+                                MessageManager.show(data.message, 'error');
+                            }
+                            setTimeout(() => {
+                                window.location.href = '/verify';
+                            }, 2000);
+                        } else {
+                            if (window.MessageManager) {
+                                MessageManager.show(data.message, 'error');
+                            }
+                            submitBtn.textContent = originalText;
+                            submitBtn.disabled = false;
+                        }
                     }
-                }, 500);
-            });
-        }
-    }
-
-    // ========== Initialize on DOM Load ==========
-    document.addEventListener('DOMContentLoaded', function() {
-        // CRITICAL: Remove all flash message elements immediately
-        const flashContainers = document.querySelectorAll('.flash-container, #flash-messages, .flash, .alert');
-        flashContainers.forEach(el => {
-            if (el) el.remove();
-        });
-        
-        // Add ajax-page class to body to prevent flash messages
-        document.body.classList.add('ajax-page');
-        
-        // Check cookie consent
-        checkCookieConsent();
-        
-        const defaultForm = '{{ default_form }}';
-        if (defaultForm === 'signup') {
-            document.getElementById('loginForm').classList.remove('active');
-            document.getElementById('signupForm').classList.add('active');
-        }
-
-        initLocationAutocomplete();
-
-        const redirectParam = getRedirectParameter();
-        if (redirectParam) {
-            console.log('Redirect parameter:', redirectParam);
-        }
-
-        // Add CSS animation
-        if (!document.getElementById('auth-styles')) {
-            const style = document.createElement('style');
-            style.id = 'auth-styles';
-            style.textContent = `
-                @keyframes slideInRight {
-                    from {
-                        opacity: 0;
-                        transform: translateX(50px);
+                } catch (error) {
+                    console.error('Login error:', error);
+                    if (window.MessageManager) {
+                        MessageManager.show('An error occurred. Please try again.', 'error');
                     }
-                    to {
-                        opacity: 1;
-                        transform: translateX(0);
-                    }
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
                 }
-            `;
-            document.head.appendChild(style);
-        }
-    });
-})();
-</script>
+            };
+
+            // ========== Signup Handler ==========
+            window.handleSignup = async function(event) {
+                event.preventDefault();
+                
+                const username = document.getElementById('signup-username').value;
+                const email = document.getElementById('signup-email').value;
+                const age = document.getElementById('signup-age').value;
+                const gender = document.getElementById('signup-gender').value;
+                const city = document.getElementById('signup-city').value;
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                
+                if (!username || !email || !age || !gender || !city || !password || !confirmPassword) {
+                    if (window.MessageManager) {
+                        MessageManager.show('Please fill in all fields', 'warning');
+                    }
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    if (window.MessageManager) {
+                        MessageManager.show('Passwords do not match', 'error');
+                    }
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    if (window.MessageManager) {
+                        MessageManager.show('Password must be at least 6 characters', 'warning');
+                    }
+                    return;
+                }
+
+                const submitBtn = event.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Creating account...';
+                submitBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/signup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            email: email,
+                            age: parseInt(age),
+                            gender: gender,
+                            city: city,
+                            password: password
+                        })
+                    });
+                    
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Server returned non-JSON response');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        if (window.MessageManager) {
+                            MessageManager.show(data.message || 'Account created successfully!', 'success');
+                        }
+                        setTimeout(() => {
+                            window.location.href = '/verify';
+                        }, 1000);
+                    } else {
+                        if (window.MessageManager) {
+                            MessageManager.show(data.message, 'error');
+                        }
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Signup error:', error);
+                    if (window.MessageManager) {
+                        MessageManager.show('An error occurred. Please try again.', 'error');
+                    }
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            };
+
+            // ========== Location Autocomplete ==========
+            function initLocationAutocomplete() {
+                const input = document.getElementById("signup-city");
+                const suggestionsList = document.getElementById("suggestions");
+
+                if (input && suggestionsList) {
+                    let debounceTimer;
+                    
+                    input.addEventListener("input", async () => {
+                        clearTimeout(debounceTimer);
+                        
+                        const query = input.value;
+                        if (query.length < 3) {
+                            suggestionsList.innerHTML = "";
+                            return;
+                        }
+
+                        debounceTimer = setTimeout(async () => {
+                            try {
+                                const response = await fetch(
+                                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`,
+                                    {
+                                        headers: {
+                                            'User-Agent': 'AQI_Smart_Health_Advisor/1.0'
+                                        }
+                                    }
+                                );
+                                
+                                if (!response.ok) {
+                                    return;
+                                }
+                                
+                                const data = await response.json();
+                                suggestionsList.innerHTML = "";
+
+                                data.forEach(place => {
+                                    const li = document.createElement("li");
+                                    li.textContent = place.display_name;
+                                    li.onclick = () => {
+                                        input.value = place.display_name;
+                                        suggestionsList.innerHTML = "";
+                                    };
+                                    suggestionsList.appendChild(li);
+                                });
+                            } catch (error) {
+                                console.error('Location search error:', error);
+                            }
+                        }, 500);
+                    });
+                }
+            }
+
+            // ========== Initialize on DOM Load ==========
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('🔐 Login page loaded');
+                
+                // Check if MessageManager is available
+                if (window.MessageManager) {
+                    console.log('✅ MessageManager available');
+                    // Process any existing Flask messages
+                    MessageManager.processFlaskMessages();
+                } else {
+                    console.warn('⚠️ MessageManager not loaded');
+                }
+                
+                // Check if CookieSessionManager is available
+                if (window.CookieSessionManager) {
+                    console.log('✅ CookieSessionManager available');
+                }
+                
+                // Check cookie consent
+                checkCookieConsent();
+                
+                const defaultForm = '{{ default_form }}';
+                if (defaultForm === 'signup') {
+                    document.getElementById('loginForm').classList.remove('active');
+                    document.getElementById('signupForm').classList.add('active');
+                }
+
+                initLocationAutocomplete();
+
+                const redirectParam = getRedirectParameter();
+                if (redirectParam) {
+                    console.log('📍 Redirect parameter:', redirectParam);
+                }
+            });
+        })();
+    </script>
 
 {% endblock %}
 

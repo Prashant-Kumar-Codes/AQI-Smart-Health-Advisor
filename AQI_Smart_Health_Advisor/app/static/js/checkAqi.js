@@ -22,10 +22,9 @@ function hideLoading() {
 }
 
 function showError(message) {
-    const errorDiv = document.getElementById('error');
-    errorDiv.innerHTML = `<strong>⚠️ Error:</strong> ${message}`;
-    errorDiv.style.display = 'block';
+    MessageManager.show(message, 'error');
     hideLoading();
+    document.getElementById('results').style.display = 'none';
 }
 
 function showSuccess() {
@@ -126,7 +125,7 @@ function hideNearestAlert() {
     document.getElementById('alternativeStations').style.display = 'none';
 }
 
-// ========== Search Functions ==========
+// ========== Search Functions (Using Centralized LocationService) ==========
 function quickSearch(city) {
     document.getElementById('locationInput').value = city;
     searchAQI();
@@ -144,108 +143,82 @@ async function searchAQI() {
     hideNearestAlert();
 
     try {
-        const response = await fetch(`/api/aqi/city/${encodeURIComponent(location)}`);
-        const data = await response.json();
-
-        if (response.ok && !data.error) {
-            if (data.is_nearest && data.nearest_info) {
-                showNearestAlert(
-                    data.nearest_info.station_name, 
-                    data.nearest_info.original_search,
-                    data.nearest_info.distance || data.distance_km
-                );
-            }
-            
-            if (data.alternative_stations && data.alternative_stations.length > 0) {
-                showAlternativeStations(data.alternative_stations);
-            }
-            
-            displayAQIData(data);
-            await fetchAIRecommendation(data.aqi);
-        } else {
-            showError(data.error || 'Location not found. Please try another city or use your current location.');
+        console.log('🔍 Using centralized LocationService for location search');
+        
+        // ✅ Use centralized LocationService
+        const result = await LocationService.getAQIFromLocationName(location);
+        
+        currentAQIData = result.aqiData;
+        
+        // Check if showing nearest station
+        if (result.aqiData.is_nearest && result.aqiData.nearest_info) {
+            showNearestAlert(
+                result.aqiData.nearest_info.station_name, 
+                result.aqiData.nearest_info.original_search,
+                result.aqiData.nearest_info.distance || result.aqiData.distance_km
+            );
         }
+        
+        if (result.aqiData.alternative_stations && result.aqiData.alternative_stations.length > 0) {
+            showAlternativeStations(result.aqiData.alternative_stations);
+        }
+        
+        displayAQIData(result.aqiData);
+        await fetchAIRecommendation(result.aqiData.aqi);
+        
+        MessageManager.show(`AQI data loaded for ${result.location.displayName}`, 'success');
+        
     } catch (error) {
-        showError('Failed to fetch air quality data. Please check your internet connection and try again.');
-        console.error('Error:', error);
+        console.error('❌ Search error:', error);
+        showError(error.message || 'Location not found. Please try another city or use your current location.');
     }
 }
 
 async function getCurrentLocation() {
-    if (!navigator.geolocation) {
-        showError('Geolocation is not supported by your browser. Please enter a city name manually.');
-        return;
-    }
-
     showLoading();
     hideNearestAlert();
 
-    const options = {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-    };
-
-    navigator.geolocation.getCurrentPosition(
-        async (position) => {
-            try {
-                const { latitude, longitude } = position.coords;
-                console.log(`Getting AQI for coordinates: ${latitude.toFixed(3)}, ${longitude.toFixed(3)}`);
-                
-                const response = await fetch(`/api/aqi/geo?lat=${latitude}&lng=${longitude}`);
-                const data = await response.json();
-
-                if (response.ok && !data.error) {
-                    if (data.is_nearest && data.nearest_info) {
-                        showNearestAlert(
-                            data.nearest_info.station_name, 
-                            data.nearest_info.original_search,
-                            data.nearest_info.distance || data.distance_km
-                        );
-                    }
-                    
-                    if (data.alternative_stations && data.alternative_stations.length > 0) {
-                        showAlternativeStations(data.alternative_stations);
-                    }
-                    
-                    displayAQIData(data);
-                    
-                    if (data.city && data.city.name) {
-                        document.getElementById('locationInput').value = data.city.name;
-                        document.getElementById('aiAdvisorLocation').value = data.city.name;
-                        aiAdvisorData.location = data.city.name;
-                    }
-                    
-                    await fetchAIRecommendation(data.aqi);
-                } else {
-                    showError(data.error || 'No air quality monitoring station found near your location.');
-                }
-            } catch (error) {
-                showError('Failed to fetch air quality data for your location.');
-                console.error('Error:', error);
-            }
-        },
-        (error) => {
-            let errorMessage = 'Unable to retrieve your location. ';
-            
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    errorMessage += 'Please allow location access in your browser settings.';
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    errorMessage += 'Location information is unavailable.';
-                    break;
-                case error.TIMEOUT:
-                    errorMessage += 'Location request timed out.';
-                    break;
-                default:
-                    errorMessage += 'An unknown error occurred.';
-            }
-            
-            showError(errorMessage);
-        },
-        options
-    );
+    try {
+        console.log('📡 Using centralized LocationService for current location');
+        
+        // ✅ Use centralized LocationService
+        const result = await LocationService.getAQIFromCurrentLocation();
+        
+        currentAQIData = result.aqiData;
+        
+        // Check if showing nearest station
+        if (result.aqiData.is_nearest && result.aqiData.nearest_info) {
+            showNearestAlert(
+                result.aqiData.nearest_info.station_name, 
+                result.aqiData.nearest_info.original_search,
+                result.aqiData.nearest_info.distance || result.aqiData.distance_km
+            );
+        }
+        
+        if (result.aqiData.alternative_stations && result.aqiData.alternative_stations.length > 0) {
+            showAlternativeStations(result.aqiData.alternative_stations);
+        }
+        
+        displayAQIData(result.aqiData);
+        
+        // Update location inputs with detected location name
+        const displayName = result.location.displayName;
+        document.getElementById('locationInput').value = displayName;
+        
+        const aiAdvisorLocationInput = document.getElementById('aiAdvisorLocation');
+        if (aiAdvisorLocationInput) {
+            aiAdvisorLocationInput.value = displayName;
+            aiAdvisorData.location = displayName;
+        }
+        
+        await fetchAIRecommendation(result.aqiData.aqi);
+        
+        MessageManager.show(`Location detected: ${displayName}`, 'success');
+        
+    } catch (error) {
+        console.error('❌ Current location error:', error);
+        showError(error.message);
+    }
 }
 
 // ========== Map Functions ==========
@@ -256,7 +229,6 @@ function openMapSelector() {
         setTimeout(() => {
             map = L.map('mapSelector').setView([28.6139, 77.2090], 5);
             
-            // Use English-labeled tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
@@ -264,24 +236,16 @@ function openMapSelector() {
             map.on('click', async function(e) {
                 selectedLatLng = e.latlng;
                 
-                // Fetch location name in English immediately
                 try {
-                    // Using Nominatim API with explicit English language parameter
-                    const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&accept-language=en&addressdetails=1`;
-                    const response = await fetch(geocodeUrl);
-                    const data = await response.json();
+                    console.log('📍 Using centralized LocationService for reverse geocoding');
                     
-                    // Extract location name in English, prioritizing city/town/village
-                    let locationName = data.address?.city || 
-                                      data.address?.town || 
-                                      data.address?.village || 
-                                      data.address?.municipality ||
-                                      data.address?.county ||
-                                      data.address?.state || 
-                                      data.address?.country ||
-                                      'Selected Location';
+                    // ✅ Use centralized LocationService for reverse geocoding
+                    const locationInfo = await LocationService.getNameFromCoordinates(
+                        e.latlng.lat, 
+                        e.latlng.lng
+                    );
                     
-                    // Store the English name
+                    const locationName = locationInfo.displayName;
                     selectedLatLng.englishName = locationName;
                     
                     if (window.mapMarker) {
@@ -296,8 +260,9 @@ function openMapSelector() {
                     document.getElementById('mapCoordinates').textContent = 
                         `Selected: ${locationName} (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})`;
                     document.getElementById('confirmLocationBtn').disabled = false;
+                    
                 } catch (error) {
-                    console.error('Geocoding error:', error);
+                    console.error('Reverse geocoding error:', error);
                     // Fallback to coordinates only
                     if (window.mapMarker) {
                         map.removeLayer(window.mapMarker);
@@ -324,35 +289,16 @@ async function confirmMapLocation() {
     hideNearestAlert();
     
     try {
-        // Get English location name - use stored one or fetch fresh
-        let locationName = selectedLatLng.englishName || '';
+        console.log('🗺️ Using centralized LocationService for map location');
         
-        if (!locationName) {
-            try {
-                const geocodeUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${selectedLatLng.lat}&lon=${selectedLatLng.lng}&accept-language=en&addressdetails=1`;
-                const geoResponse = await fetch(geocodeUrl);
-                const geoData = await geoResponse.json();
-                
-                // Extract city name in English with multiple fallback options
-                locationName = geoData.address?.city || 
-                              geoData.address?.town || 
-                              geoData.address?.village || 
-                              geoData.address?.municipality ||
-                              geoData.address?.county ||
-                              geoData.address?.state || 
-                              geoData.address?.country ||
-                              geoData.display_name?.split(',')[0] || 
-                              'Selected Location';
-            } catch (geoError) {
-                console.log('Geocoding error:', geoError);
-                locationName = 'Selected Location';
-            }
-        }
+        // ✅ Use centralized LocationService
+        const result = await LocationService.getAQIFromCurrentLocation();
         
-        const response = await fetch(`/api/aqi/geo?lat=${selectedLatLng.lat}&lng=${selectedLatLng.lng}`);
-        const data = await response.json();
-
-        if (response.ok && !data.error) {
+        // Override with selected coordinates
+        const coordResult = await fetch(`/api/aqi/geo?lat=${selectedLatLng.lat}&lng=${selectedLatLng.lng}`);
+        const data = await coordResult.json();
+        
+        if (coordResult.ok && !data.error) {
             if (data.is_nearest && data.nearest_info) {
                 showNearestAlert(
                     data.nearest_info.station_name, 
@@ -367,22 +313,42 @@ async function confirmMapLocation() {
             
             displayAQIData(data);
             
-            // Update location inputs with English name - prefer API name, fallback to geocoded name
+            // Get location name
+            let locationName = selectedLatLng.englishName;
+            
+            if (!locationName) {
+                try {
+                    const locationInfo = await LocationService.getNameFromCoordinates(
+                        selectedLatLng.lat,
+                        selectedLatLng.lng
+                    );
+                    locationName = locationInfo.displayName;
+                } catch (error) {
+                    locationName = data.city?.name || 'Selected Location';
+                }
+            }
+            
+            // Update location inputs with English name
             const displayName = data.city?.name || locationName;
             document.getElementById('locationInput').value = displayName;
-            document.getElementById('aiAdvisorLocation').value = displayName;
-            aiAdvisorData.location = displayName;
+            
+            const aiAdvisorLocationInput = document.getElementById('aiAdvisorLocation');
+            if (aiAdvisorLocationInput) {
+                aiAdvisorLocationInput.value = displayName;
+                aiAdvisorData.location = displayName;
+            }
             
             await fetchAIRecommendation(data.aqi);
+            
+            MessageManager.show(`AQI data loaded for ${displayName}`, 'success');
         } else {
             showError(data.error || 'No monitoring station found at this location.');
         }
     } catch (error) {
+        console.error('❌ Map location error:', error);
         showError('Failed to fetch air quality data for selected location.');
-        console.error('Error:', error);
     }
 }
-
 
 // ========== AI Recommendation Functions ==========
 async function fetchAIRecommendation(aqi) {
@@ -423,15 +389,16 @@ function getDefaultRecommendation(aqi) {
     } else if (aqi <= 100) {
         return "👍 Air quality is acceptable for most people. You can proceed with normal outdoor activities.";
     } else if (aqi <= 150) {
-    return "⚠️ Sensitive individuals should take precautions. Consider reducing prolonged outdoor activities.";
+        return "⚠️ Sensitive individuals should take precautions. Consider reducing prolonged outdoor activities.";
     } else if (aqi <= 200) {
-    return "🚨 Air quality is unhealthy for everyone. Reduce outdoor activities and consider wearing masks.";
+        return "🚨 Air quality is unhealthy for everyone. Reduce outdoor activities and consider wearing masks.";
     } else if (aqi <= 300) {
-    return "⛔ Very unhealthy air! Everyone should minimize outdoor exposure. Use air purifiers indoors.";
+        return "⛔ Very unhealthy air! Everyone should minimize outdoor exposure. Use air purifiers indoors.";
     } else {
-    return "☠️ HAZARDOUS CONDITIONS - Health emergency! Stay indoors with sealed windows. Seek medical help if needed.";
+        return "☢️ HAZARDOUS CONDITIONS - Health emergency! Stay indoors with sealed windows. Seek medical help if needed.";
     }
 }
+
 // ========== AQI Category Functions ==========
 function getAQICategory(aqi) {
     if (aqi <= 50) return { category: 'Good', class: 'aqi-good' };
@@ -441,6 +408,7 @@ function getAQICategory(aqi) {
     if (aqi <= 300) return { category: 'Very Unhealthy', class: 'aqi-very-unhealthy' };
     return { category: 'Hazardous', class: 'aqi-hazardous' };
 }
+
 function updateBodyBackground(aqiClass) {
     const body = document.body;
     body.className = '';
@@ -458,61 +426,63 @@ function updateBodyBackground(aqiClass) {
         body.classList.add('aqi-hazardous-bg');
     }
 }
+
 function getRecommendations(aqi) {
     if (aqi <= 50) {
         return [
-        { icon: '✅', title: 'Excellent Air Quality', desc: 'Perfect time to enjoy the outdoors!' },
-        { icon: '🏃', title: 'Perfect for Outdoor Activities', desc: 'Great conditions for exercise and sports.' },
-        { icon: '🪟', title: 'Fresh Air Ventilation', desc: 'Open windows to circulate fresh air.' },
-        { icon: '👨‍👩‍👧‍👦', title: 'Safe for Everyone', desc: 'Air quality poses no risk to any groups.' }
+            { icon: '✅', title: 'Excellent Air Quality', desc: 'Perfect time to enjoy the outdoors!' },
+            { icon: '🏃', title: 'Perfect for Outdoor Activities', desc: 'Great conditions for exercise and sports.' },
+            { icon: '🪟', title: 'Fresh Air Ventilation', desc: 'Open windows to circulate fresh air.' },
+            { icon: '👨‍👩‍👧‍👦', title: 'Safe for Everyone', desc: 'Air quality poses no risk to any groups.' }
         ];
     } else if (aqi <= 100) {
         return [
-        { icon: '⚠️', title: 'Moderate Air Quality', desc: 'Acceptable for most people.' },
-        { icon: '🏃', title: 'Generally Safe Activities', desc: 'Most can enjoy normal outdoor activities.' },
-        { icon: '👶', title: 'Sensitive Groups Monitor', desc: 'Watch for symptoms if sensitive.' },
-        { icon: '🪟', title: 'Moderate Ventilation', desc: 'Safe to open windows moderately.' }
+            { icon: '⚠️', title: 'Moderate Air Quality', desc: 'Acceptable for most people.' },
+            { icon: '🏃', title: 'Generally Safe Activities', desc: 'Most can enjoy normal outdoor activities.' },
+            { icon: '👶', title: 'Sensitive Groups Monitor', desc: 'Watch for symptoms if sensitive.' },
+            { icon: '🪟', title: 'Moderate Ventilation', desc: 'Safe to open windows moderately.' }
         ];
     } else if (aqi <= 150) {
         return [
-        { icon: '⚠️', title: 'Unhealthy for Sensitive Groups', desc: 'Vulnerable groups may experience effects.' },
-        { icon: '😷', title: 'Masks Recommended', desc: 'Sensitive individuals should wear N95 masks.' },
-        { icon: '🏠', title: 'Limit Outdoor Exposure', desc: 'Reduce prolonged outdoor activities.' },
-        { icon: '🪟', title: 'Keep Windows Closed', desc: 'Prevent outdoor air from entering.' },
-        { icon: '💊', title: 'Monitor Symptoms', desc: 'Have rescue medications available.' }
+            { icon: '⚠️', title: 'Unhealthy for Sensitive Groups', desc: 'Vulnerable groups may experience effects.' },
+            { icon: '😷', title: 'Masks Recommended', desc: 'Sensitive individuals should wear N95 masks.' },
+            { icon: '🏠', title: 'Limit Outdoor Exposure', desc: 'Reduce prolonged outdoor activities.' },
+            { icon: '🪟', title: 'Keep Windows Closed', desc: 'Prevent outdoor air from entering.' },
+            { icon: '💊', title: 'Monitor Symptoms', desc: 'Have rescue medications available.' }
         ];
     } else if (aqi <= 200) {
         return [
-        { icon: '🚨', title: 'Unhealthy Air Quality', desc: 'Everyone may experience health effects.' },
-        { icon: '😷', title: 'Masks Essential Outdoors', desc: 'Everyone should wear N95/KN95 masks.' },
-        { icon: '🏠', title: 'Stay Indoors', desc: 'Avoid all outdoor activities.' },
-        { icon: '💨', title: 'Use Air Purifiers', desc: 'Run HEPA purifiers indoors.' },
-        { icon: '🚫', title: 'Cancel Outdoor Events', desc: 'Postpone outdoor activities.' },
-        { icon: '💊', title: 'Health Monitoring', desc: 'Watch for respiratory symptoms.' }
+            { icon: '🚨', title: 'Unhealthy Air Quality', desc: 'Everyone may experience health effects.' },
+            { icon: '😷', title: 'Masks Essential Outdoors', desc: 'Everyone should wear N95/KN95 masks.' },
+            { icon: '🏠', title: 'Stay Indoors', desc: 'Avoid all outdoor activities.' },
+            { icon: '💨', title: 'Use Air Purifiers', desc: 'Run HEPA purifiers indoors.' },
+            { icon: '🚫', title: 'Cancel Outdoor Events', desc: 'Postpone outdoor activities.' },
+            { icon: '💊', title: 'Health Monitoring', desc: 'Watch for respiratory symptoms.' }
         ];
     } else if (aqi <= 300) {
         return [
-        { icon: '🚨', title: 'Very Unhealthy Air', desc: 'Significant health risk for everyone.' },
-        { icon: '🏠', title: 'Mandatory Indoor Stay', desc: 'Everyone should stay indoors.' },
-        { icon: '😷', title: 'N95/N99 Masks Required', desc: 'Proper respirators essential if outside.' },
-        { icon: '💨', title: 'Air Purification Critical', desc: 'Keep purifiers running continuously.' },
-        { icon: '🏥', title: 'Health Vigilance', desc: 'Monitor for severe symptoms.' },
-        { icon: '🚗', title: 'Avoid Vehicle Emissions', desc: 'Limit driving to reduce pollution.' },
-        { icon: '📞', title: 'Emergency Contacts Ready', desc: 'Have medical contacts available.' }
+            { icon: '🚨', title: 'Very Unhealthy Air', desc: 'Significant health risk for everyone.' },
+            { icon: '🏠', title: 'Mandatory Indoor Stay', desc: 'Everyone should stay indoors.' },
+            { icon: '😷', title: 'N95/N99 Masks Required', desc: 'Proper respirators essential if outside.' },
+            { icon: '💨', title: 'Air Purification Critical', desc: 'Keep purifiers running continuously.' },
+            { icon: '🏥', title: 'Health Vigilance', desc: 'Monitor for severe symptoms.' },
+            { icon: '🚗', title: 'Avoid Vehicle Emissions', desc: 'Limit driving to reduce pollution.' },
+            { icon: '📞', title: 'Emergency Contacts Ready', desc: 'Have medical contacts available.' }
         ];
     } else {
         return [
-        { icon: '☠️', title: 'Hazardous - Emergency', desc: 'Severe health warning for everyone.' },
-        { icon: '🚫', title: 'Do NOT Go Outside', desc: 'Public health emergency - stay indoors!' },
-        { icon: '💨', title: 'Maximum Air Purification', desc: 'Run multiple HEPA purifiers.' },
-        { icon: '😷', title: 'Emergency Masks Only', desc: 'N95/N99/P100 respirators if evacuation needed.' },
-        { icon: '🏥', title: 'Medical Emergency Protocol', desc: 'Seek immediate help for symptoms.' },
-        { icon: '📞', title: 'Emergency Services', desc: 'Consider evacuation if high-risk.' },
-        { icon: '🚨', title: 'Follow Official Guidance', desc: 'Monitor emergency broadcasts.' },
-        { icon: '👥', title: 'Check on Vulnerable People', desc: 'Ensure neighbors have protection.' }
+            { icon: '☢️', title: 'Hazardous - Emergency', desc: 'Severe health warning for everyone.' },
+            { icon: '🚫', title: 'Do NOT Go Outside', desc: 'Public health emergency - stay indoors!' },
+            { icon: '💨', title: 'Maximum Air Purification', desc: 'Run multiple HEPA purifiers.' },
+            { icon: '😷', title: 'Emergency Masks Only', desc: 'N95/N99/P100 respirators if evacuation needed.' },
+            { icon: '🏥', title: 'Medical Emergency Protocol', desc: 'Seek immediate help for symptoms.' },
+            { icon: '📞', title: 'Emergency Services', desc: 'Consider evacuation if high-risk.' },
+            { icon: '🚨', title: 'Follow Official Guidance', desc: 'Monitor emergency broadcasts.' },
+            { icon: '👥', title: 'Check on Vulnerable People', desc: 'Ensure neighbors have protection.' }
         ];
     }
 }
+
 // ========== Data Display Functions ==========
 function displayAQIData(data) {
     currentAQIData = data;
@@ -539,9 +509,11 @@ function displayAQIData(data) {
 
     showSuccess();
 }
+
 function displayWeatherInfo(iaqi, enhancedWeather) {
     const weatherInfo = document.getElementById('weatherInfo');
     weatherInfo.innerHTML = '';
+    
     if (!iaqi) {
         weatherInfo.innerHTML = '<p style="text-align: center; color: #6b7280;">Weather data not available</p>';
         return;
@@ -555,7 +527,7 @@ function displayWeatherInfo(iaqi, enhancedWeather) {
     const weatherData = [
         { label: 'Temperature', value: iaqi.t?.v !== undefined ? `${roundValue(iaqi.t.v, 1)}°C` : 'N/A', icon: '🌡️' },
         { label: 'Humidity', value: iaqi.h?.v !== undefined ? `${roundValue(iaqi.h.v, 1)}%` : 'N/A', icon: '💧' },
-        { label: 'Pressure', value: iaqi.p?.v !== undefined ? `${roundValue(iaqi.p.v, 1)} hPa` : 'N/A', icon: '📽' },
+        { label: 'Pressure', value: iaqi.p?.v !== undefined ? `${roundValue(iaqi.p.v, 1)} hPa` : 'N/A', icon: '🔽' },
         { label: 'Wind Speed', value: iaqi.w?.v !== undefined ? `${roundValue(iaqi.w.v, 1)} m/s` : 'N/A', icon: '💨' }
     ];
 
@@ -581,6 +553,7 @@ function displayWeatherInfo(iaqi, enhancedWeather) {
 function displayPollutants(iaqi) {
     const pollutantsGrid = document.getElementById('pollutantsGrid');
     pollutantsGrid.innerHTML = '';
+    
     if (!iaqi) {
         pollutantsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Pollutant data not available</p>';
         return;
@@ -621,12 +594,12 @@ function displayPollutants(iaqi) {
     if (!hasData) {
         pollutantsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">Detailed pollutant data not available</p>';
     }
-
 }
 
 function displayDominantPollutant(dominentpol) {
     const pollutantCard = document.getElementById('dominantPollutantCard');
     const pollutantText = document.getElementById('dominantPollutant');
+    
     if (!dominentpol) {
         pollutantCard.style.display = 'none';
         return;
@@ -651,6 +624,7 @@ function displayRecommendations(aqi) {
     const recommendations = getRecommendations(aqi);
     const recommendationsDiv = document.getElementById('recommendations');
     recommendationsDiv.innerHTML = '';
+    
     recommendations.forEach(rec => {
         const item = document.createElement('div');
         item.className = 'recommendation-item';
@@ -663,59 +637,92 @@ function displayRecommendations(aqi) {
         `;
         recommendationsDiv.appendChild(item);
     });
+}
+
+// ========== Expandable Card Functions ==========
+function toggleCard(cardId) {
+    const card = document.getElementById(cardId)?.parentElement;
+    if (card) {
+        card.classList.toggle('expanded');
     }
-    // ========== Expandable Card Functions ==========
-    function toggleCard(cardId) {
-    const card = document.getElementById(cardId).parentElement;
-    card.classList.toggle('expanded');
 }
 
 // ========== Event Listeners ==========
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+
     const locationInput = document.getElementById('locationInput');
     const aiAdvisorLocationInput = document.getElementById('aiAdvisorLocation');
     const aiAdvisorAgeInput = document.getElementById('aiAdvisorAge');
-    // Enter key to search
-    locationInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            searchAQI();
-        }
-    });
+    const customQuestion = document.getElementById('customQuestion');
 
-    // Sync location input changes between main input and AI advisor input
-    locationInput.addEventListener('input', function() {
-        const value = this.value;
-        if (aiAdvisorLocationInput) {
-            aiAdvisorLocationInput.value = value;
+    // Prevent errors if aiAdvisorData is not defined
+    window.aiAdvisorData = window.aiAdvisorData || {};
+
+    // Enter key triggers AQI search
+    if (locationInput) {
+        locationInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchAQI();
+            }
+        });
+
+        // Sync main location → AI Advisor
+        locationInput.addEventListener('input', function () {
+            const value = this.value;
+            if (aiAdvisorLocationInput) {
+                aiAdvisorLocationInput.value = value;
+            }
             aiAdvisorData.location = value;
-        }
-    });
+        });
 
-    // Sync AI Advisor location input back to main
-    if (aiAdvisorLocationInput) {
-        aiAdvisorLocationInput.addEventListener('input', function() {
+        locationInput.focus();
+    }
+
+    // Sync AI Advisor → main location
+    if (aiAdvisorLocationInput && locationInput) {
+        aiAdvisorLocationInput.addEventListener('input', function () {
             const value = this.value;
             locationInput.value = value;
             aiAdvisorData.location = value;
         });
     }
 
-    // Update age in data object when changed
+    // Age input validation
     if (aiAdvisorAgeInput) {
-        aiAdvisorAgeInput.addEventListener('input', function() {
-            const age = parseInt(this.value);
-            if (age && age >= 1 && age <= 120) {
+        aiAdvisorAgeInput.addEventListener('input', function () {
+            const age = parseInt(this.value, 10);
+            if (!isNaN(age) && age >= 1 && age <= 120) {
                 aiAdvisorData.age = age;
             }
         });
     }
 
-    // Word count for custom question
-    const customQuestion = document.getElementById('customQuestion');
+    // Word count handling
     if (customQuestion) {
         customQuestion.addEventListener('input', updateWordCount);
     }
-
-    locationInput.focus();
 });
+
+// ========== Word Count ==========
+function updateWordCount() {
+    const textarea = document.getElementById('customQuestion');
+    const wordCountElement = document.getElementById('wordCount');
+
+    if (!textarea || !wordCountElement) return;
+
+    const words = textarea.value.trim().split(/\s+/).filter(Boolean);
+    const count = words.length;
+
+    wordCountElement.textContent = `${count}/30 words`;
+
+    if (count > 30) {
+        wordCountElement.style.color = '#dc2626';
+        wordCountElement.style.fontWeight = '700';
+    } else {
+        wordCountElement.style.color = '#6b7280';
+        wordCountElement.style.fontWeight = '600';
+    }
+
+    aiAdvisorData.customQuestion = textarea.value;
+}

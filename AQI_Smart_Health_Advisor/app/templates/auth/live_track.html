@@ -22,7 +22,7 @@
             <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link">AI Advisor</a>
             <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link active">Live Tracker</a>
             <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
-            <a href="{{ url_for('learnMore_auth.learnMoreAqi') }}" class="nav-link">AQI Guide</a>
+            <a href="{{ url_for('learnMore_auth.learnMore') }}" class="nav-link">AQI Guide</a>
             <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
         </div>
     </div>
@@ -178,7 +178,11 @@
 </div>
 
 {% block script %}
+    <!-- 1. Cookie Session Manager -->
+    <script src="{{ url_for('static', filename='js/cookieSessionManager.js') }}"></script>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <script src="{{ url_for('static', filename='js/live_track.js') }}"></script>
 {% endblock %}
 

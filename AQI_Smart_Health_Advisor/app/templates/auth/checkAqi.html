@@ -5,6 +5,7 @@
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/checkAqi.css') }}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 {% endblock %}
 
 {% block content %}
@@ -13,61 +14,54 @@
         <div class="nav-container">
             <div class="nav-brand">
                 <span class="brand-icon">🌍</span>
-                <span class="brand-text">AQI Status</span>
+                <span class="brand-text">AQI Smart Health Advisor</span>
             </div>
+            
+            <!-- Hamburger Menu Icon -->
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <!-- Navigation Links -->
             <div class="nav-links">
                 <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
                 <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link active">AQI Status</a>
                 <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link">AI Advisor</a>
                 <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link">Live Tracker</a>
                 <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
-                <a href="{{ url_for('learnMore_auth.learnMoreAqi') }}" class="nav-link">AQI Guide</a>
+                <a href="{{ url_for('learnMore_auth.learnMore') }}" class="nav-link">AQI Guide</a>
                 <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
             </div>
         </div>
     </nav>
 
-    <!-- Animated Air Flow Background -->
-    <div class="air-flow-container">
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-    </div>
-
     <div class="container">
         <!-- Professional Header Section -->
         <div class="header-professional">
-            <div class="header-content-pro">
-                <h1 class="main-title">Air Quality Monitoring System</h1>
-                <p class="main-subtitle">Real-time environmental data with AI-powered health insights</p>
-                <div class="header-features">
-                    <div class="feature-badge">
-                        <span class="feature-icon">🌐</span>
-                        <div class="feature-info">
-                            <div class="feature-label">Coverage</div>
-                            <div class="feature-value">Global</div>
-                        </div>
+            <h1 class="main-title">Air Quality Monitoring System</h1>
+            <p class="main-subtitle">Real-time environmental data with AI-powered health insights</p>
+            <div class="header-features">
+                <div class="feature-badge">
+                    <span class="feature-icon">🌐</span>
+                    <div class="feature-info">
+                        <div class="feature-label">Coverage</div>
+                        <div class="feature-value">Global</div>
                     </div>
-                    <div class="feature-badge">
-                        <span class="feature-icon">⚡</span>
-                        <div class="feature-info">
-                            <div class="feature-label">Updates</div>
-                            <div class="feature-value">Real-time</div>
-                        </div>
+                </div>
+                <div class="feature-badge">
+                    <span class="feature-icon">⚡</span>
+                    <div class="feature-info">
+                        <div class="feature-label">Updates</div>
+                        <div class="feature-value">Real-time</div>
                     </div>
-                    <div class="feature-badge">
-                        <span class="feature-icon">🤖</span>
-                        <div class="feature-info">
-                            <div class="feature-label">AI Powered</div>
-                            <div class="feature-value">GPT-4</div>
-                        </div>
+                </div>
+                <div class="feature-badge">
+                    <span class="feature-icon">🤖</span>
+                    <div class="feature-info">
+                        <div class="feature-label">AI Powered</div>
+                        <div class="feature-value">GPT-4</div>
                     </div>
                 </div>
             </div>
@@ -104,13 +98,12 @@
                         <span class="btn-icon-pro">🗺️</span>
                         <span>Select on Map</span>
                     </button>
-                    
-                    <a href="{{url_for('live_track_auth.live_track')}}">
-                    <button class="btn-pro btn-live-tracking-pro">
-                        <span class="btn-icon-pro">🗺️</span>
-                        <span>Live Tracking</span>
-                    </button></a>
-
+                    <a href="{{url_for('live_track_auth.live_track')}}" style="text-decoration: none;">
+                        <button class="btn-pro btn-live-tracking-pro">
+                            <span class="btn-icon-pro">🛰️</span>
+                            <span>Live Tracking</span>
+                        </button>
+                    </a>
                 </div>
             </div>
 
@@ -225,9 +218,11 @@
                         <span class="title-icon">🤖</span>
                         AI-Powered Health Recommendations
                     </h3>
-                    <a href="{{url_for('ai_advisor_auth.ai_advisor')}}" style="text-decoration: none;"><button class="btn-more-insights" onclick="openAIAdvisor()">
-                        ✨ More AI Insights
-                    </button></a>
+                    <a href="{{url_for('ai_advisor_auth.ai_advisor')}}" style="text-decoration: none;">
+                        <button class="btn-more-insights">
+                            ✨ More AI Insights
+                        </button>
+                    </a>
                 </div>
                 
                 <!-- Custom AI Recommendation Section -->
@@ -240,39 +235,9 @@
                         Loading personalized recommendations...
                     </p>
                 </div>
-                            <!-- Personalized AI Insights Card -->
-            <div class="personalized-ai-card-pro" id="personalizedAiCard" style="display: none;">
-                <div class="ai-insights-header">
-                    <h3 class="ai-insights-title">
-                        <span class="title-icon">🎯</span>
-                        Your Personalized AI Insights
-                    </h3>
-                    <button class="btn-customize-insights" onclick="openAIAdvisor()">
-                        ⚙️ Customize
-                    </button>
-                </div>
-                
-                <div class="ai-insights-content">
-                    <div class="insight-section" id="personalizedInsightContent">
-
-                        <!-- AI response will be injected here -->
-                    </div>
-                    
-                    <div class="insight-metadata">
-                        <span class="metadata-item">📍 <span id="insightLocation">-</span></span>
-                        <span class="metadata-item">👤 <span id="insightProfile">-</span></span>
-                    </div>
-                </div>
-                
-                <button class="btn-refresh-insights" onclick="refreshPersonalizedInsights()">
-                    🔄 Update Insights
-                </button>
-            </div>
 
                 <div class="recommendations-pro" id="recommendations"></div>
             </div>
-
-
 
             <!-- Health Impact & Take Action Side by Side -->
             <div class="action-cards-container">
@@ -353,8 +318,22 @@
     </div>
 
 {% block script %}
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    {{super()}}
+    <!-- Hamburger Navigation -->
+    <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script>
+
+    <!-- Cookie Session Manager -->
+    <script src="{{ url_for('static', filename='js/cookieSessionManager.js') }}"></script>
+
+    <!-- Location Service -->
+    <script src="{{ url_for('static', filename='js/locationService.js') }}"></script>
+
+    <!-- Main AQI Script -->
     <script src="{{ url_for('static', filename='js/checkAqi.js') }}"></script>
+
+    <!-- Leaflet Maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
     // Auto-fill user's city on page load
     document.addEventListener('DOMContentLoaded', async function() {
@@ -364,7 +343,6 @@
                 const data = await response.json();
                 if (data.city) {
                     document.getElementById('locationInput').value = data.city;
-                    document.getElementById('aiAdvisorLocation').value = data.city;
                 }
             }
         } catch (error) {

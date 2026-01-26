@@ -421,7 +421,7 @@ def check_user_logged_in():
         
         try:
             # Fetch user data from database
-            cursor = mysql.connection.cursor()
+            cursor = mysql.connector.cursor()
             cursor.execute("SELECT username, email, age, gender, city FROM login_data WHERE id = %s", (user_id,))
             user = cursor.fetchone()
             cursor.close()
@@ -462,7 +462,7 @@ def get_user_city():
         
         # Try to fetch from database
         try:
-            cursor = mysql.connection.cursor()
+            cursor = mysql.connector.cursor()
             cursor.execute("SELECT city FROM login_data WHERE id = %s", (session.get('user_id'),))
             result = cursor.fetchone()
             cursor.close()

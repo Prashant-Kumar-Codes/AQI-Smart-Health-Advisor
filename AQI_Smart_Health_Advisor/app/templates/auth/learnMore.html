@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block title %}Learn About AQI - Air Quality Awareness{% endblock %}
+
+{% block style %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/leanrMore.css') }}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo-section">
+            <img src="{{ url_for('static', filename='images/app_logo.png') }}" alt="AQI Logo" class="logo-image">
+            <div class="logo-text">AQI Smart Health Advisor</div>
+        </div>
+        <div class="nav-buttons">
+            <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Back to Home
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">Understanding Air Quality</h1>
+            <p class="hero-subtitle">Learn how to protect yourself and your loved ones from air pollution</p>
+            <div class="hero-image-container">
+                <img src="{{ url_for('static', filename='images/learn_more.jpg') }}" alt="Air Quality Awareness" class="hero-banner">
+            </div>
+        </div>
+
+        <!-- Introduction Section -->
+        <div class="content-card">
+
+            <h2 class="section-title">
+                <span class="section-icon">📖</span>
+                How to Read AQI Levels
+            </h2>
+            <p class="section-intro">
+                AQI values are grouped into ranges to help you quickly understand how good or bad the air quality is. Each range indicates the level of health risk and the precautions you should take.
+            </p>
+
+            <h3 style="font-size: 2em; color: var(--text-dark); margin: 40px 0 30px; font-weight: 800;">AQI Ranges and What They Mean</h3>
+
+            <div class="aqi-ranges">
+                <div class="aqi-range-card">
+                    <div class="aqi-badge aqi-good">
+                        <div class="aqi-badge-title">Good</div>
+                        <div class="aqi-badge-range">0–50</div>
+                    </div>
+                    <div class="aqi-description">
+                        <h4>Clean & Safe Air</h4>
+                        <p>Air quality is clean and safe. There is little or no risk to health, and outdoor activities can be done without concern.</p>
+                    </div>
+                </div>
+
+                <div class="aqi-range-card">
+                    <div class="aqi-badge aqi-moderate">
+                        <div class="aqi-badge-title">Moderate</div>
+                        <div class="aqi-badge-range">51–100</div>
+                    </div>
+                    <div class="aqi-description">
+                        <h4>Generally Acceptable</h4>
+                        <p>Air quality is generally acceptable. Most people can continue normal activities, but sensitive individuals may experience mild symptoms and should limit prolonged outdoor exertion.</p>
+                    </div>
+                </div>
+
+                <div class="aqi-range-card">
+                    <div class="aqi-badge aqi-unhealthy-sensitive">
+                        <div class="aqi-badge-title">Unhealthy for Sensitive Groups</div>
+                        <div class="aqi-badge-range">101–150</div>
+                    </div>
+                    <div class="aqi-description">
+                        <h4>Caution for Sensitive Groups</h4>
+                        <p>People with asthma, heart or lung conditions, older adults, children, and pregnant women may experience health effects. Outdoor activity should be reduced for sensitive individuals.</p>
+                    </div>
+                </div>
+
+                <div class="aqi-range-card">
+                    <div class="aqi-badge aqi-unhealthy">
+                        <div class="aqi-badge-title">Unhealthy</div>
+                        <div class="aqi-badge-range">151–200</div>
+                    </div>
+                    <div class="aqi-description">
+                        <h4>Everyone May Feel Effects</h4>
+                        <p>Everyone may begin to feel health effects. It is advisable to avoid prolonged outdoor activities and take preventive measures such as staying indoors when possible.</p>
+                    </div>
+                </div>
+
+                <div class="aqi-range-card">
+                    <div class="aqi-badge aqi-very-unhealthy">
+                        <div class="aqi-badge-title">Very Unhealthy</div>
+                        <div class="aqi-badge-range">201–300</div>
+                    </div>
+                    <div class="aqi-description">
+                        <h4>Serious Health Risk</h4>
+                        <p>This level indicates a serious health risk. Outdoor activities should be avoided. Staying indoors with clean air and taking protective measures is strongly recommended.</p>
+                    </div>
+                </div>
+
+                <div class="aqi-range-card">
+                    <div class="aqi-badge aqi-hazardous">
+                        <div class="aqi-badge-title">Hazardous</div>
+                        <div class="aqi-badge-range">301–500</div>
+                    </div>
+                    <div class="aqi-description">
+                        <h4>Emergency Level</h4>
+                        <p>Air quality is extremely poor and poses emergency-level health risks. All individuals should minimize outdoor exposure and follow official health advisories immediately.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero/Banner Image -->
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='images/good_vs_bad_aqi.jpg') }}" alt="Clean vs Polluted Air Comparison" class="content-image">
+            </div>
+
+            <div class="importance-box">
+                <h3><i class="fas fa-lightbulb"></i> Why AQI Ranges Matter</h3>
+                <p style="margin-bottom: 15px;">Understanding AQI ranges helps you:</p>
+                <ul>
+                    <li>Decide whether it is safe to go outside</li>
+                    <li>Protect vulnerable family members</li>
+                    <li>Plan work, exercise, and travel safely</li>
+                    <li>Reduce long-term health risks caused by air pollution</li>
+                </ul>
+                <p style="margin-top: 20px; font-weight: 600;">Knowing how to read AQI values enables timely action and better health decisions.</p>
+            </div>
+        </div>
+
+        <!-- Health Effects Section -->
+        <div class="content-card">
+            <!-- Health Effects Infographic Image -->
+            <div class="image-container">
+                <img src="{{ url_for('static', filename='images/health_harms_of_air_pollution.jpg') }}" alt="Health Effects Infographic" class="content-image">
+            </div>
+
+            <h2 class="section-title">
+                <span class="section-icon">❤️</span>
+                Health Effects of Poor Air Quality
+            </h2>
+            <p class="section-intro">
+                Breathing polluted air can affect both short-term well-being and long-term health. Even people who feel healthy can experience problems when air quality remains poor for extended periods. Some groups, such as children, elderly people, and individuals with existing health conditions, are at higher risk.
+            </p>
+
+            <div class="effects-grid">
+                <div class="effect-card">
+                    <h3><i class="fas fa-clock"></i> Short-Term Health Effects</h3>
+                    <p style="margin-bottom: 15px;">Poor air quality can cause immediate symptoms, including:</p>
+                    <ul>
+                        <li>Irritation in the eyes, nose, and throat</li>
+                        <li>Coughing and shortness of breath</li>
+                        <li>Headaches and dizziness</li>
+                        <li>Fatigue and reduced concentration</li>
+                        <li>Worsening of asthma symptoms</li>
+                    </ul>
+                    <p style="margin-top: 15px; font-style: italic; font-size: 0.95em;">These effects may appear within hours of exposure, especially during high AQI levels.</p>
+                </div>
+
+                <div class="effect-card">
+                    <h3><i class="fas fa-calendar-alt"></i> Long-Term Health Effects</h3>
+                    <p style="margin-bottom: 15px;">Continuous exposure to polluted air can lead to serious health conditions, such as:</p>
+                    <ul>
+                        <li>Chronic respiratory diseases (asthma, bronchitis, COPD)</li>
+                        <li>Reduced lung function and lung damage</li>
+                        <li>Increased risk of heart disease and stroke</li>
+                        <li>High blood pressure and cardiovascular stress</li>
+                        <li>Weakened immune system</li>
+                    </ul>
+                    <p style="margin-top: 15px; font-style: italic; font-size: 0.95em;">Long-term exposure increases the risk even if symptoms are not immediately visible.</p>
+                </div>
+
+                <div class="effect-card">
+                    <h3><i class="fas fa-shield-alt"></i> Why Awareness Matters</h3>
+                    <p style="line-height: 1.8;">Understanding the health effects of polluted air helps people take timely preventive steps. Reducing exposure, following safety guidelines, and monitoring AQI regularly can significantly lower health risks and improve quality of life.</p>
+                </div>
+            </div>
+
+            <!-- Protection Methods Image -->
+            <div class="image-container" style="margin-top: 40px;">
+                <img src="{{ url_for('static', filename='images/indoorActivities_and_wearMarks.png') }}" alt="Protection Methods and Safety Measures" class="content-image small-image">
+            </div>
+        </div>
+
+        <!-- Vulnerable Groups Section -->
+        <div class="content-card">
+            <h2 class="section-title">
+                <span class="section-icon">👥</span>
+                Impact on Vulnerable Groups
+            </h2>
+            <p class="section-intro">
+                Some people are more sensitive to air pollution and require extra precautions during poor AQI conditions:
+            </p>
+
+            <div class="vulnerable-grid">
+                <div class="vulnerable-card">
+                    <div class="vulnerable-icon">👶</div>
+                    <h4>Children</h4>
+                    <p>Developing lungs are more easily damaged by pollutants. Children breathe faster and spend more time outdoors.</p>
+                </div>
+
+                <div class="vulnerable-card">
+                    <div class="vulnerable-icon">👴</div>
+                    <h4>Elderly Individuals</h4>
+                    <p>Higher risk of heart and lung complications. Existing health conditions can worsen quickly with poor air quality.</p>
+                </div>
+
+                <div class="vulnerable-card">
+                    <div class="vulnerable-icon">🫁</div>
+                    <h4>People with Asthma or Heart Disease</h4>
+                    <p>Symptoms can worsen quickly when exposed to pollutants. Extra care and monitoring is essential.</p>
+                </div>
+
+                <div class="vulnerable-card">
+                    <div class="vulnerable-icon">🤰</div>
+                    <h4>Pregnant Women</h4>
+                    <p>Poor air quality may affect both mother and baby. Can impact fetal development and pregnancy outcomes.</p>
+                </div>
+            </div>
+
+            <div class="importance-box" style="margin-top: 40px;">
+                <h3><i class="fas fa-exclamation-triangle"></i> Extra Precautions Needed</h3>
+                <p style="font-size: 1.05em; line-height: 1.8;">
+                    If you or your family members fall into these vulnerable groups, it's crucial to monitor AQI levels daily, 
+                    limit outdoor activities during poor air quality days, use air purifiers indoors, and consult healthcare 
+                    providers for personalized protection strategies.
+                </p>
+            </div>
+
+            <!-- Vulnerable Groups Image -->
+            <div class="image-container" style="margin-top: 40px;">
+                <img src="{{ url_for('static', filename='images/vulnerable_group_for_bad_aqi.png') }}" alt="Vulnerable Groups Needing Extra Care" class="content-image small-image">
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-box">
+            <h2>Take Action Today</h2>
+            <p>Start monitoring air quality in your area and protect your health</p>
+            <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="cta-button">
+                Check AQI Now
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>AQI Smart Health Advisor</h3>
+                <p>Monitor air quality, predict health risks, and stay protected with AI-powered insights.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{{ url_for('checkAqi_auth.check_aqi') }}">Check AQI</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="{{ url_for('learnMore_auth.learnMore') }}">Learn More</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">AQI Guide</a></li>
+                    <li><a href="#">Health Tips</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 AQI Smart Health Advisor. All rights reserved.</p>
+            <p>Data provided by <a href="https://aqicn.org" target="_blank" rel="noopener">World Air Quality Index Project</a> & <a href="https://openweathermap.org" target="_blank" rel="noopener">OpenWeather</a></p>
+        </div>
+    </footer>
+{% endblock %}

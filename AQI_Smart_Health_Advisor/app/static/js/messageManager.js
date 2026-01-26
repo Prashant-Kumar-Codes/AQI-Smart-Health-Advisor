@@ -165,14 +165,13 @@ const MessageManager = {
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                z-index: 10000;
+                z-index: 2147483647; /* Maximum Z-Index */
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
                 max-width: 400px;
-                pointer-events: none;
+                pointer-events: none; /* Allows clicks to pass through empty space */
             }
-            
             .message-toast {
                 background: #333;
                 color: #fff;
@@ -188,7 +187,7 @@ const MessageManager = {
                 opacity: 0;
                 transform: translateX(400px);
                 transition: all 0.3s ease-out;
-                pointer-events: auto;
+                pointer-events: auto;   /* Re-enable clicks on the specific message */
             }
             
             .message-toast.show {

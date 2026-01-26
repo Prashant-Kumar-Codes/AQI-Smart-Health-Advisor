@@ -5,24 +5,9 @@
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
 {% endblock %}
 
 {% block content %}
-    <!-- Animated Air Flow Background -->
-    <div class="air-flow-container">
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-        <div class="air-particle"></div>
-    </div>
-
     <!-- Navigation -->
     <nav class="navbar">
         <div class="logo-section">
@@ -41,29 +26,45 @@
 
     <!-- Hero Section -->
     <section class="hero-section">
+
+        <div class="hero-background">
+            <!-- Desktop Large -->
+            <video class="bg-video video-desktop" autoplay muted loop playsinline disablePictureInPicture>
+                <source src="{{ url_for('static', filename='videos/1400x900HomepageBackgroundVideo.mp4') }}" type="video/mp4">
+            </video>
+            <!-- Laptop / Tablet Landscape -->
+            <video class="bg-video video-laptop" autoplay muted loop playsinline disablePictureInPicture>
+                <source src="{{ url_for('static', filename='videos/1200x900HomepageBackgroundVideo.mp4') }}" type="video/mp4">
+            </video>
+            <!-- Tablet Portrait -->
+            <video class="bg-video video-tablet" autoplay muted loop playsinline disablePictureInPicture>
+                <source src="{{ url_for('static', filename='videos/800x900HomepageBackgroundVideo.mp4') }}" type="video/mp4">
+            </video>
+            <!-- Mobile -->
+            <video class="bg-video video-mobile" autoplay muted loop playsinline disablePictureInPicture>
+                <source src="{{ url_for('static', filename='videos/500x900HomepageBackgroundVideo.mp4') }}" type="video/mp4">
+            </video>
+
+        </div>
+        
+        <div class="hero-overlay"></div>
+        
         <div class="hero-container">
             <div class="hero-content">
-                <h1 class="hero-title">
-                    Monitor air quality.<br>
-                    Predict health risks.<br>
-                    <span class="highlight-text">Stay protected.</span>
-                </h1>
+                <h1 class="hero-title">Monitor air quality<br>Smart Health Insights Powered by AI<br><span class="highlight-text">Stay protected</span></h1>
                 
                 <p class="hero-description">
                     Real-time air quality monitoring with AI-powered health recommendations tailored to your location and conditions.
                 </p>
                 
-                <div class="hero-buttons">
-                    <a href="{{ url_for('checkAqi_auth.check_aqi') }}" style="text-decoration: none; color: inherit;">
-                        <button class="btn btn-primary">
-                            <span>🔍</span>
+                <div class="hero-search-box">
+                    <!-- <input type="text" class="search-input" placeholder="Enter your city or location..."> -->
+                    <a href="{{ url_for('checkAqi_auth.check_aqi') }}" style="text-decoration: none;">
+                        <button class="search-button">
+                            <i class="fas fa-location-dot"></i>
                             Check Air Quality Now
                         </button>
                     </a>
-                    <button class="btn btn-secondary" onclick="scrollToSection('features-section')">
-                        <span>✨</span>
-                        Learn More
-                    </button>
                 </div>
 
                 <div class="trust-indicators">
@@ -90,188 +91,154 @@
                     </div>
                 </div>
             </div>
-
-            <div class="hero-visual">
-                <div class="shield-container">
-                    <div class="floating-card card-1">
-                        <div class="mini-aqi-display aqi-good">
-                            <div class="mini-aqi-value">42</div>
-                            <div class="mini-aqi-label">Good</div>
-                        </div>
-                        <div class="card-location">📍 San Francisco</div>
-                    </div>
-                    
-                    <div class="floating-card card-2">
-                        <div class="mini-aqi-display aqi-moderate">
-                            <div class="mini-aqi-value">87</div>
-                            <div class="mini-aqi-label">Moderate</div>
-                        </div>
-                        <div class="card-location">📍 New York</div>
-                    </div>
-                    
-                    <div class="floating-card card-3">
-                        <div class="mini-aqi-display aqi-unhealthy">
-                            <div class="mini-aqi-value">165</div>
-                            <div class="mini-aqi-label">Unhealthy</div>
-                        </div>
-                        <div class="card-location">📍 Delhi</div>
-                    </div>
-
-                    <svg class="shield-icon" width="300" height="360" viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M100 10 L180 50 L180 130 Q180 180 100 230 Q20 180 20 130 L20 50 Z" fill="url(#shieldGradient)" stroke="white" stroke-width="4"/>
-                        <path d="M70 120 L90 140 L135 95" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-                        <defs>
-                            <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.9" />
-                                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:0.9" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-            </div>
         </div>
     </section>
 
-    <!-- What is AQI Section -->
+   <!-- What is AQI Section -->
     <section class="what-is-aqi-section">
+        <div class="what-is-aqi-bg">
+            <img src="{{ url_for('static', filename='images/what_is_aqi_bg.jpg') }}" alt="AQI Background" class="what-is-aqi-bg-image">
+        </div>
+        
         <div class="what-is-aqi-container">
-            <div class="aqi-explanation-card">
-                <h2>What is AQI?</h2>
-                <p>AQI (Air Quality Index) is a number that shows how clean or polluted the air is around you. It helps you understand whether the air is safe to breathe and how it may affect your health. A lower AQI means cleaner air, while a higher AQI means more pollution and higher health risk—especially for children, elderly people, and those with breathing or heart conditions.</p>
+            <div class="aqi-content">
+                <h2 class="section-label">WHAT IS AQI</h2>
+                <h3 class="aqi-title">YOUR GUIDE TO AIR QUALITY LEVELS</h3>
+                
+                <p class="aqi-description">
+                    The Air Quality Index (AQI) is a standardized scale used to measure how clean or polluted the air is and how it may affect your health. It converts complex air pollution data into a simple, easy-to-understand number that helps you quickly assess the air around you.
+
+                    AQI considers major pollutants such as PM2.5, PM10, carbon monoxide (CO), nitrogen dioxide (NO₂), sulfur dioxide (SO₂), and ozone (O₃). Each AQI value represents a specific level of health concern, ranging from Good to Hazardous.
+
+                    By checking the AQI, you can make informed decisions—whether it's safe to go outside, exercise, or take precautions to protect your health. Higher AQI values indicate greater health risks, especially for children, the elderly, and people with respiratory conditions.
+
+                    In short, AQI transforms complex air data into actionable insights, helping you stay aware, prepared, and protected—every day.
+                </p>
+                
+                <a href="{{ url_for('learnMore_auth.learnMore') }}" style="text-decoration: none; color: inherit;">
+                    <button class="aqi-cta-button">Learn More</button>
+                </a>
             </div>
+
             <div class="aqi-visual">
-                <img src="{{ url_for('static', filename='images/aqi_meter.png') }}" alt="AQI Mobile Interface" class="aqi-mobile-image">
+                <img src="{{ url_for('static', filename='images/what_is_aqi.jpg') }}" alt="AQI Interface" class="aqi-interface-image">
             </div>
         </div>
     </section>
 
-    <!-- Why It Matters Section -->
+    <!-- Why Air Quality Matters Section -->
     <section class="why-matters-section">
         <div class="why-matters-container">
             <div class="section-header-center">
-                <h2 class="section-title-white">Why Air Quality Matters</h2>
-                <p class="section-subtitle-white">Understanding the impact of air pollution on your daily life</p>
+                <h2 class="section-label">HEALTH IMPACT</h2>
+                <h3 class="section-title">Why Air Quality Matters</h3>
             </div>
 
-            <div class="impact-grid">
-                <div class="impact-card">
-                    <div class="impact-icon">🫁</div>
-                    <h3>Respiratory Health</h3>
-                    <p>Poor air quality can cause immediate breathing difficulties and long-term lung damage, affecting millions worldwide.</p>
-                </div>
+            <div class="impact-cards-wrapper">
+                <div class="impact-cards-grid">
+                    <div class="impact-card-bg">
+                        <img src="{{ url_for('static', filename='images/respiratory_problem.jpg') }}" alt="Respiratory Health" class="impact-card-image">
+                        <div class="impact-card-content">
+                            <h3>Respiratory Health</h3>
+                            <p>Poor air quality can cause immediate breathing difficulties and long-term lung damage, affecting millions worldwide.</p>
+                        </div>
+                    </div>
 
-                <div class="impact-card">
-                    <div class="impact-icon">❤️</div>
-                    <h3>Heart Health</h3>
-                    <p>Air pollution increases risk of heart disease, stroke, and cardiovascular complications significantly.</p>
-                </div>
+                    <div class="impact-card-bg">
+                        <img src="{{ url_for('static', filename='images/heart_problem.jpg') }}" alt="Heart Health" class="impact-card-image">
+                        <div class="impact-card-content">
+                            <h3>Heart Health</h3>
+                            <p>Air pollution increases risk of heart disease, stroke, and cardiovascular complications significantly.</p>
+                        </div>
+                    </div>
 
-                <div class="impact-card">
-                    <div class="impact-icon">👶</div>
-                    <h3>Child Development</h3>
-                    <p>Children's developing lungs are especially vulnerable to air pollution, affecting their growth and immunity.</p>
-                </div>
+                    <div class="impact-card-bg">
+                        <img src="{{ url_for('static', filename='images/children_development_problem.png') }}" alt="Child Development" class="impact-card-image">
+                        <div class="impact-card-content">
+                            <h3>Child Development</h3>
+                            <p>Children's developing lungs are especially vulnerable to air pollution, affecting their growth and immunity.</p>
+                        </div>
+                    </div>
 
-                <div class="impact-card">
-                    <div class="impact-icon">🧠</div>
-                    <h3>Mental Health</h3>
-                    <p>Studies show air pollution affects cognitive function, mood, and mental health over time.</p>
+                    <div class="impact-card-bg">
+                        <img src="{{ url_for('static', filename='images/mental_problem.jpg') }}" alt="Mental Health" class="impact-card-image">
+                        <div class="impact-card-content">
+                            <h3>Mental Health</h3>
+                            <p>Studies show air pollution affects cognitive function, mood, and mental health over time.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section class="features-section" id="features-section">
-        <div class="features-container">
-            <div class="features-visual">
-                <img src="{{ url_for('static', filename='images/mother_earth.png') }}" alt="Sustainable Future" class="hand-globe-image">
-            </div>
-
-            <div class="features-content">
-                <div class="section-header">
-                    <h2 class="section-title-dark">Features</h2>
-                    <p class="section-subtitle-white">Comprehensive tools to monitor and protect your health</p>
-                </div>
-
-                <div class="features-list">
-                    <div class="feature-item-horizontal">
-                        <div class="feature-icon-circle">
-                            <i class="fas fa-user-friends"></i>
-                        </div>
-                        <div class="feature-text">
-                            <h3>User-friendly</h3>
-                            <p>Easy-to-use interface that lets anyone check air quality and health advice in seconds.</p>
-                        </div>
-                    </div>
-
-                    <div class="feature-item-horizontal">
-                        <div class="feature-icon-circle">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <div class="feature-text">
-                            <h3>Seamless Integration</h3>
-                            <p>Effortlessly integrates real-time AQI data and AI health insights into one unified platform.</p>
-                        </div>
-                    </div>
-
-                    <div class="feature-item-horizontal">
-                        <div class="feature-icon-circle">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <div class="feature-text">
-                            <h3>Secure & Safe</h3>
-                            <p>Designed to protect user data while delivering reliable health insights.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <section class="features-section">
+        <div class="features-bg">
+            <img src="{{ url_for('static', filename='images/features_background.png') }}" alt="Features Background" class="features-bg-image">
         </div>
-    </section>
 
-    <!-- How It Works Section -->
-    <section class="how-it-works-section">
-        <div class="how-it-works-container">
-            <div class="section-header-center">
-                <h2 class="section-title-dark">How It Works</h2>
-                <p class="section-subtitle-white">Simple steps to stay informed and protected</p>
+        <div class="features-container">
+            <div class="features-content">
+                
+                <div class="section-header">
+                    <h2 class="section-label">3 SIMPLE STEPS TO A SMARTER AIR QUALITY SETUP</h2>
+                    <h3 class="section-title-dark">EXPERT-BACKED AIR QUALITY MONITORING, MADE EFFORTLESS</h3>
+                    
+                    <p class="features-intro">
+                        Designed with research at its core, our platform delivers reliable and accurate air quality insights without complexity. Every feature is built to simplify monitoring, reduce confusion, and help you understand your environment with clarity.
+                        Track the air around you with confidence—no unnecessary steps, no guesswork.
+                    </p>
+                </div>
+
+                <div class="features-visual">
+                    <img src="{{ url_for('static', filename='images/features.jpg') }}" alt="Features Illustration" class="features-illustration">
+                </div>
+
+                <div class="features-steps">
+                    <div class="feature-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-icon">
+                                <i class="fas fa-location-crosshairs"></i>
+                            </div>
+                            <div class="step-text">
+                                <h3>Enter Your Location</h3>
+                                <p>Simply enter your city or let us detect your location automatically for instant results.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="step-text">
+                                <h3>Get Real-Time Data</h3>
+                                <p>Receive current AQI levels, pollutant concentrations, and weather conditions instantly.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="step-text">
+                                <h3>AI Health Advice</h3>
+                                <p>Get personalized recommendations based on your health conditions and current air quality.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="steps-container">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <div class="step-icon">📍</div>
-                    <h3>Enter Your Location</h3>
-                    <p>Simply enter your city or let us detect your location automatically for instant results.</p>
-                </div>
 
-                <div class="step-arrow">→</div>
-
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <div class="step-icon">📊</div>
-                    <h3>Get Real-Time Data</h3>
-                    <p>Receive current AQI levels, pollutant concentrations, and weather conditions instantly.</p>
-                </div>
-
-                <div class="step-arrow">→</div>
-
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <div class="step-icon">🤖</div>
-                    <h3>AI Health Advice</h3>
-                    <p>Get personalized recommendations based on your health conditions and current air quality.</p>
-                </div>
-
-                <div class="step-arrow">→</div>
-
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <div class="step-icon">✅</div>
-                    <h3>Stay Protected</h3>
-                    <p>Follow our guidance to minimize exposure and maintain your health during poor air quality.</p>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -286,12 +253,12 @@
             <div class="testimonials-grid">
                 <div class="testimonial-card">
                     <div class="quote-icon">"</div>
-                    <p class="testimonial-text">This app has been a lifesaver! As someone with asthma, knowing the air quality before I step outside gives me peace of mind.</p>
+                    <p class="testimonial-text">This app has been a lifesaver! As someone with beathing problems, knowing the air quality before I step outside gives me peace of mind.</p>
                     <div class="testimonial-author">
                         <div class="author-avatar">S</div>
                         <div class="author-info">
-                            <h4>Sarah Johnson</h4>
-                            <span>San Francisco, CA</span>
+                            <h4>Tushar Kumar</h4>
+                            <span>Rajasthan</span>
                         </div>
                     </div>
                 </div>
@@ -302,7 +269,7 @@
                     <div class="testimonial-author">
                         <div class="author-avatar">R</div>
                         <div class="author-info">
-                            <h4>Raj Patel</h4>
+                            <h4>Raj Singh</h4>
                             <span>Delhi, India</span>
                         </div>
                     </div>
@@ -314,8 +281,8 @@
                     <div class="testimonial-author">
                         <div class="author-avatar">M</div>
                         <div class="author-info">
-                            <h4>Maria Garcia</h4>
-                            <span>Madrid, Spain</span>
+                            <h4>Abhishek</h4>
+                            <span>Ropar, Punjab</span>
                         </div>
                     </div>
                 </div>
@@ -323,7 +290,7 @@
         </div>
     </section>
 
-        <!-- Stats Section -->
+    <!-- Stats Section -->
     <section class="stats-section">
         <div class="stats-container">
             <div class="stat-item-large">
@@ -332,7 +299,6 @@
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item-large">
-                <!-- Dynamic user count from database -->
                 <div class="stat-number">{{ active_users }}</div>
                 <div class="stat-label">Active Users</div>
             </div>
@@ -357,9 +323,7 @@
                 Join thousands of users who trust AQI Smart Health Advisor to keep them safe and informed about air quality in their area.
             </p>
             <a href="{{ url_for('login_auth.login_signup_page', form='signup') }}" style="text-decoration: none; color: inherit;">
-                <button class="cta-button">
-                    Get Started Now →
-                </button>
+                <button class="cta-button">Get Started Now →</button>
             </a>
         </div>
     </section>
@@ -405,4 +369,4 @@
         }
     </script>
 
-{%endblock%}
+{% endblock %}

@@ -179,7 +179,6 @@ def resend_otp():
 @login_auth.route('/login', methods=['POST', 'GET'])
 def login():
     """Handle login request with proper redirect"""
-    # Handle GET request (direct access to /login URL)
     if request.method == 'GET':
         return redirect(url_for('login_auth.login_signup_page'))
     
@@ -187,12 +186,12 @@ def login():
         data = request.get_json()
         email = data.get('email')
         password = data.get('password')
-        redirect_to = data.get('redirect_to', '')
+        redirect_to = data.get('redirect_to', '').strip()
         
-        print(f"Login attempt for: {email}, redirect_to: {redirect_to}")
+        print(f"🔐 Login attempt: {email}, redirect_to: '{redirect_to}'")
         
         if not email or not password:
-            return jsonify({'success': False, 'message': 'Email and password are required'}), 400
+            return jsonify({'success': False, 'message': 'Email and password required'}), 400
         
         mycon = get_db_connection()
         cursor = mycon.cursor()
@@ -206,21 +205,18 @@ def login():
         
         user_id, username, user_email, age, gender, city, hashed_password, is_verified = user
         
-        # Verify password
         if not check_password_hash(hashed_password, password):
             return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
         
-        # Check if email is verified
         if not is_verified:
-            # Store email in session for verify page
             session['verification_email'] = email
             return jsonify({
                 'success': False, 
-                'message': 'Please verify your email before logging in',
+                'message': 'Please verify your email first',
                 'redirect_to_verify': True
             }), 403
         
-        # Set session data with permanent session
+        # Set session
         session.permanent = True
         session['user_id'] = user_id
         session['username'] = username
@@ -229,32 +225,38 @@ def login():
         session['user_gender'] = gender
         session['user_city'] = city
         
-        # After successful login, before return
-        session.permanent = True  # Make session permanent
+        print(f"✅ Session created for: {username}")
         
-        print(f"✓ Session created for user: {username} (ID: {user_id})")
+        # FIXED: Better redirect handling
+        redirect_url = '/aqi_homepage'  # Default
         
-        # Determine redirect URL
         if redirect_to:
-            redirect_map = {
-                'live_track': '/live_track',
-                'ai_advisor': '/ai_advisor',
-                'check_aqi': '/check_aqi',
-                'home': '/aqi_homepage'
-            }
-            redirect_url = redirect_map.get(redirect_to, '/aqi_homepage')
-        else:
-            redirect_url = '/aqi_homepage'
+            # Direct page names
+            if redirect_to == 'live_track':
+                redirect_url = '/live_track'
+            elif redirect_to == 'ai_advisor':
+                redirect_url = '/ai_advisor'
+            elif redirect_to == 'check_aqi':
+                redirect_url = '/check_aqi'
+            elif redirect_to == 'home':
+                redirect_url = '/aqi_homepage'
+            # If it's already a full path (starts with /)
+            elif redirect_to.startswith('/'):
+                redirect_url = redirect_to
         
-        print(f"✓ Redirecting to: {redirect_url}")
+        print(f"✅ Redirecting to: {redirect_url}")
         
         return jsonify({
             'success': True, 
             'message': f'Welcome back, {username}!',
             'redirect': redirect_url,
             'user': {
+                'user_id': user_id,
                 'username': username,
-                'email': user_email
+                'email': user_email,
+                'age': age,
+                'gender': gender,
+                'city': city
             }
         }), 200
         
@@ -262,7 +264,7 @@ def login():
         print(f"❌ Login error: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'message': 'An error occurred during login'}), 500
+        return jsonify({'success': False, 'message': 'Login failed'}), 500
 
 
 @login_auth.route('/signup', methods=['POST'])

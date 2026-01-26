@@ -9,7 +9,7 @@ const LocationService = {
     AQI_API_BASE: '/api/aqi',
     
     /**
-     * Get precise coordinates from location name
+     * Get precise coordinates from location name (using backend)
      * @param {string} locationName - City name or address
      * @returns {Promise<Object>} - {lat, lng, displayName, address}
      */
@@ -19,53 +19,41 @@ const LocationService = {
         }
 
         try {
-            console.log(`🔍 Geocoding location: ${locationName}`);
+            console.log(`🔍 Getting coordinates via backend for: ${locationName}`);
             
+            // Use backend API which handles geocoding server-side
             const response = await fetch(
-                `${this.NOMINATIM_BASE}/search?` + new URLSearchParams({
-                    format: 'json',
-                    q: locationName,
-                    limit: 1,
-                    'accept-language': 'en',
-                    addressdetails: 1
-                }),
+                `/api/aqi/city/${encodeURIComponent(locationName)}`,
                 {
-                    headers: {
-                        'User-Agent': 'AQI_Smart_Health_Advisor/1.0'
-                    }
+                    method: 'GET',
+                    credentials: 'include'
                 }
             );
 
             if (!response.ok) {
-                throw new Error('Geocoding service unavailable');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Location "${locationName}" not found`);
             }
 
             const data = await response.json();
             
-            if (!data || data.length === 0) {
-                throw new Error(`Location "${locationName}" not found. Please try a different location.`);
+            // Extract coordinates from backend response
+            const lat = data.city?.geo?.[0] || null;
+            const lng = data.city?.geo?.[1] || null;
+            const cityName = data.city?.name || locationName;
+
+            if (!lat || !lng) {
+                throw new Error('Could not determine coordinates for this location');
             }
 
-            const location = data[0];
-            const lat = parseFloat(location.lat);
-            const lng = parseFloat(location.lon);
-            
-            // Extract clean city name
-            const cityName = location.address?.city || 
-                           location.address?.town || 
-                           location.address?.village || 
-                           location.address?.municipality ||
-                           location.address?.county ||
-                           location.display_name.split(',')[0];
-
-            console.log(`✅ Geocoded successfully: ${cityName} (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+            console.log(`✅ Coordinates retrieved: ${cityName} (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
 
             return {
                 lat: lat,
                 lng: lng,
                 displayName: cityName,
-                fullAddress: location.display_name,
-                address: location.address
+                fullAddress: data.precise_location || cityName,
+                address: {}
             };
         } catch (error) {
             console.error('❌ Geocoding error:', error);
@@ -74,7 +62,7 @@ const LocationService = {
     },
 
     /**
-     * Get precise location name from coordinates
+     * Get precise location name from coordinates (using backend)
      * @param {number} lat - Latitude
      * @param {number} lng - Longitude
      * @returns {Promise<Object>} - {displayName, fullAddress, address}
@@ -85,47 +73,40 @@ const LocationService = {
         }
 
         try {
-            console.log(`📍 Reverse geocoding: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            console.log(`📍 Getting location name via backend: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
             
+            // Use backend API which gets location name from AQI data
             const response = await fetch(
-                `${this.NOMINATIM_BASE}/reverse?` + new URLSearchParams({
-                    format: 'json',
-                    lat: lat,
-                    lon: lng,
-                    zoom: 14,
-                    'accept-language': 'en',
-                    addressdetails: 1
-                }),
+                `/api/aqi/geo?lat=${lat}&lng=${lng}`,
                 {
-                    headers: {
-                        'User-Agent': 'AQI_Smart_Health_Advisor/1.0'
-                    }
+                    method: 'GET',
+                    credentials: 'include'
                 }
             );
 
             if (!response.ok) {
-                throw new Error('Reverse geocoding failed');
+                throw new Error('Could not get location name');
             }
 
             const data = await response.json();
             
-            const cityName = data.address?.city || 
-                           data.address?.town || 
-                           data.address?.village || 
-                           data.address?.municipality ||
-                           data.address?.county ||
-                           data.display_name.split(',')[0];
+            const cityName = data.city?.name || data.precise_location || 'Unknown Location';
 
-            console.log(`✅ Reverse geocoded: ${cityName}`);
+            console.log(`✅ Location name retrieved: ${cityName}`);
 
             return {
                 displayName: cityName,
-                fullAddress: data.display_name,
-                address: data.address
+                fullAddress: data.precise_location || cityName,
+                address: {}
             };
         } catch (error) {
             console.error('❌ Reverse geocoding error:', error);
-            throw error;
+            // Return a fallback instead of throwing
+            return {
+                displayName: 'Selected Location',
+                fullAddress: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+                address: {}
+            };
         }
     },
 
@@ -156,7 +137,7 @@ const LocationService = {
 
                         console.log(`✅ Location acquired: ${lat.toFixed(6)}, ${lng.toFixed(6)} (±${accuracy.toFixed(0)}m)`);
 
-                        // Get location name
+                        // Get location name from backend
                         const locationInfo = await this.getNameFromCoordinates(lat, lng);
 
                         resolve({
@@ -168,7 +149,15 @@ const LocationService = {
                             address: locationInfo.address
                         });
                     } catch (error) {
-                        reject(error);
+                        // Even if we can't get the name, return coordinates
+                        resolve({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            displayName: 'Current Location',
+                            fullAddress: `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`,
+                            address: {}
+                        });
                     }
                 },
                 (error) => {
@@ -274,10 +263,10 @@ const LocationService = {
      */
     async getAQIFromLocationName(locationName) {
         try {
-            // Step 1: Get coordinates
+            // Step 1: Get coordinates and AQI data (backend does both)
             const location = await this.getCoordinatesFromName(locationName);
             
-            // Step 2: Get AQI data
+            // Step 2: Get AQI data using coordinates
             const aqiData = await this.getAQIByCoordinates(location.lat, location.lng);
             
             return {
@@ -311,52 +300,15 @@ const LocationService = {
     },
 
     /**
-     * Search locations with autocomplete
+     * Search locations with autocomplete (disabled - would need backend implementation)
      * @param {string} query - Search query
      * @param {number} limit - Max results
      * @returns {Promise<Array>} - List of locations
      */
     async searchLocations(query, limit = 5) {
-        if (!query || query.trim().length < 3) {
-            return [];
-        }
-
-        try {
-            const response = await fetch(
-                `${this.NOMINATIM_BASE}/search?` + new URLSearchParams({
-                    format: 'json',
-                    q: query,
-                    limit: limit,
-                    'accept-language': 'en',
-                    addressdetails: 1
-                }),
-                {
-                    headers: {
-                        'User-Agent': 'AQI_Smart_Health_Advisor/1.0'
-                    }
-                }
-            );
-
-            if (!response.ok) {
-                return [];
-            }
-
-            const data = await response.json();
-            
-            return data.map(place => ({
-                displayName: place.display_name,
-                cityName: place.address?.city || 
-                         place.address?.town || 
-                         place.address?.village ||
-                         place.display_name.split(',')[0],
-                lat: parseFloat(place.lat),
-                lng: parseFloat(place.lon),
-                address: place.address
-            }));
-        } catch (error) {
-            console.error('Search error:', error);
-            return [];
-        }
+        // Autocomplete feature requires backend implementation to avoid CORS issues
+        console.log('⚠️ Autocomplete search disabled - use backend implementation if needed');
+        return [];
     }
 };
 
