@@ -63,4 +63,7 @@ def create_app():
     from app.routes.auth_live_track import live_track_auth
     app.register_blueprint(live_track_auth)
     
+    from app.routes.locationService import geocode_blueprint
+    app.register_blueprint(geocode_blueprint)
+    
     return app

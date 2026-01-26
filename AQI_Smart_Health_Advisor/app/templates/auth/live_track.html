@@ -9,24 +9,34 @@
 
 {% block content %}
 
-<!-- Navigation Bar -->
-<nav class="aqi-navbar">
-    <div class="nav-container">
-        <div class="nav-brand">
-            <span class="brand-icon">📍</span>
-            <span class="brand-text">Live AQI Tracker</span>
+    <!-- Navigation Bar -->
+    <nav class="aqi-navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">AQI Smart Health Advisor</span>
+            </div>
+            
+            <!-- Hamburger Menu Icon -->
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="nav-links">
+                <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link">AQI Status</a>
+                <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link">AI Advisor</a>
+                <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link active">Live Tracker</a>
+                <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
+                <a href="{{ url_for('learnMore_auth.learnMore') }}" class="nav-link">AQI Guide</a>
+                <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
+            </div>
         </div>
-        <div class="nav-links">
-            <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
-            <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link">AQI Status</a>
-            <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link">AI Advisor</a>
-            <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link active">Live Tracker</a>
-            <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
-            <a href="{{ url_for('learnMore_auth.learnMore') }}" class="nav-link">AQI Guide</a>
-            <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
-        </div>
-    </div>
-</nav>
+    </nav>
+
 
 <!-- Animated Air Flow Background -->
 <div class="air-flow-container">
@@ -178,12 +188,26 @@
 </div>
 
 {% block script %}
-    <!-- 1. Cookie Session Manager -->
-    <script src="{{ url_for('static', filename='js/cookieSessionManager.js') }}"></script>
+    <!-- {{super()}} -->
+    <!-- LiveTrack - Hamburger Navigation -->
+    <!-- <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script> -->
 
+    <!-- LiveTrack - Cookie Session Manager -->
+    <!-- <script src="{{ url_for('static', filename='js/cookiesSessionManager.js') }}"></script> -->
+
+    <!-- LiveTrack - Message Manager -->
+    <!-- <script src="{{ url_for('static', filename='js/messageManager.js') }}"></script> -->
+
+    <!-- LiveTrack - Location Service -->
+    <!-- <script src="{{ url_for('static', filename='js/locationService.js') }}"></script> -->
+
+    <!-- LiveTrack - Main AQI Script -->
+    <script src="{{ url_for('static', filename='js/live_track.js') }}"></script>
+
+    <!-- LiveTrack - Leaflet Maps -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
-    <script src="{{ url_for('static', filename='js/live_track.js') }}"></script>
+
 {% endblock %}
 
 {% endblock %}

@@ -104,6 +104,15 @@
     color: white;
 }
 
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 768px) {
     .cookie-content {
         flex-direction: column;
@@ -270,35 +279,56 @@
 <!-- Message Container -->
 <div id="auth-message" style="display: none;"></div>
 
+{% endblock %}
+
 {% block script %}
-    <!-- 1. Message Manager from the base file -->
-    {{super()}}
+    <!-- Load base scripts (MessageManager from base.html) -->
+    {{ super() }}
 
-    <!-- 2. Cookie Session Manager -->
-    <script src="{{ url_for('static', filename='js/cookiesSessionManager.js') }}"></script>
+    <!-- Load CookieSessionManager ONLY if not already loaded -->
+    <script>
+        if (typeof CookieSessionManager === 'undefined') {
+            const script = document.createElement('script');
+            script.src = "{{ url_for('static', filename='js/cookiesSessionManager.js') }}";
+            script.async = false;
+            document.head.appendChild(script);
+        }
+    </script>
 
-    <!-- 3. Script for this specific file -->
+    <!-- Page-specific functionality wrapped in IIFE -->
     <script>
         (function() {
             'use strict';
             
-            // ========== Cookie Consent (Using CookieSessionManager if available) ==========
+            console.log('🔐 Login page loaded');
+            
+            // Check MessageManager availability
+            if (typeof MessageManager !== 'undefined') {
+                console.log('✅ MessageManager available');
+            } else {
+                console.warn('⚠️ MessageManager not loaded');
+            }
+            
+            // ========== Cookie Consent Functions ==========
             window.acceptCookies = function() {
-                if (window.CookieSessionManager) {
+                if (typeof CookieSessionManager !== 'undefined') {
                     CookieSessionManager.acceptCookies();
                 } else {
-                    // Fallback if CookieSessionManager not loaded
+                    // Fallback
                     try {
                         localStorage.setItem('cookieConsent', 'accepted');
                     } catch (e) {
                         console.log('LocalStorage not available');
                     }
                 }
-                document.getElementById('cookieConsent').classList.remove('show');
+                const banner = document.getElementById('cookieConsent');
+                if (banner) {
+                    banner.classList.remove('show');
+                }
             };
             
             window.declineCookies = function() {
-                if (window.CookieSessionManager) {
+                if (typeof CookieSessionManager !== 'undefined') {
                     CookieSessionManager.declineCookies();
                 } else {
                     try {
@@ -307,10 +337,12 @@
                         console.log('LocalStorage not available');
                     }
                 }
-                document.getElementById('cookieConsent').classList.remove('show');
+                const banner = document.getElementById('cookieConsent');
+                if (banner) {
+                    banner.classList.remove('show');
+                }
                 
-                // Use MessageManager
-                if (window.MessageManager) {
+                if (typeof MessageManager !== 'undefined') {
                     MessageManager.show('You can still use the site, but some features may be limited.', 'info');
                 }
             };
@@ -318,7 +350,7 @@
             function checkCookieConsent() {
                 let consent = null;
                 
-                if (window.CookieSessionManager) {
+                if (typeof CookieSessionManager !== 'undefined') {
                     consent = CookieSessionManager.getCookie('cookieConsent');
                 } else {
                     try {
@@ -330,7 +362,10 @@
                 
                 if (!consent) {
                     setTimeout(() => {
-                        document.getElementById('cookieConsent').classList.add('show');
+                        const banner = document.getElementById('cookieConsent');
+                        if (banner) {
+                            banner.classList.add('show');
+                        }
                     }, 1000);
                 }
             }
@@ -341,8 +376,10 @@
                 const loginForm = document.getElementById('loginForm');
                 const signupForm = document.getElementById('signupForm');
                 
-                loginForm.classList.toggle('active');
-                signupForm.classList.toggle('active');
+                if (loginForm && signupForm) {
+                    loginForm.classList.toggle('active');
+                    signupForm.classList.toggle('active');
+                }
             };
 
             // ========== Get Redirect Parameter ==========
@@ -365,8 +402,7 @@
                 const redirectTo = getRedirectParameter();
                 
                 if (!email || !password) {
-                    // ✅ Use MessageManager instead of custom showMessage
-                    if (window.MessageManager) {
+                    if (typeof MessageManager !== 'undefined') {
                         MessageManager.show('Please fill in all fields', 'warning');
                     }
                     return;
@@ -400,30 +436,40 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        // ✅ Use MessageManager
-                        if (window.MessageManager) {
+                        if (typeof MessageManager !== 'undefined') {
                             MessageManager.show(data.message || 'Login successful!', 'success');
                         }
                         
-                        // ✅ Save session to cookies using CookieSessionManager
-                        if (window.CookieSessionManager && data.user) {
-                            CookieSessionManager.saveUserSession(data.user);
+                        // ✅ FIX: Safe session save with Unicode handling
+                        if (typeof CookieSessionManager !== 'undefined' && data.user) {
+                            try {
+                                // Convert user data to JSON and handle Unicode properly
+                                const userDataStr = JSON.stringify(data.user);
+                                
+                                // Use encodeURIComponent instead of btoa for Unicode safety
+                                const encodedData = encodeURIComponent(userDataStr);
+                                CookieSessionManager.setCookie('user_session', encodedData, 7);
+                                
+                                console.log('✅ Session saved successfully');
+                            } catch (saveError) {
+                                console.error('⚠️ Session save error:', saveError);
+                                // Continue anyway - server session is still valid
+                            }
                         }
                         
                         setTimeout(() => {
                             window.location.href = data.redirect;
                         }, 500);
                     } else {
-                        // Check if user needs to verify email
                         if (data.redirect_to_verify) {
-                            if (window.MessageManager) {
+                            if (typeof MessageManager !== 'undefined') {
                                 MessageManager.show(data.message, 'error');
                             }
                             setTimeout(() => {
                                 window.location.href = '/verify';
                             }, 2000);
                         } else {
-                            if (window.MessageManager) {
+                            if (typeof MessageManager !== 'undefined') {
                                 MessageManager.show(data.message, 'error');
                             }
                             submitBtn.textContent = originalText;
@@ -432,7 +478,7 @@
                     }
                 } catch (error) {
                     console.error('Login error:', error);
-                    if (window.MessageManager) {
+                    if (typeof MessageManager !== 'undefined') {
                         MessageManager.show('An error occurred. Please try again.', 'error');
                     }
                     submitBtn.textContent = originalText;
@@ -453,21 +499,21 @@
                 const confirmPassword = document.getElementById('signup-confirm-password').value;
                 
                 if (!username || !email || !age || !gender || !city || !password || !confirmPassword) {
-                    if (window.MessageManager) {
+                    if (typeof MessageManager !== 'undefined') {
                         MessageManager.show('Please fill in all fields', 'warning');
                     }
                     return;
                 }
                 
                 if (password !== confirmPassword) {
-                    if (window.MessageManager) {
+                    if (typeof MessageManager !== 'undefined') {
                         MessageManager.show('Passwords do not match', 'error');
                     }
                     return;
                 }
                 
                 if (password.length < 6) {
-                    if (window.MessageManager) {
+                    if (typeof MessageManager !== 'undefined') {
                         MessageManager.show('Password must be at least 6 characters', 'warning');
                     }
                     return;
@@ -503,14 +549,14 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        if (window.MessageManager) {
+                        if (typeof MessageManager !== 'undefined') {
                             MessageManager.show(data.message || 'Account created successfully!', 'success');
                         }
                         setTimeout(() => {
                             window.location.href = '/verify';
                         }, 1000);
                     } else {
-                        if (window.MessageManager) {
+                        if (typeof MessageManager !== 'undefined') {
                             MessageManager.show(data.message, 'error');
                         }
                         submitBtn.textContent = originalText;
@@ -518,7 +564,7 @@
                     }
                 } catch (error) {
                     console.error('Signup error:', error);
-                    if (window.MessageManager) {
+                    if (typeof MessageManager !== 'undefined') {
                         MessageManager.show('An error occurred. Please try again.', 'error');
                     }
                     submitBtn.textContent = originalText;
@@ -583,7 +629,7 @@
                 console.log('🔐 Login page loaded');
                 
                 // Check if MessageManager is available
-                if (window.MessageManager) {
+                if (typeof MessageManager !== 'undefined') {
                     console.log('✅ MessageManager available');
                     // Process any existing Flask messages
                     MessageManager.processFlaskMessages();
@@ -592,7 +638,7 @@
                 }
                 
                 // Check if CookieSessionManager is available
-                if (window.CookieSessionManager) {
+                if (typeof CookieSessionManager !== 'undefined') {
                     console.log('✅ CookieSessionManager available');
                 }
                 
@@ -601,20 +647,22 @@
                 
                 const defaultForm = '{{ default_form }}';
                 if (defaultForm === 'signup') {
-                    document.getElementById('loginForm').classList.remove('active');
-                    document.getElementById('signupForm').classList.add('active');
+                    const loginForm = document.getElementById('loginForm');
+                    const signupForm = document.getElementById('signupForm');
+                    if (loginForm && signupForm) {
+                        loginForm.classList.remove('active');
+                        signupForm.classList.add('active');
+                    }
                 }
 
                 initLocationAutocomplete();
 
                 const redirectParam = getRedirectParameter();
                 if (redirectParam) {
-                    console.log('📍 Redirect parameter:', redirectParam);
+                    console.log('🔗 Redirect parameter:', redirectParam);
                 }
             });
         })();
     </script>
-
-{% endblock %}
 
 {% endblock %}

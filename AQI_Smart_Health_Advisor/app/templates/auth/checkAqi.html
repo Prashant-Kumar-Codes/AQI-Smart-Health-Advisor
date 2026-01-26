@@ -318,20 +318,23 @@
     </div>
 
 {% block script %}
-    {{super()}}
-    <!-- Hamburger Navigation -->
-    <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script>
+    <!-- {{super()}} -->
+    <!-- CheckAqi - Hamburger Navigation -->
+    <!-- <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script> -->
 
-    <!-- Cookie Session Manager -->
-    <script src="{{ url_for('static', filename='js/cookieSessionManager.js') }}"></script>
+    <!-- CheckAqi - Cookie Session Manager -->
+    <!-- <script src="{{ url_for('static', filename='js/cookiesSessionManager.js') }}"></script> -->
 
-    <!-- Location Service -->
-    <script src="{{ url_for('static', filename='js/locationService.js') }}"></script>
+    <!-- CheckAqi - Message Manager -->
+    <!-- <script src="{{ url_for('static', filename='js/messageManager.js') }}"></script> -->
 
-    <!-- Main AQI Script -->
+    <!-- CheckAqi - Location Service -->
+    <!-- <script src="{{ url_for('static', filename='js/locationService.js') }}"></script> -->
+
+    <!-- CheckAqi - Main AQI Script -->
     <script src="{{ url_for('static', filename='js/checkAqi.js') }}"></script>
 
-    <!-- Leaflet Maps -->
+    <!-- CheckAqi - Leaflet Maps -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>

@@ -226,6 +226,7 @@ def login():
         session['user_city'] = city
         
         print(f"✅ Session created for: {username}")
+        print(f'Session Data : {user_id}, {username}, {user_email}, {age}, {gender}, {city}')
         
         # FIXED: Better redirect handling
         redirect_url = '/aqi_homepage'  # Default

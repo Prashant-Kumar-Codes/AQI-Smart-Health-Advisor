@@ -23,20 +23,20 @@ async function getCurrentLocationAI() {
         console.log('🔍 Using centralized LocationService for current location');
         
         // ✅ Use centralized LocationService
-        const result = await LocationService.getCurrentLocation();
+        const result = await window.LocationService.getCurrentLocation();
         
         locationInput.value = result.displayName;
         aiAdvisorData.location = result.displayName;
         locationInput.disabled = false;
         
-        MessageManager.show(`Location detected: ${result.displayName}`, 'success');
+        window.MessageManager.show(`Location detected: ${result.displayName}`, 'success');
         console.log('✅ Current location set to:', result.displayName);
         
     } catch (error) {
         console.error('❌ Location error:', error);
         locationInput.value = originalValue;
         locationInput.disabled = false;
-        MessageManager.show(error.message, 'error');
+        window.MessageManager.show(error.message, 'error');
     }
 }
 
@@ -48,9 +48,9 @@ async function fetchAQIForLocation(cityName, lat, lng) {
         
         // ✅ Use centralized LocationService
         if (lat && lng) {
-            result = await LocationService.getAQIFromCurrentLocation();
+            result = await window.LocationService.getAQIFromCurrentLocation();
         } else {
-            result = await LocationService.getAQIFromLocationName(cityName);
+            result = await window.LocationService.getAQIFromLocationName(cityName);
         }
         
         currentAQIData = result.aqiData;
@@ -60,7 +60,7 @@ async function fetchAQIForLocation(cityName, lat, lng) {
         
     } catch (error) {
         console.error('❌ Error fetching AQI data:', error);
-        MessageManager.show(error.message || 'Could not fetch AQI data', 'error');
+        window.MessageManager.show(error.message || 'Could not fetch AQI data', 'error');
         return null;
     }
 }
@@ -324,7 +324,7 @@ window.getAIAdvice = async function() {
     
     const location = locationInput.value.trim();
     if (!location) {
-        MessageManager.show('Please enter a location first', 'warning');
+        window.MessageManager.show('Please enter a location first', 'warning');
         return;
     }
 
@@ -359,7 +359,7 @@ window.getAIAdvice = async function() {
     const aqiData = await fetchAQIForLocation(location);
 
     if (!aqiData) {
-        MessageManager.show('Unable to fetch air quality data for this location. Please try another location.', 'error');
+        window.MessageManager.show('Unable to fetch air quality data for this location. Please try another location.', 'error');
         responseDiv.style.display = 'none';
         return;
     }
@@ -387,13 +387,13 @@ window.getAIAdvice = async function() {
     const words = customQ.split(/\s+/).filter(w => w.length > 0);
 
     if (words.length > 30) {
-        MessageManager.show('Please limit your question to 30 words or less', 'warning');
+        window.MessageManager.show('Please limit your question to 30 words or less', 'warning');
         return;
     }
 
     // Validate minimum input
     if (!customQ && aiAdvisorData.conditions.length === 0 && !age && !ageGroup && !aiAdvisorData.gender && !aiAdvisorData.timeOutside) {
-        MessageManager.show('Please provide at least one input: select health conditions, enter age, select gender, time outside, or ask a question', 'warning');
+        window.MessageManager.show('Please provide at least one input: select health conditions, enter age, select gender, time outside, or ask a question', 'warning');
         return;
     }
 
@@ -471,7 +471,7 @@ window.getAIAdvice = async function() {
             
             displayAQISummary(currentAQIData, data.location);
             
-            MessageManager.show('AI advice generated successfully!', 'success');
+            window.MessageManager.show('AI advice generated successfully!', 'success');
             
             setTimeout(() => {
                 responseDiv.scrollIntoView({
@@ -499,12 +499,12 @@ window.getAIAdvice = async function() {
         } else {
             const errorData = await response.json();
             console.error('Error response:', errorData);
-            MessageManager.show(errorData.error || 'Failed to get AI advice. Please try again.', 'error');
+            window.MessageManager.show(errorData.error || 'Failed to get AI advice. Please try again.', 'error');
             responseDiv.style.display = 'none';
         }
     } catch (error) {
         console.error('AI Advice error:', error);
-        MessageManager.show('Failed to get AI advice. Please check your connection and try again.', 'error');
+        window.MessageManager.show('Failed to get AI advice. Please check your connection and try again.', 'error');
         responseDiv.style.display = 'none';
     }
 };
@@ -666,8 +666,15 @@ async function checkLoginAndLoadData() {
     try {
         console.log('Checking login status...');
         
-        // ✅ First check cookies for saved session
-        const savedSession = CookieSessionManager.loadUserSession();
+        // Check if CookieSessionManager exists and cookies are accepted
+        if (!window.CookieSessionManager) {
+            console.warn('⚠️ CookieSessionManager not available');
+            isUserLoggedIn = false;
+            return;
+        }
+        
+        // Try to load saved session from cookies
+        const savedSession = window.CookieSessionManager.loadUserSession();
         if (savedSession) {
             console.log('📦 Found saved session in cookies:', savedSession);
         }
@@ -681,27 +688,28 @@ async function checkLoginAndLoadData() {
             const data = await response.json();
             
             if (data.logged_in) {
-                // User IS logged in
                 isUserLoggedIn = true;
                 console.log('✓ User is logged in:', data);
                 
-                // ✅ Save session to cookies
-                CookieSessionManager.saveUserSession({
-                    user_id: data.user_id,
-                    username: data.username,
-                    email: data.email,
-                    age: data.age,
-                    gender: data.gender,
-                    city: data.city
-                });
+                // Save session to cookies only if cookies are accepted
+                if (window.CookieSessionManager.areCookiesAccepted()) {
+                    window.CookieSessionManager.saveUserSession({
+                        user_id: data.user_id,
+                        username: data.username,
+                        email: data.email,
+                        age: data.age,
+                        gender: data.gender,
+                        city: data.city
+                    });
+                }
                 
-                // Auto-fill user data from database
+                // Auto-fill user data
                 if (data.city) {
                     const locationInput = document.getElementById('aiAdvisorLocation');
                     if (locationInput && !locationInput.value) {
                         locationInput.value = data.city;
                         aiAdvisorData.location = data.city;
-                        console.log('Auto-filled location from DB:', data.city);
+                        console.log('Auto-filled location:', data.city);
                     }
                 }
                 
@@ -710,28 +718,29 @@ async function checkLoginAndLoadData() {
                     if (ageInput && !ageInput.value) {
                         ageInput.value = data.age;
                         aiAdvisorData.age = data.age;
-                        console.log('Auto-filled age from DB:', data.age);
+                        console.log('Auto-filled age:', data.age);
                     }
                 }
                 
                 if (data.gender && !aiAdvisorData.gender) {
                     window.selectGender(data.gender);
-                    console.log('Auto-filled gender from DB:', data.gender);
+                    console.log('Auto-filled gender:', data.gender);
                 }
             } else {
-                // User is NOT logged in
                 isUserLoggedIn = false;
-                CookieSessionManager.clearUserSession();
+                if (window.CookieSessionManager) {
+                    window.CookieSessionManager.clearUserSession();
+                }
                 console.log('⚠ User is not logged in');
             }
         } else {
-            // API returned error - user not logged in
             isUserLoggedIn = false;
-            CookieSessionManager.clearUserSession();
+            if (window.CookieSessionManager) {
+                window.CookieSessionManager.clearUserSession();
+            }
             console.log('⚠ User not logged in (API error)');
         }
     } catch (error) {
-        // Network error or other issue
         isUserLoggedIn = false;
         console.log('⚠ Could not check login status:', error);
     }

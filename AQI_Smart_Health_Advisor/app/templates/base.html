@@ -168,10 +168,22 @@
 
     {% block content %}{%endblock%}
 
-    <!-- ✅ Scripts go here at BOTTOM, just before </body> -->
+    <!-- IN BASE.HTML : ✅ Scripts go here at BOTTOM, just before </body> -->
     {% block script%}
         <!-- Common scripts for all pages -->
+
+        <!-- BASE.HTML - Hamburger Navigation -->
+        <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script>
+
+        <!-- BASE.HTML - Cookie Session Manager -->
+        <script src="{{ url_for('static', filename='js/cookiesSessionManager.js') }}"></script>
+
+        <!-- BASE.HTML - Message Manager -->
         <script src="{{ url_for('static', filename='js/messageManager.js') }}"></script>
+
+        <!-- BASE.HTML - Location Service -->
+        <script src="{{ url_for('static', filename='js/locationService.js') }}"></script>
+
         <!-- Page-specific scripts will be added by child templates -->
     {%endblock%}
 

@@ -2,6 +2,7 @@ from .extensions import *
 import json
 import requests
 from .locationService import location_service
+import mysql.connector
 
 ai_advisor_auth = Blueprint('ai_advisor_auth', __name__)
 
@@ -418,13 +419,23 @@ def check_user_logged_in():
     """Check if user is logged in and return user data from session"""
     if 'user_id' in session:
         user_id = session.get('user_id')
+        #checking in termianl
+        print('\nSession Details of user_id', user_id,'\n')
         
         try:
             # Fetch user data from database
-            cursor = mysql.connector.cursor()
+            conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="My@MySql8044",
+            database="aqi_app_db"
+        )
+            cursor = conn.cursor()
+            print('cursor is created successfully')
             cursor.execute("SELECT username, email, age, gender, city FROM login_data WHERE id = %s", (user_id,))
             user = cursor.fetchone()
             cursor.close()
+            conn.close()
             
             if user:
                 user_data = {
@@ -444,6 +455,7 @@ def check_user_logged_in():
                 
         except Exception as e:
             print(f"❌ Database error: {e}")
+            flash('Cannot fetch user data from database', 'danger')
             return jsonify({'logged_in': False, 'error': 'Database error'}), 500
     
     print("⚠️ User not logged in")

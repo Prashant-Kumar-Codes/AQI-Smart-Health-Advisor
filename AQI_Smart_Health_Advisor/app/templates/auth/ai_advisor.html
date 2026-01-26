@@ -5,36 +5,37 @@
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_advisor.css') }}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 {% endblock %}
 
 {% block content %}
 
-<!-- Navigation Bar -->
-<nav class="aqi-navbar">
-    <div class="nav-container">
-        <div class="nav-brand">
-            <span class="brand-icon">🤖</span>
-            <span class="brand-text">AI Health Advisor</span>
-        </div>
-        
-        <button class="hamburger" aria-label="Toggle navigation menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+    <!-- Navigation Bar -->
+    <nav class="aqi-navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">AQI Smart Health Advisor</span>
+            </div>
+            
+            <!-- Hamburger Menu Icon -->
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
 
-        <div class="nav-links">
-            <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
-            <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link">AQI Status</a>
-            <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link active">AI Advisor</a>
-            <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link">Live Tracker</a>
-            <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
-            <a href="{{ url_for('learnMore_auth.learnMore') }}" class="nav-link">AQI Guide</a>
-            <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
+            <!-- Navigation Links -->
+            <div class="nav-links">
+                <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link">AQI Status</a>
+                <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link active">AI Advisor</a>
+                <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link">Live Tracker</a>
+                <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
+                <a href="{{ url_for('learnMore_auth.learnMore') }}" class="nav-link">AQI Guide</a>
+                <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
 <!-- Animated Air Flow Background -->
 <div class="air-flow-container">
@@ -100,7 +101,7 @@
                         >
                         <button class="btn-location" onclick="getCurrentLocationAI()" title="Use current location">
                             <span class="btn-icon">📍</span>
-                            <span>Current Location</span>
+                            Current Location
                         </button>
                     </div>
                 </div>
@@ -244,7 +245,7 @@
                 <!-- Custom Question -->
                 <div class="advisor-section">
                     <label class="advisor-label">✍️ Ask Your Question</label>
-                    <p class="advisor-hint">Type your specific question (Maximum 250 characters)</p>
+                    <p class="advisor-hint">Type your specific question (Maximum 30 words)</p>
                     <div class="question-input-group">
                         <textarea 
                             id="customQuestion" 
@@ -253,7 +254,7 @@
                             maxlength="250"
                             rows="4"
                         ></textarea>
-                        <span class="word-count" id="wordCount">0/250 chars</span>
+                        <span class="word-count" id="wordCount">0/30 words</span>
                     </div>
                 </div>
 
@@ -308,18 +309,19 @@
 </div>
 
 {% block script %}
+    {{super()}}
 
-    <!-- 1. Centralized Hamburger Navigation -->
-    <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script>
+    <!-- ai_advisor - Hamburger Navigation -->
+    <!-- <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script> -->
 
-    <!-- 2. Cookie Session Manager -->
-    <script src="{{ url_for('static', filename='js/cookieSessionManager.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='js/messageManager.js') }}"></script> -->
 
-    <!-- 3. Location Service -->
-    <script src="{{ url_for('static', filename='js/locationService.js') }}"></script>
+    <!-- 1. Cookie Session Manager -->
+    <!-- <script src="{{ url_for('static', filename='js/cookiesSessionManager.js') }}"></script> -->
 
-    <!-- 4. AI Advisor Functionality -->
-    <!-- <script src="{{ url_for('static', filename='js/ai_advisor.js') }}"></script> -->
+    <!-- 2. Location Service -->
+    <!-- <script src="{{ url_for('static', filename='js/locationService.js') }}"></script> -->
+
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -339,12 +341,12 @@
                         aiAdvisorData.location = cityData.city;
                     }
                 }
-                // Try to get user's age from session
+                // Try to get user's age from session (will be added later)
                 if (data.age) {
                     document.getElementById('specificAge').value = data.age;
                     aiAdvisorData.age = data.age;
                 }
-                // Try to get user's gender from session
+                // Try to get user's gender from session (will be added later)
                 if (data.gender) {
                     selectGender(data.gender);
                 }
@@ -354,6 +356,13 @@
         }
     });
     </script>
+
+
+
+
+    <!-- 3. Existing file -->
+    <script src="{{ url_for('static', filename='js/ai_advisor.js') }}"></script>
+
 {% endblock %}
 
 {% endblock %}
