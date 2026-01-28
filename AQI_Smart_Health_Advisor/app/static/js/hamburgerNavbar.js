@@ -1,4 +1,4 @@
-/**
+/*
  * Universal Hamburger Navigation Menu
  * Handles mobile navigation toggle and interactions for any page
  * 

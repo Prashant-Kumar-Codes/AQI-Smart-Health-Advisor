@@ -308,7 +308,13 @@ def get_fallback_recommendations(aqi, aqi_category, dominant_pollutant):
 def store_alert_in_db(user_email, alert, recommendations):
     """Store alert in MySQL database"""
     try:
-        cursor = mysql.connector.cursor()
+        conn = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="My@MySql8044",
+                database="Aqi_app_db"
+        )
+        cursor = conn.cursor()
         
         # Store with expiry time (30 minutes after creation)
         expiry_time = datetime.now() + timedelta(minutes=30)
@@ -341,8 +347,9 @@ def store_alert_in_db(user_email, alert, recommendations):
             expiry_time
         ))
         
-        mysql.connector.commit()
+        conn.commit()
         cursor.close()
+        conn.close()
         
         print(f"✓ Alert stored in database (expires at {expiry_time})")
         
@@ -355,12 +362,18 @@ def store_alert_in_db(user_email, alert, recommendations):
 def get_alerts_from_db(user_email):
     """Retrieve active alerts from database and clean up expired ones"""
     try:
-        cursor = mysql.connector.cursor()
+        conn = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="My@MySql8044",
+                database="Aqi_app_db"
+)
+        cursor = conn.cursor()
         
         # First, delete expired alerts
         delete_query = "DELETE FROM tracking_alerts WHERE expiry_time < NOW()"
         cursor.execute(delete_query)
-        mysql.connector.commit()
+        conn.commit()
         
         # Get active alerts
         query = """
@@ -375,6 +388,7 @@ def get_alerts_from_db(user_email):
         cursor.execute(query, (user_email,))
         rows = cursor.fetchall()
         cursor.close()
+        conn.close()
         
         alerts = []
         for row in rows:
@@ -407,14 +421,21 @@ def get_alerts_from_db(user_email):
 def clear_alerts_from_db(user_email):
     """Clear all alerts for user from database"""
     try:
-        cursor = mysql.connector.cursor()
+        conn = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="My@MySql8044",
+                database="Aqi_app_db"
+)
+        cursor = conn.cursor()
         
         query = "DELETE FROM tracking_alerts WHERE user_email = %s"
         cursor.execute(query, (user_email,))
-        mysql.connector.commit()
+        conn.commit()
         
         deleted_count = cursor.rowcount
         cursor.close()
+        conn.close()
         
         print(f"✓ Deleted {deleted_count} alerts from database")
         

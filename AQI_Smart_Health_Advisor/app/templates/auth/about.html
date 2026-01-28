@@ -4,193 +4,180 @@
 {% block style %}
     {{ super() }}
     <link href="{{ url_for('static', filename='css/about.css') }}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
 
-    <!-- Animated Background Particles -->
-    <div class="bg-particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-    </div>
-
-    <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="back-btn">
                 <i class="fas fa-arrow-left"></i>
-                Back to AQI Status
+                <span>Back to Dashboard</span>
             </a>
             <div class="nav-title">About Us</div>
         </div>
     </nav>
 
-    <!-- Main Container -->
     <div class="container">
-        <!-- Hero Section -->
+        
         <div class="hero-section">
-            <div class="hero-icon">ℹ️</div>
+            <div class="hero-icon-container">
+                <i class="fas fa-info"></i>
+            </div>
             <h1 class="hero-title">About This Platform</h1>
-            <p class="hero-subtitle">Empowering people with real-time air quality insights and AI-driven health recommendations</p>
+            <div class="separator-line"></div>
+            <p class="hero-subtitle">Empowering people with real-time air quality insights and AI-driven health recommendations.</p>
         </div>
 
-        <!-- Our Goal Section -->
         <div class="content-card">
-            <h2 class="section-title">
-                <span class="section-icon">🎯</span>
-                Our Goal
-            </h2>
-            <p class="section-content">
-                The primary goal of this platform is to <strong>raise awareness about air quality</strong> and its impact on human health while providing clear, actionable guidance to users. By combining real-time AQI data with AI-powered insights, we aim to help people make better daily decisions—such as when to go outside, take precautions, or limit exposure to polluted air.
-            </p>
-            <p class="section-content">
-                This project focuses on <strong>education, prevention, and informed decision-making</strong>, especially for people living in areas affected by air pollution.
-            </p>
-        </div>
-
-        <!-- How We Get AQI Data Section -->
-        <div class="content-card">
-            <h2 class="section-title">
-                <span class="section-icon">📡</span>
-                How We Get AQI Data
-            </h2>
-            <p class="section-content">
-                We fetch air quality and weather-related data using the <strong>OpenWeather API</strong>. This API provides reliable, real-time information such as:
-            </p>
-            
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <span class="feature-item-icon">🌡️</span>
-                    <h4>Air Quality Index (AQI)</h4>
-                    <p>Real-time AQI measurements for your location</p>
+            <div class="card-header">
+                <div class="icon-box">
+                    <i class="fas fa-bullseye"></i>
                 </div>
-                <div class="feature-item">
-                    <span class="feature-item-icon">💨</span>
-                    <h4>Pollutant Levels</h4>
-                    <p>PM2.5, PM10, CO, NO₂, SO₂, O₃ concentrations</p>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-item-icon">☁️</span>
-                    <h4>Weather Parameters</h4>
-                    <p>Temperature, humidity, wind speed affecting air quality</p>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-item-icon">📍</span>
-                    <h4>Location-Based</h4>
-                    <p>Data retrieved dynamically based on your selected location</p>
-                </div>
+                <h2 class="section-title">Our Goal</h2>
             </div>
-        </div>
-
-        <!-- How AQI Data Is Collected Section -->
-        <div class="content-card">
-            <h2 class="section-title">
-                <span class="section-icon">🔬</span>
-                How AQI Data Is Collected (Important Fact)
-            </h2>
-            <p class="section-content">
-                AQI data is collected through <strong>official air quality monitoring stations</strong> operated by:
-            </p>
-
-            <div class="info-box">
-                <h3><i class="fas fa-building"></i> Monitoring Organizations</h3>
-                <ul>
-                    <li>Government agencies</li>
-                    <li>Environmental organizations</li>
-                    <li>Certified weather and pollution monitoring centers</li>
-                </ul>
-            </div>
-
-            <p class="section-content">
-                Each monitoring station measures pollutant concentrations using <strong>specialized sensors</strong>. AQI values are only available for locations where these monitoring stations exist.
-            </p>
-
-            <div class="info-box" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: #f59e0b;">
-                <h3 style="color: #92400e;"><i class="fas fa-info-circle"></i> Important Limitation</h3>
-                <p style="color: #78350f;">
-                    If a city or region does not have a nearby monitoring center, <strong>precise AQI data may not be available</strong> for that area. This is a known and accepted limitation of air quality monitoring worldwide.
+            <div class="card-body">
+                <p class="section-content">
+                    The primary goal of this platform is to <strong>raise awareness about air quality</strong> and its impact on human health while providing clear, actionable guidance to users. By combining real-time AQI data with AI-powered insights, we aim to help people make better daily decisions—such as when to go outside, take precautions, or limit exposure to polluted air.
+                </p>
+                <p class="section-content">
+                    This project focuses on <strong>education, prevention, and informed decision-making</strong>, especially for people living in areas affected by air pollution.
                 </p>
             </div>
         </div>
 
-        <!-- User Privacy Section -->
         <div class="content-card">
-            <h2 class="section-title">
-                <span class="section-icon">🔐</span>
-                User Privacy & Location Data
-            </h2>
-            <p class="section-content">
-                We take user privacy seriously.
-            </p>
-
-            <div class="privacy-box">
-                <h3><i class="fas fa-shield-alt"></i> Our Privacy Commitment</h3>
-                <ul>
-                    <li>Your location data is used only temporarily to fetch AQI information</li>
-                    <li>We do not store, save, or track your location</li>
-                    <li>All location data exists only during the active session and is automatically discarded once you close the website</li>
-                    <li>No personal data is collected or shared with third parties</li>
-                </ul>
+            <div class="card-header">
+                <div class="icon-box">
+                    <i class="fas fa-satellite-dish"></i>
+                </div>
+                <h2 class="section-title">How We Get AQI Data</h2>
+            </div>
+            <div class="card-body">
+                <p class="section-content">
+                    We fetch air quality and weather-related data using the <strong>OpenWeather API</strong>. This API provides reliable, real-time information such as:
+                </p>
+                
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-temperature-high"></i>
+                        </div>
+                        <h4>Air Quality Index</h4>
+                        <p>Real-time AQI measurements for your specific location.</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-wind"></i>
+                        </div>
+                        <h4>Pollutant Levels</h4>
+                        <p>PM2.5, PM10, CO, NO₂, SO₂, and O₃ concentrations.</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <h4>Weather Parameters</h4>
+                        <p>Temperature, humidity, and wind speed data.</p>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h4>Location-Based</h4>
+                        <p>Data retrieved dynamically based on your coordinates.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Developer Section -->
+        <div class="content-card">
+            <div class="card-header">
+                <div class="icon-box">
+                    <i class="fas fa-microscope"></i>
+                </div>
+                <h2 class="section-title">Data Collection Methodology</h2>
+            </div>
+            <div class="card-body">
+                <p class="section-content">
+                    AQI data is collected through <strong>official air quality monitoring stations</strong> operated by:
+                </p>
+
+                <div class="info-box classic-info">
+                    <h3><i class="fas fa-building"></i> Monitoring Organizations</h3>
+                    <ul>
+                        <li>Government agencies</li>
+                        <li>Environmental organizations</li>
+                        <li>Certified weather and pollution monitoring centers</li>
+                    </ul>
+                </div>
+
+                <p class="section-content">
+                    Each monitoring station measures pollutant concentrations using <strong>specialized sensors</strong>. AQI values are only available for locations where these monitoring stations exist.
+                </p>
+
+                <div class="info-box classic-warning">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Important Limitation</h3>
+                    <p>
+                        If a city or region does not have a nearby monitoring center, <strong>precise AQI data may not be available</strong> for that area. This is a known and accepted limitation of air quality monitoring worldwide.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header">
+                <div class="icon-box">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h2 class="section-title">Privacy & Data</h2>
+            </div>
+            <div class="card-body">
+                <p class="section-content">
+                    We take user privacy seriously.
+                </p>
+
+                <div class="privacy-box">
+                    <h3><i class="fas fa-lock"></i> Our Privacy Commitment</h3>
+                    <ul>
+                        <li>Your location data is used only temporarily to fetch AQI information.</li>
+                        <li>We do not store, save, or track your location history.</li>
+                        <li>All location data exists only during the active session.</li>
+                        <li>No personal data is collected or shared with third parties.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <div class="developer-section">
             <div class="developer-content">
                 <div class="developer-photo-container">
-                    <!-- 
-                        DEVELOPER PHOTO PLACEHOLDER
-                        Replace the placeholder div below with an <img> tag
-                        Image should be:
-                        - Square format (recommended: 400x400px minimum)
-                        - Professional headshot or portrait
-                        - Good lighting and clear face
-                        - Format: JPG or PNG
-                        
-                        Example:
-                        <img src="{{ url_for('static', filename='images/developer_photo.jpg') }}" 
-                             alt="Prashant Kumar" 
-                             class="developer-photo">
-                    -->
-                <img src="{{ url_for('static', filename='images/Developer_Photo.png') }}" alt="Prashant Kumar" class="developer-photo">
+                    <img src="{{ url_for('static', filename='images/Developer_Photo.png') }}" alt="Prashant Kumar" class="developer-photo">
                 </div>
 
                 <div class="developer-info">
-                    <h2>About the Developer</h2>
+                    <div class="dev-header">
+                        <h2>About the Developer</h2>
+                        <div class="gold-line"></div>
+                    </div>
                     <p class="role">Prashant Kumar</p>
-                    <p>
-                        B.Tech Computer Science Engineering student and aspiring AI Engineer, with a strong interest in:
+                    <p class="bio-text">
+                        B.Tech Computer Science Engineering student and aspiring AI Engineer. Dedicated to combining Artificial Intelligence, machine learning, and user-centric design to create technology with social and environmental impact.
                     </p>
-                    <ul>
-                        <li>Artificial Intelligence & Machine Learning</li>
-                        <li>Data-driven applications</li>
-                        <li>Building technology for social and environmental impact</li>
-                    </ul>
-                    <p style="margin-top: 20px;">
-                        This project is part of a continuous learning journey to combine AI, real-world data, and user-centric design.
-                    </p>
-
+                    
                     <a href="https://www.linkedin.com/in/itsprashantkumar/" target="_blank" class="linkedin-btn">
-                        <i class="fab fa-linkedin linkedin-icon"></i>
+                        <i class="fab fa-linkedin"></i>
                         Connect on LinkedIn
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
             <p>© 2026 AQI Smart Health Advisor. All rights reserved.</p>
-            <p style="font-size: 0.9em; opacity: 0.8; margin-top: 10px;">
-                Built with passion for environmental and social impact
-            </p>
+            <p class="footer-note">Built with passion for environmental and social impact.</p>
         </div>
     </div>
 {% endblock %}

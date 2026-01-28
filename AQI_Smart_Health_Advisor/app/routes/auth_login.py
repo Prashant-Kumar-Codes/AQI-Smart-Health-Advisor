@@ -201,7 +201,7 @@ def login():
         mycon.close()
         
         if not user:
-            return jsonify({'success': False, 'message': 'Invalid email or password'}), 401
+            return jsonify({'success': False, 'message': 'Invalid email or password\nPlease Sign Up first'}), 401
         
         user_id, username, user_email, age, gender, city, hashed_password, is_verified = user
         
@@ -351,19 +351,133 @@ def send_otp_email(email, otp, username):
             subject="Your OTP for AQI App Verification",
             recipients=[email],
             html=f"""
-            <html>
-            <body style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2>Welcome to AQI Smart Health Advisor!</h2>
-                <p>Hello {username},</p>
-                <p>Your OTP for email verification is:</p>
-                <h1 style="color: #667eea; font-size: 36px; letter-spacing: 5px;">{otp}</h1>
-                <p>This OTP is valid for 10 minutes.</p>
-                <p>If you didn't request this, please ignore this email.</p>
-                <br>
-                <p>Best regards,<br>AQI Smart Health Advisor Team</p>
-            </body>
-            </html>
-            """
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6;
+                color: #1f2937;
+                margin: 0;
+                padding: 0;
+                background-color: #f3f4f6;
+            }}
+            .email-wrapper {{
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+            }}
+            .header {{
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 40px 30px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0 0 10px 0;
+                font-size: 28px;
+                font-weight: 700;
+            }}
+            .header p {{
+                margin: 0;
+                font-size: 16px;
+                opacity: 0.95;
+            }}
+            .content {{
+                padding: 40px 30px;
+            }}
+            .greeting {{
+                font-size: 16px;
+                color: #1f2937;
+                margin-bottom: 20px;
+            }}
+            .otp-display {{
+                text-align: center;
+                padding: 30px;
+                background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+                border-radius: 12px;
+                margin: 25px 0;
+            }}
+            .otp-label {{
+                font-size: 14px;
+                font-weight: 600;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 15px;
+            }}
+            .otp-value {{
+                font-size: 48px;
+                font-weight: 900;
+                color: #667eea;
+                letter-spacing: 8px;
+                margin: 0;
+            }}
+            .message-box {{
+                background-color: #f9fafb;
+                border-left: 4px solid #667eea;
+                padding: 20px;
+                margin: 25px 0;
+                border-radius: 8px;
+                color: #4b5563;
+            }}
+            .warning-box {{
+                background: linear-gradient(135deg, #fef3c7, #fde68a);
+                border-left: 4px solid #f59e0b;
+                padding: 20px;
+                margin: 25px 0;
+                border-radius: 8px;
+            }}
+            .warning-box p {{
+                margin: 0;
+                color: #78350f;
+                font-weight: 500;
+            }}
+            .footer {{
+                text-align: center;
+                padding: 30px;
+                background-color: #f9fafb;
+                color: #6b7280;
+                font-size: 14px;
+            }}
+            .footer p {{
+                margin: 5px 0;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="email-wrapper">
+            <div class="header">
+                <h1>🔐 Email Verification</h1>
+                <p>AQI Smart Health Advisor</p>
+            </div>
+            <div class="content">
+                <div class="greeting">
+                    <p>Hello <strong>{username}</strong>,</p>
+                    <p>Welcome to AQI Smart Health Advisor! Please use the following one-time password to verify your email address.</p>
+                </div>
+                
+                <div class="otp-display">
+                    <div class="otp-label">Your Verification Code</div>
+                    <div class="otp-value">{otp}</div>
+                </div>
+                
+                <div class="message-box">
+                    This OTP is valid for <strong>10 minutes</strong>. Please enter it in the verification page to complete your registration.
+                </div>
+                
+                <div class="warning-box">
+                    <p>⚠️ If you didn't request this verification code, please ignore this email. Your account remains secure.</p>
+                </div>
+            </div>
+            <div class="footer">
+                <p><strong>AQI Smart Health Advisor Team</strong></p>
+                <p>Stay informed about air quality for better health decisions</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
         )
         mail.send(msg)
     except Exception as e:

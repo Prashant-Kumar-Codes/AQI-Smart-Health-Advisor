@@ -168,93 +168,22 @@ if (typeof window.CookieSessionManager === 'undefined') {
         showCookieConsent() {
             const consent = this.getCookie(this.COOKIE_CONSENT);
             if (consent) {
+                console.log('ℹ️ Cookie consent already given:', consent);
                 return;
             }
             
-            let banner = document.getElementById('cookieConsent');
-            if (!banner) {
-                banner = this.createCookieBanner();
-                document.body.appendChild(banner);
+            console.log('🍪 Showing cookie consent banner');
+            const banner = document.getElementById('cookieConsent');
+            
+            if (banner) {
+                // Use setTimeout to ensure animation triggers
+                setTimeout(() => {
+                    banner.classList.add('show');
+                    console.log('✅ Cookie banner displayed');
+                }, 500);
+            } else {
+                console.warn('⚠️ Cookie consent banner element not found');
             }
-            
-            setTimeout(() => {
-                banner.classList.add('show');
-            }, 1000);
-        },
-        
-        /*
-         * Create cookie consent banner
-         */
-        createCookieBanner() {
-            const banner = document.createElement('div');
-            banner.id = 'cookieConsent';
-            banner.className = 'cookie-consent';
-            banner.innerHTML = `
-                <div class="cookie-content">
-                    <div class="cookie-text">
-                        <h4>🍪 We Value Your Privacy</h4>
-                        <p>We use cookies to keep you logged in and enhance your experience.</p>
-                    </div>
-                    <div class="cookie-buttons">
-                        <button class="cookie-btn decline" onclick="window.CookieSessionManager.handleDecline()">Decline</button>
-                        <button class="cookie-btn accept" onclick="window.CookieSessionManager.handleAccept()">Accept All</button>
-                    </div>
-                </div>
-            `;
-            
-            if (!document.getElementById('cookie-styles')) {
-                const style = document.createElement('style');
-                style.id = 'cookie-styles';
-                style.textContent = `
-                    .cookie-consent {
-                        position: fixed;
-                        bottom: -200px;
-                        left: 0;
-                        right: 0;
-                        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-                        color: white;
-                        padding: 20px;
-                        box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
-                        z-index: 10000;
-                        transition: bottom 0.5s ease-out;
-                    }
-                    .cookie-consent.show { bottom: 0; }
-                    .cookie-content {
-                        max-width: 1200px;
-                        margin: 0 auto;
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        gap: 20px;
-                        flex-wrap: wrap;
-                    }
-                    .cookie-text { flex: 1; min-width: 250px; }
-                    .cookie-text h4 { margin: 0 0 8px 0; font-size: 18px; }
-                    .cookie-text p { margin: 0; font-size: 14px; color: #d1d5db; }
-                    .cookie-buttons { display: flex; gap: 12px; }
-                    .cookie-btn {
-                        padding: 10px 24px;
-                        border: none;
-                        border-radius: 8px;
-                        font-size: 14px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s;
-                    }
-                    .cookie-btn.accept {
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                    }
-                    .cookie-btn.decline {
-                        background: transparent;
-                        border: 2px solid #4b5563;
-                        color: #d1d5db;
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-            
-            return banner;
         },
         
         /*
@@ -265,7 +194,13 @@ if (typeof window.CookieSessionManager === 'undefined') {
             const banner = document.getElementById('cookieConsent');
             if (banner) {
                 banner.classList.remove('show');
-                setTimeout(() => banner.remove(), 500);
+                setTimeout(() => {
+                    banner.style.display = 'none';
+                }, 500);
+            }
+            
+            if (window.MessageManager) {
+                window.MessageManager.show('Cookie preferences saved. Your session will be preserved.', 'success');
             }
         },
         
@@ -277,7 +212,9 @@ if (typeof window.CookieSessionManager === 'undefined') {
             const banner = document.getElementById('cookieConsent');
             if (banner) {
                 banner.classList.remove('show');
-                setTimeout(() => banner.remove(), 500);
+                setTimeout(() => {
+                    banner.style.display = 'none';
+                }, 500);
             }
             
             if (window.MessageManager) {
@@ -289,10 +226,12 @@ if (typeof window.CookieSessionManager === 'undefined') {
     // Auto-initialize on page load
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('📄 DOM loaded - initializing CookieSessionManager');
             window.CookieSessionManager.showCookieConsent();
             window.CookieSessionManager.initializeSession();
         });
     } else {
+        console.log('📄 DOM already loaded - initializing CookieSessionManager immediately');
         window.CookieSessionManager.showCookieConsent();
         window.CookieSessionManager.initializeSession();
     }

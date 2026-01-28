@@ -4,35 +4,30 @@
 {% block style %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/verify.css') }}">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 {% endblock %}
 
 {% block content %}
-<!-- Animated Background Particles -->
-<div class="bg-particles">
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-</div>
 
 <div class="container">
     <div class="verify-content">
-        <!-- Logo Section -->
         <div class="logo-section">
-            <div class="logo-icon">🛡️</div>
+            <div class="logo-icon">
+                <img src="{{ url_for('static', filename='images/app_logo.png') }}" alt="AQI Logo" class="logo-image">
+            </div>
             <div class="logo-text">AQI Smart Health Advisor</div>
         </div>
 
         <div class="verify-box">
+            <div class="card-header-strip"></div>
+
             <div class="verify-header">
                 <div class="verify-icon">
-                    <i class="fas fa-envelope-open"></i>
+                    <i class="fas fa-envelope-open-text"></i>
                 </div>
                 <h2 class="verify-title">Verify Your Email</h2>
-                <p class="verify-subtitle">Enter the 6-digit code sent to your email</p>
+                <p class="verify-subtitle">Enter the 6-digit code sent to your email address.</p>
             </div>
 
             <form id="verifyForm" method="POST" action="{{ url_for('login_auth.verify') }}">
@@ -52,7 +47,7 @@
                     >
                     <div class="otp-hint">
                         <i class="fas fa-info-circle"></i>
-                        <span>Check your email inbox and spam folder</span>
+                        <span>Check your inbox and spam folder</span>
                     </div>
                 </div>
 
@@ -90,14 +85,15 @@
     </div>
 </div>
 
+{%block script%}
+{{super()}}
 <script>
     // ============================================
-    // TIMER & OTP VERIFICATION SCRIPT
+    // TIMER & OTP VERIFICATION SCRIPT (Kept Original Logic)
     // ============================================
 
     console.log('🔐 OTP Verification System Initialized');
 
-    // Get elements
     const countdown = document.getElementById('countdown');
     const timerSection = document.getElementById('timerSection');
     const timerText = document.getElementById('timerText');
@@ -108,15 +104,9 @@
     const verifyForm = document.getElementById('verifyForm');
     const resendForm = document.getElementById('resendForm');
 
-    // Get initial time from server (in seconds)
     let timeLeft = parseInt("{{ remaining|default(60) }}") || 60;
     let timerInterval = null;
 
-    console.log('⏱️ Initial time remaining:', timeLeft, 'seconds');
-
-    /**
-     * Format time display (MM:SS or SS)
-     */
     function formatTime(seconds) {
         if (seconds >= 60) {
             const mins = Math.floor(seconds / 60);
@@ -126,9 +116,6 @@
         return seconds.toString();
     }
 
-    /**
-     * Update timer display
-     */
     function updateTimerDisplay() {
         if (timeLeft > 0) {
             countdown.textContent = formatTime(timeLeft);
@@ -141,209 +128,86 @@
         }
     }
 
-    /**
-     * Start countdown timer
-     */
     function startTimer() {
-        console.log('▶️ Starting timer...');
-        
-        // Clear any existing timer
-        if (timerInterval) {
-            clearInterval(timerInterval);
-        }
-
-        // Reset UI
+        if (timerInterval) clearInterval(timerInterval);
         timerSection.classList.remove('expired');
         timerText.textContent = 'Code expires in: ';
         resendBtn.disabled = true;
         resendBtn.classList.add('disabled');
         resendText.textContent = 'Resend OTP';
-
-        // Update display immediately
         updateTimerDisplay();
 
-        // Start countdown
         timerInterval = setInterval(() => {
             timeLeft--;
-            console.log('⏳ Time remaining:', timeLeft);
             updateTimerDisplay();
-
             if (timeLeft <= 0) {
-                console.log('⏰ Timer expired!');
                 clearInterval(timerInterval);
                 timerInterval = null;
-                
-                // Enable resend button
                 resendBtn.disabled = false;
                 resendBtn.classList.remove('disabled');
                 resendText.innerHTML = '<i class="fas fa-redo-alt"></i> Resend OTP';
-                
-                // Show notification
-                showNotification('OTP has expired. Please request a new code.', 'warning');
             }
         }, 1000);
     }
 
-    /**
-     * Show notification
-     */
-    function showNotification(message, type = 'info') {
-        // You can implement a toast notification here
-        console.log(`📢 ${type.toUpperCase()}: ${message}`);
-    }
-
-    /**
-     * Auto-format OTP input - only allow digits
-     */
     otpInput.addEventListener('input', (e) => {
-        // Remove any non-digit characters
         let value = e.target.value.replace(/\D/g, '');
-        
-        // Limit to 6 digits
-        value = value.slice(0, 6);
-        
-        e.target.value = value;
-
-        // Auto-submit when 6 digits entered (optional)
-        if (value.length === 6) {
-            console.log('✅ Full OTP entered:', value);
-            // Uncomment to auto-submit:
-            // verifyForm.submit();
-        }
+        e.target.value = value.slice(0, 6);
     });
 
-    /**
-     * Prevent paste of non-numeric content
-     */
     otpInput.addEventListener('paste', (e) => {
         e.preventDefault();
         const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-        const numericText = pastedText.replace(/\D/g, '').slice(0, 6);
-        otpInput.value = numericText;
-        
-        if (numericText.length === 6) {
-            console.log('📋 OTP pasted:', numericText);
-        }
+        otpInput.value = pastedText.replace(/\D/g, '').slice(0, 6);
     });
 
-    /**
-     * Validate OTP on form submit
-     */
     verifyForm.addEventListener('submit', (e) => {
-        const otp = otpInput.value.trim();
-        
-        if (otp.length !== 6) {
+        if (otpInput.value.trim().length !== 6) {
             e.preventDefault();
-            
-            // Show error state
             otpInput.classList.add('error');
             otpInput.focus();
-            
-            showNotification('Please enter a valid 6-digit OTP', 'error');
-            
-            // Remove error state after 2 seconds
-            setTimeout(() => {
-                otpInput.classList.remove('error');
-            }, 2000);
-            
+            setTimeout(() => otpInput.classList.remove('error'), 2000);
             return false;
         }
-
         if (timeLeft <= 0) {
             e.preventDefault();
-            showNotification('OTP has expired. Please request a new code.', 'error');
             return false;
         }
-
-        console.log('📤 Submitting OTP:', otp);
-        // Form will submit normally
     });
 
-    /**
-     * Handle resend OTP
-     */
     resendForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        if (resendBtn.disabled) return false;
         
-        if (resendBtn.disabled) {
-            console.log('⏸️ Resend blocked - timer still running');
-            return false;
-        }
-
-        console.log('🔄 Resending OTP...');
-        
-        // Disable button immediately
         resendBtn.disabled = true;
         resendText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-        
-        // Reset timer
         timeLeft = 60;
         
-        // Submit form via fetch to handle response
         fetch(resendForm.action, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         })
         .then(response => {
-            console.log('📬 Resend response received');
-            
-            // Start new timer
             startTimer();
-            
-            // Clear OTP input
             otpInput.value = '';
             otpInput.focus();
-            
-            showNotification('New OTP sent! Check your email.', 'success');
-            
-            // Reload page to get updated flash messages
             window.location.reload();
         })
         .catch(error => {
-            console.error('❌ Resend error:', error);
             resendBtn.disabled = false;
             resendText.textContent = 'Resend OTP';
-            showNotification('Failed to resend OTP. Please try again.', 'error');
         });
     });
 
-    /**
-     * Focus on OTP input when page loads
-     */
-    window.addEventListener('load', () => {
-        otpInput.focus();
-    });
+    window.addEventListener('load', () => otpInput.focus());
 
-    /**
-     * Handle visibility change (pause/resume timer when tab is hidden)
-     */
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            console.log('👁️ Tab hidden - timer continues in background');
-        } else {
-            console.log('👁️ Tab visible - timer running');
-        }
-    });
-
-    // ============================================
-    // INITIALIZE TIMER
-    // ============================================
-    
-    console.log('🚀 Initializing timer with', timeLeft, 'seconds remaining');
-    
     if (timeLeft > 0) {
         startTimer();
     } else {
-        console.log('⚠️ OTP already expired on page load');
         updateTimerDisplay();
         resendBtn.disabled = false;
         resendBtn.classList.remove('disabled');
     }
-
-    // Log session info
-    console.log('📧 Email session active');
-    console.log('⏰ OTP expires at:', new Date(Date.now() + timeLeft * 1000).toLocaleTimeString());
 </script>
 {% endblock %}
+{%endblock%}

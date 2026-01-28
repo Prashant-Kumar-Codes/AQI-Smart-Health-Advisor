@@ -4,349 +4,406 @@
 {% block style %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_advisor.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 {% endblock %}
 
 {% block content %}
 
-    <!-- Navigation Bar -->
-    <nav class="aqi-navbar">
+    <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-brand">
-                <span class="brand-icon">🌍</span>
-                <span class="brand-text">AQI Smart Health Advisor</span>
+            <div class="logo-section">
+                <img src="{{ url_for('static', filename='images/app_logo.png') }}" alt="AQI Logo" class="logo-image">
+                <div class="logo-text">AQI Smart Health Advisor</div>
             </div>
             
-            <!-- Hamburger Menu Icon -->
             <div class="hamburger">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
 
-            <!-- Navigation Links -->
             <div class="nav-links">
                 <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
                 <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link">AQI Status</a>
                 <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link active">AI Advisor</a>
                 <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link">Live Tracker</a>
-                <a href="{{ url_for('about_auth.about') }}" class="nav-link">About</a>
-                <a href="{{ url_for('learnMore_auth.learnMore') }}" class="nav-link">AQI Guide</a>
-                <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('about_auth.about') }}" class="nav-link optional-link">About</a>
+                <a href="{{ url_for('learnMore_auth.learnMore') }}" class="nav-link optional-link">AQI Guide</a>
+                <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link btn-login-nav">Login</a>
             </div>
         </div>
     </nav>
 
-<!-- Animated Air Flow Background -->
-<div class="air-flow-container">
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-    <div class="air-particle"></div>
-</div>
-
-<div class="container">
-    <!-- Professional Header Section -->
-    <div class="header-professional">
-        <div class="header-content-pro">
-            <h1 class="main-title">🤖 AI Health Advisor</h1>
-            <p class="main-subtitle">Get personalized health recommendations based on current air quality conditions</p>
-            <div class="header-features">
-                <div class="feature-badge">
-                    <span class="feature-icon">🧠</span>
-                    <div class="feature-info">
-                        <div class="feature-label">AI Powered</div>
-                        <div class="feature-value">GPT-4</div>
+    <div class="container">
+        <div class="header-professional">
+            <div class="header-overlay"></div>
+            <div class="header-content-pro">
+                <div class="title-wrapper">
+                    <div class="hero-icon-container">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div>
+                        <h1 class="main-title">AI Health Advisor</h1>
+                        <p class="main-subtitle">Your personalized respiratory health assistant powered by GPT-4.</p>
                     </div>
                 </div>
-                <div class="feature-badge">
-                    <span class="feature-icon">🎯</span>
-                    <div class="feature-info">
-                        <div class="feature-label">Advice Type</div>
-                        <div class="feature-value">Personalized</div>
-                    </div>
-                </div>
-                <div class="feature-badge">
-                    <span class="feature-icon">⚡</span>
-                    <div class="feature-info">
-                        <div class="feature-label">Response Time</div>
-                        <div class="feature-value">Instant</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI Advisor Form -->
-    <div class="ai-advisor-form-container">
-        <div class="ai-advisor-card">
-            <div class="ai-advisor-content">
                 
-                <!-- Location Section -->
-                <div class="advisor-section">
-                    <label class="advisor-label">📍 Location</label>
-                    <p class="advisor-hint">Enter your location to get air quality data</p>
-                    <div class="location-input-group">
-                        <input 
-                            type="text" 
-                            id="aiAdvisorLocation" 
-                            class="advisor-input"
-                            placeholder="Enter city name or location"
-                        >
-                        <button class="btn-location" onclick="getCurrentLocationAI()" title="Use current location">
-                            <span class="btn-icon">📍</span>
-                            Current Location
-                        </button>
+                <div class="header-stats-grid">
+                    <div class="stat-badge">
+                        <i class="fas fa-brain"></i>
+                        <span>GPT-4 AI Analysis</span>
                     </div>
-                </div>
-
-                <!-- Age Section -->
-                <div class="advisor-section">
-                    <label class="advisor-label">👤 Age</label>
-                    <p class="advisor-hint">Select your age group or enter specific age</p>
-                    <div class="age-input-container">
-                        <div class="age-buttons">
-                            <button class="age-btn" data-age="child" onclick="selectAgeGroup('child', '0-12')">
-                                👶 Child<br><span class="age-range">(0-12)</span>
-                            </button>
-                            <button class="age-btn" data-age="teen" onclick="selectAgeGroup('teen', '13-19')">
-                                🧒 Teen<br><span class="age-range">(13-19)</span>
-                            </button>
-                            <button class="age-btn" data-age="adult" onclick="selectAgeGroup('adult', '20-60')">
-                                🧑 Adult<br><span class="age-range">(20-60)</span>
-                            </button>
-                            <button class="age-btn" data-age="senior" onclick="selectAgeGroup('senior', '60+')">
-                                👴 Senior<br><span class="age-range">(60+)</span>
-                            </button>
-                        </div>
-                        <div class="age-input-divider">
-                            <span>OR</span>
-                        </div>
-                        <div class="specific-age-input">
-                            <label for="specificAge" class="specific-age-label">Enter specific age:</label>
-                            <input 
-                                type="number" 
-                                id="specificAge" 
-                                class="advisor-input-small"
-                                placeholder="e.g., 25"
-                                min="1"
-                                max="120"
-                                oninput="clearAgeGroupSelection()"
-                            >
-                        </div>
+                    <div class="stat-badge">
+                        <i class="fas fa-bullseye"></i>
+                        <span>Tailored Advice</span>
                     </div>
-                </div>
-
-                <!-- Gender Section -->
-                <div class="advisor-section">
-                    <label class="advisor-label">⚧ Gender</label>
-                    <p class="advisor-hint">Select your gender for personalized health advice</p>
-                    <div class="gender-buttons">
-                        <button class="gender-btn" data-gender="male" onclick="selectGender('male')">
-                            ♂️ Male
-                        </button>
-                        <button class="gender-btn" data-gender="female" onclick="selectGender('female')">
-                            ♀️ Female
-                        </button>
-                        <button class="gender-btn" data-gender="other" onclick="selectGender('other')">
-                            ⚧ Other
-                        </button>
-                        <button class="gender-btn" data-gender="prefer-not-to-say" onclick="selectGender('prefer-not-to-say')">
-                            🚫 Prefer not to say
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Time Spent Outside Section -->
-                <div class="advisor-section">
-                    <label class="advisor-label">⏰ Daily Time Spent Outside</label>
-                    <p class="advisor-hint">How much time do you typically spend outdoors per day?</p>
-                    <div class="time-outside-buttons">
-                        <button class="time-btn" data-time="1-2" onclick="selectTimeOutside('1-2')">
-                            <span class="time-icon">🕐</span>
-                            <span class="time-text">1-2 hours</span>
-                        </button>
-                        <button class="time-btn" data-time="3-4" onclick="selectTimeOutside('3-4')">
-                            <span class="time-icon">🕒</span>
-                            <span class="time-text">3-4 hours</span>
-                        </button>
-                        <button class="time-btn" data-time="5-6" onclick="selectTimeOutside('5-6')">
-                            <span class="time-icon">🕔</span>
-                            <span class="time-text">5-6 hours</span>
-                        </button>
-                        <button class="time-btn" data-time="7+" onclick="selectTimeOutside('7+')">
-                            <span class="time-icon">🕗</span>
-                            <span class="time-text">7+ hours</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Health Conditions -->
-                <div class="advisor-section">
-                    <label class="advisor-label">🏥 Health Conditions</label>
-                    <p class="advisor-hint">Select all health conditions that apply to you</p>
-                    <div class="condition-buttons">
-                        <button class="condition-btn" data-condition="asthma" onclick="toggleCondition('asthma')">
-                            😮‍💨 Asthma
-                        </button>
-                        <button class="condition-btn" data-condition="headache" onclick="toggleCondition('headache')">
-                            🤕 Chronic Headaches
-                        </button>
-                        <button class="condition-btn" data-condition="breathing" onclick="toggleCondition('breathing')">
-                            😤 Breathing Issues
-                        </button>
-                        <button class="condition-btn" data-condition="heart" onclick="toggleCondition('heart')">
-                            ❤️ Heart Condition
-                        </button>
-                        <button class="condition-btn" data-condition="allergy" onclick="toggleCondition('allergy')">
-                            🤧 Allergies
-                        </button>
-                        <button class="condition-btn" data-condition="copd" onclick="toggleCondition('copd')">
-                            🫁 COPD
-                        </button>
-                        <button class="condition-btn" data-condition="none" onclick="toggleCondition('none')">
-                            ✅ None
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Quick Questions -->
-                <div class="advisor-section">
-                    <label class="advisor-label">💬 Quick Questions</label>
-                    <p class="advisor-hint">Select a common question or ask your own below</p>
-                    <div class="quick-questions">
-                        <button class="quick-q-btn" onclick="askQuickQuestion('Is it safe to go outside?')">
-                            ❓ Is it safe to go outside?
-                        </button>
-                        <button class="quick-q-btn" onclick="askQuickQuestion('What is the best time to go outside today?')">
-                            ⏰ Best time to go outside?
-                        </button>
-                        <button class="quick-q-btn" onclick="askQuickQuestion('How can I protect my family from air pollution?')">
-                            👨‍👩‍👧‍👦 How to protect my family?
-                        </button>
-                        <button class="quick-q-btn" onclick="askQuickQuestion('Should I exercise outdoors today?')">
-                            🏃 Should I exercise outdoors?
-                        </button>
-                        <button class="quick-q-btn" onclick="askQuickQuestion('Do I need to wear a mask outside?')">
-                            😷 Do I need a mask?
-                        </button>
-                        <button class="quick-q-btn" onclick="askQuickQuestion('Is it safe for my children to play outside?')">
-                            👶 Safe for children?
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Custom Question -->
-                <div class="advisor-section">
-                    <label class="advisor-label">✍️ Ask Your Question</label>
-                    <p class="advisor-hint">Type your specific question (Maximum 30 words)</p>
-                    <div class="question-input-group">
-                        <textarea 
-                            id="customQuestion" 
-                            class="advisor-textarea" 
-                            placeholder="Type your question here... e.g., Is it safe to exercise outdoors today?"
-                            maxlength="250"
-                            rows="4"
-                        ></textarea>
-                        <span class="word-count" id="wordCount">0/30 words</span>
-                    </div>
-                </div>
-
-                <!-- Get Advice Button -->
-                <button class="btn-pro btn-primary-pro btn-get-advice" onclick="getAIAdvice()">
-                    <span class="btn-icon-pro">✨</span>
-                    Get Personalized AI Advice
-                </button>
-
-                <!-- AI Response -->
-                <div class="ai-response" id="aiResponse" style="display: none;">
-                    <div class="response-header">
-                        <span class="response-icon">🤖</span>
-                        <span class="response-title">AI Health Recommendation</span>
-                    </div>
-                    <div class="response-content" id="aiResponseContent"></div>
-                    
-                    <!-- AQI Summary in Response -->
-                    <div class="aqi-summary" id="aqiSummary" style="display: none;">
-                        <div class="aqi-summary-header">📊 Current Air Quality Data</div>
-                        <div class="aqi-summary-content" id="aqiSummaryContent"></div>
+                    <div class="stat-badge">
+                        <i class="fas fa-stopwatch"></i>
+                        <span>Real-Time Data</span>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="ai-advisor-form-container">
+            <div class="ai-advisor-card">
+                <div class="card-header-strip"></div>
+                
+                <div class="ai-advisor-content">
+                    
+                    <div class="advisor-section location-section">
+                        <div class="section-header">
+                            <span class="step-num">01</span>
+                            <h3>Where are you?</h3>
+                        </div>
+                        <div class="location-wrapper">
+                            <div class="input-with-icon">
+                                <i class="fas fa-search location-search-icon"></i>
+                                <input 
+                                    type="text" 
+                                    id="aiAdvisorLocation" 
+                                    class="advisor-input-modern"
+                                    placeholder="Enter your city..."
+                                >
+                            </div>
+                            <button class="btn-location-modern" onclick="getCurrentLocationAI()" title="Use current location">
+                                <i class="fas fa-crosshairs"></i> Auto-Detect
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-layout">
+                        <div class="advisor-section">
+                            <div class="section-header">
+                                <span class="step-num">02</span>
+                                <h3>Age Group</h3>
+                            </div>
+                            
+                            <div class="selection-grid age-grid">
+                                <button class="select-tile" data-age="child" onclick="selectAgeGroup('child', '0-12')">
+                                    <i class="fas fa-child"></i>
+                                    <span>Child</span>
+                                    <small>0-12</small>
+                                </button>
+                                <button class="select-tile" data-age="teen" onclick="selectAgeGroup('teen', '13-19')">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <span>Teen</span>
+                                    <small>13-19</small>
+                                </button>
+                                <button class="select-tile" data-age="adult" onclick="selectAgeGroup('adult', '20-60')">
+                                    <i class="fas fa-user-tie"></i>
+                                    <span>Adult</span>
+                                    <small>20-60</small>
+                                </button>
+                                <button class="select-tile" data-age="senior" onclick="selectAgeGroup('senior', '60+')">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span>Senior</span>
+                                    <small>60+</small>
+                                </button>
+                            </div>
+
+                            <div class="specific-age-wrapper">
+                                <span class="or-divider">OR</span>
+                                <div class="floating-label-input">
+                                    <input 
+                                        type="number" 
+                                        id="specificAge" 
+                                        class="modern-input"
+                                        placeholder=" "
+                                        min="1" max="120"
+                                        oninput="clearAgeGroupSelection()"
+                                    >
+                                    <label>Enter Specific Age</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="advisor-section">
+                            <div class="section-header">
+                                <span class="step-num">03</span>
+                                <h3>Gender</h3>
+                            </div>
+                            <div class="selection-grid gender-grid">
+                                <button class="select-tile" data-gender="male" onclick="selectGender('male')">
+                                    <i class="fas fa-mars"></i>
+                                    <span>Male</span>
+                                </button>
+                                <button class="select-tile" data-gender="female" onclick="selectGender('female')">
+                                    <i class="fas fa-venus"></i>
+                                    <span>Female</span>
+                                </button>
+                                <button class="select-tile" data-gender="other" onclick="selectGender('other')">
+                                    <i class="fas fa-genderless"></i>
+                                    <span>Other</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="advisor-section">
+                        <div class="section-header">
+                            <span class="step-num">04</span>
+                            <h3>Daily Outdoor Activity</h3>
+                        </div>
+                        <div class="time-slider-grid">
+                            <button class="time-tile" data-time="1-2" onclick="selectTimeOutside('1-2')">
+                                <span>Low</span>
+                                <strong>1-2 hrs</strong>
+                            </button>
+                            <button class="time-tile" data-time="3-4" onclick="selectTimeOutside('3-4')">
+                                <span>Moderate</span>
+                                <strong>3-4 hrs</strong>
+                            </button>
+                            <button class="time-tile" data-time="5-6" onclick="selectTimeOutside('5-6')">
+                                <span>High</span>
+                                <strong>5-6 hrs</strong>
+                            </button>
+                            <button class="time-tile" data-time="7+" onclick="selectTimeOutside('7+')">
+                                <span>Extreme</span>
+                                <strong>7+ hrs</strong>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="advisor-section">
+                        <div class="section-header">
+                            <span class="step-num">05</span>
+                            <h3>Existing Conditions</h3>
+                            <span class="optional-tag">Select all that apply</span>
+                        </div>
+                        <div class="conditions-grid">
+                            <button class="condition-chip" data-condition="asthma" onclick="toggleCondition('asthma')">
+                                <i class="fas fa-lungs"></i> Asthma
+                            </button>
+                            <button class="condition-chip" data-condition="breathing" onclick="toggleCondition('breathing')">
+                                <i class="fas fa-lungs-virus"></i> Respiratory
+                            </button>
+                            <button class="condition-chip" data-condition="heart" onclick="toggleCondition('heart')">
+                                <i class="fas fa-heart-broken"></i> Heart
+                            </button>
+                            <button class="condition-chip" data-condition="allergy" onclick="toggleCondition('allergy')">
+                                <i class="fas fa-allergies"></i> Allergies
+                            </button>
+                            <button class="condition-chip" data-condition="headache" onclick="toggleCondition('headache')">
+                                <i class="fas fa-head-side-virus"></i> Migraines
+                            </button>
+                            <button class="condition-chip" data-condition="copd" onclick="toggleCondition('copd')">
+                                <i class="fas fa-procedures"></i> COPD
+                            </button>
+                            <button class="condition-chip none-chip" data-condition="none" onclick="toggleCondition('none')">
+                                <i class="fas fa-check-circle"></i> No Conditions
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="advisor-section">
+                        <div class="section-header">
+                            <span class="step-num">06</span>
+                            <h3>What would you like to know?</h3>
+                        </div>
+                        
+                        <div class="quick-tags-container">
+                            <p class="tags-label">Popular queries:</p>
+                            <div class="quick-tags">
+                                <button class="tag-btn" onclick="askQuickQuestion('Is it safe to go outside?')">Safe to go out?</button>
+                                <button class="tag-btn" onclick="askQuickQuestion('Best time for outdoor activities?')">Best exercise time?</button>
+                                <button class="tag-btn" onclick="askQuickQuestion('Do I need a mask?')">Mask recommendation?</button>
+                                <button class="tag-btn" onclick="askQuickQuestion('How to protect my family?')">Protection tips</button>
+                            </div>
+                        </div>
+
+                        <div class="custom-query-box">
+                            <i class="fas fa-pen-fancy query-icon"></i>
+                            <textarea 
+                                id="customQuestion" 
+                                class="advisor-textarea-modern" 
+                                placeholder="Or type your specific question here..."
+                                maxlength="250"
+                                rows="3"
+                            ></textarea>
+                            <span class="word-count" id="wordCount">0/30 words</span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn-generate-advice" onclick="getAIAdvice()">
+                            <span class="btn-content">
+                                <i class="fas fa-wand-magic-sparkles"></i> 
+                                Generate Health Advice
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="ai-response-container" id="aiResponse" style="display: none;">
+                        <div class="response-card">
+                            <div class="response-header-modern">
+                                <div class="bot-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div>
+                                    <h4>AI Analysis</h4>
+                                    <span class="response-date">Just now</span>
+                                </div>
+                            </div>
+                            <div class="response-body" id="aiResponseContent"></div>
+                            <div id="aqiSummary" class="mini-aqi-summary" style="display: none;">
+                                <div class="mini-header"><i class="fas fa-wind"></i> Live Context</div>
+                                <div id="aqiSummaryContent"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="info-cards-container">
+            <div class="info-card">
+                <div class="info-card-icon"><i class="fas fa-user-shield"></i></div>
+                <h3>Personalized</h3>
+                <p>Advice tailored to your age and health.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card-icon"><i class="fas fa-clock"></i></div>
+                <h3>Real-Time</h3>
+                <p>Based on live air quality metrics.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card-icon"><i class="fas fa-brain"></i></div>
+                <h3>Smart AI</h3>
+                <p>Powered by advanced GPT-4 models.</p>
+            </div>
+        </div>
+
+        <div class="attribution-pro">
+            <p>Powered by GPT-4 | Data Source: <a href="https://aqicn.org" target="_blank">WAQI</a></p>
+        </div>
     </div>
 
-    <!-- Information Cards -->
-    <div class="info-cards-container">
-        <div class="info-card">
-            <div class="info-card-icon">🎯</div>
-            <h3>Personalized Advice</h3>
-            <p>Get health recommendations tailored to your age, health conditions, and lifestyle</p>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>AQI Smart Health Advisor</h3>
+                <p>Monitor air quality, predict health risks, and stay protected with AI-powered insights.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{{ url_for('checkAqi_auth.check_aqi') }}">Check AQI</a></li>
+                    <li><a href="{{ url_for('about_auth.about') }}">About Us</a></li>
+                    <li><a href="{{ url_for('learnMore_auth.learnMore') }}">Learn More</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">AQI Guide</a></li>
+                    <li><a href="#">Health Tips</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
         </div>
-        <div class="info-card">
-            <div class="info-card-icon">🌡️</div>
-            <h3>Real-time Data</h3>
-            <p>Advice based on current air quality levels in your specific location</p>
+        <div class="footer-bottom">
+            <p>© 2026 AQI Smart Health Advisor. All rights reserved.</p>
+            <p>Data provided by <a href="https://aqicn.org" target="_blank" rel="noopener">World Air Quality Index Project</a> & <a href="https://openweathermap.org" target="_blank" rel="noopener">OpenWeather</a></p>
         </div>
-        <div class="info-card">
-            <div class="info-card-icon">🤖</div>
-            <h3>AI-Powered</h3>
-            <p>Advanced AI analyzes multiple factors to provide accurate guidance</p>
-        </div>
-    </div>
-
-    <!-- Attribution -->
-    <div class="attribution-pro">
-        <p>AI Health Advisor powered by GPT-4 | Air quality data from <a href="https://aqicn.org" target="_blank">WAQI</a></p>
-        <p class="attribution-note-pro">Personalized health recommendations based on real-time environmental data</p>
-    </div>
-</div>
+    </footer>
 
 {% block script %}
     {{super()}}
-
-    <!-- ai_advisor - Hamburger Navigation -->
-    <!-- <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script> -->
-
-    <!-- <script src="{{ url_for('static', filename='js/messageManager.js') }}"></script> -->
-
-    <!-- 1. Cookie Session Manager -->
-    <!-- <script src="{{ url_for('static', filename='js/cookiesSessionManager.js') }}"></script> -->
-
-    <!-- 2. Location Service -->
-    <!-- <script src="{{ url_for('static', filename='js/locationService.js') }}"></script> -->
-
-
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-    // Auto-fill user's location on page load
+    // ========== FIXED CONDITION TOGGLE LOGIC ==========
+    function toggleCondition(condition) {
+        const btn = document.querySelector(`button[data-condition="${condition}"]`);
+        
+        // Initialize aiAdvisorData if it doesn't exist
+        if (typeof aiAdvisorData === 'undefined') {
+            window.aiAdvisorData = { conditions: [] };
+        }
+        
+        if (condition === 'none') {
+            // Logic for "None" Button
+            const isCurrentlySelected = btn.classList.contains('selected');
+            
+            if (!isCurrentlySelected) {
+                // If selecting None: Clear all other buttons
+                document.querySelectorAll('.condition-chip').forEach(b => {
+                    b.classList.remove('selected');
+                });
+                // Select only None
+                btn.classList.add('selected');
+                aiAdvisorData.conditions = ['none'];
+            } else {
+                // If deselecting None
+                btn.classList.remove('selected');
+                aiAdvisorData.conditions = [];
+            }
+        } else {
+            // Logic for Any Other Condition
+            const noneBtn = document.querySelector('button[data-condition="none"]');
+            
+            // If selecting a real condition, deselect "None"
+            if (noneBtn && noneBtn.classList.contains('selected')) {
+                noneBtn.classList.remove('selected');
+                // Remove 'none' from array
+                aiAdvisorData.conditions = aiAdvisorData.conditions.filter(c => c !== 'none');
+            }
+            
+            // Toggle the clicked button
+            if (btn.classList.contains('selected')) {
+                btn.classList.remove('selected');
+                aiAdvisorData.conditions = aiAdvisorData.conditions.filter(c => c !== condition);
+            } else {
+                btn.classList.add('selected');
+                aiAdvisorData.conditions.push(condition);
+            }
+        }
+    }
+
+    // Auto-fill user's location on page load (Existing Logic)
     document.addEventListener('DOMContentLoaded', async function() {
         try {
             const response = await fetch('/api/user/check');
             if (response.ok) {
                 const data = await response.json();
-                // Try to get user's city from session
                 const cityResponse = await fetch('/api/user/city');
                 if (cityResponse.ok) {
                     const cityData = await cityResponse.json();
                     if (cityData.city) {
                         document.getElementById('aiAdvisorLocation').value = cityData.city;
-                        aiAdvisorData.location = cityData.city;
+                        if(typeof aiAdvisorData !== 'undefined') aiAdvisorData.location = cityData.city;
                     }
                 }
-                // Try to get user's age from session (will be added later)
                 if (data.age) {
                     document.getElementById('specificAge').value = data.age;
-                    aiAdvisorData.age = data.age;
+                    if(typeof aiAdvisorData !== 'undefined') aiAdvisorData.age = data.age;
                 }
-                // Try to get user's gender from session (will be added later)
                 if (data.gender) {
                     selectGender(data.gender);
                 }
@@ -356,13 +413,7 @@
         }
     });
     </script>
-
-
-
-
-    <!-- 3. Existing file -->
     <script src="{{ url_for('static', filename='js/ai_advisor.js') }}"></script>
-
 {% endblock %}
 
 {% endblock %}

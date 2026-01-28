@@ -66,4 +66,7 @@ def create_app():
     from app.routes.locationService import geocode_blueprint
     app.register_blueprint(geocode_blueprint)
     
+    from app.location_api import location_api
+    app.register_blueprint(location_api)
+    
     return app
