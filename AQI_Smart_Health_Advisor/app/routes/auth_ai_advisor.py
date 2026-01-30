@@ -6,21 +6,23 @@ import mysql.connector
 
 ai_advisor_auth = Blueprint('ai_advisor_auth', __name__)
 
-# OpenAI API Configuration
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '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')
+# Gemini API Configuration
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyC8R96XiTZ1U90D5N-YztBh9VpZQbuWoNE')
+#GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
-# Initialize OpenAI client with API key
-openai_client = None
+# Initialize Gemini client
+gemini_available = True
 try:
-    from openai import OpenAI
-    openai_client = OpenAI(api_key=OPENAI_API_KEY)
-    print("✅ OpenAI client initialized successfully")
+    # Test if requests is available
+    import requests
+    print("✅ Gemini API initialized successfully")
 except ImportError:
-    print("⚠️ Warning: OpenAI package not installed. Install it with: pip install openai")
-    openai_client = None
+    print("⚠️ Warning: requests package not installed. Install it with: pip install requests")
+    gemini_available = False
 except Exception as e:
-    print(f"⚠️ Warning: OpenAI client initialization failed: {e}")
-    openai_client = None
+    print(f"⚠️ Warning: Gemini client initialization failed: {e}")
+    gemini_available = False
 
 
 def get_aqi_category(aqi):
@@ -47,7 +49,7 @@ def ai_advisor():
 
 @ai_advisor_auth.route('/api/aqi/ai-personalized-advice', methods=['POST'])
 def get_ai_personalized_advice():
-    """Get personalized AI advice using GPT-4 - Login required"""
+    """Get personalized AI advice using Gemini - Login required"""
     try:
         # CHECK IF USER IS LOGGED IN
         if 'user_id' not in session:
@@ -102,7 +104,7 @@ def get_ai_personalized_advice():
         print(f"❓ Question: {question}")
         
         # Build comprehensive prompt for AI
-        system_prompt = """You are an expert air quality health advisor with deep knowledge of environmental health, respiratory medicine, and pollution science. 
+        system_instruction = """You are an expert air quality health advisor with deep knowledge of environmental health, respiratory medicine, and pollution science. 
 
 Your role is to provide clear, actionable, and personalized health advice based on current air quality conditions. 
 
@@ -207,29 +209,67 @@ Keep each section concise and actionable. Use simple language. Be empathetic but
         
         print("\n📄 Generated prompt length:", len(user_prompt))
         
-        # Call OpenAI API
+        # Call Gemini API
         try:
-            if not openai_client:
-                print("⚠️ OpenAI client not available, using fallback")
-                raise ImportError("OpenAI client not initialized")
+            if not gemini_available:
+                print("⚠️ Gemini API not available, using fallback")
+                raise ImportError("Gemini API not initialized")
             
-            print(f"🤖 Calling OpenAI API (Model: gpt-4o-mini)")
+            print(f"🤖 Calling Gemini API (Model: gemini-2.5-flash)")
             
-            response = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
+            # Prepare Gemini API request
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            
+            payload = {
+                "system_instruction": {
+                    "parts": [
+                        {"text": system_instruction}
+                    ]
+                },
+                "contents": [
+                    {
+                        "parts": [
+                            {"text": user_prompt}
+                        ]
+                    }
                 ],
-                max_tokens=700,
-                temperature=0.7,
-                top_p=0.9
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "topP": 0.9,
+                    "maxOutputTokens": 1200
+                }
+            }
+            
+            # Make API request with timeout
+            response = requests.post(
+                f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
+                headers=headers,
+                json=payload,
+                timeout=30
             )
             
-            advice = response.choices[0].message.content.strip()
+            # Check if request was successful
+            if response.status_code != 200:
+                print(f"❌ Gemini API Error: Status {response.status_code}")
+                print(f"Response: {response.text}")
+                raise Exception(f"Gemini API returned status {response.status_code}")
+            
+            # Parse response
+            response_data = response.json()
+            
+            # Extract advice from Gemini response
+            if 'candidates' in response_data and len(response_data['candidates']) > 0:
+                advice = response_data['candidates'][0]['content']['parts'][0]['text'].strip()
+            else:
+                print(f"❌ Unexpected Gemini response format: {response_data}")
+                raise Exception("Invalid response format from Gemini")
             
             print(f"✅ AI Advice generated successfully")
             print(f"📄 Response length: {len(advice)} characters")
+            print(f"🔍 AI Response Content: {advice}")
+            print(f"\nFull API Response: {json.dumps(response_data, indent=2)}")
             print("=" * 60)
             
             return jsonify({
@@ -240,7 +280,7 @@ Keep each section concise and actionable. Use simple language. Be empathetic but
             }), 200
             
         except Exception as e:
-            print(f"❌ OpenAI API Error: {e}")
+            print(f"❌ Gemini API Error: {e}")
             import traceback
             traceback.print_exc()
             

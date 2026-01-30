@@ -1,25 +1,26 @@
 from .extensions import *
 from datetime import datetime, timedelta
 from flask_mail import Message
+import os
 import json
 
 live_track_auth = Blueprint('live_track_auth', '__name__')
 
-# OpenAI API Configuration
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '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')
+# Gemini API Configuration
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyC8R96XiTZ1U90D5N-YztBh9VpZQbuWoNE')
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
-# Initialize OpenAI client
-openai_client = None
+# Initialize Gemini client
+gemini_available = True
 try:
-    from openai import OpenAI
-    openai_client = OpenAI(api_key=OPENAI_API_KEY)
-    print("✓ OpenAI client initialized successfully for live tracker")
+    import requests
+    print("✓ Gemini API initialized successfully for live tracker")
 except ImportError:
-    print("⚠ Warning: OpenAI package not installed")
-    openai_client = None
+    print("⚠ Warning: requests package not installed")
+    gemini_available = False
 except Exception as e:
-    print(f"⚠ Warning: OpenAI client initialization failed: {e}")
-    openai_client = None
+    print(f"⚠ Warning: Gemini client initialization failed: {e}")
+    gemini_available = False
 
 
 @live_track_auth.route('/live_track', methods=['GET'])
@@ -174,10 +175,10 @@ def generate_recommendations(aqi, aqi_category, pollutants, dominant_pollutant):
     
     print(f"🤖 Generating AI recommendations for AQI: {aqi}")
     
-    # Try to use OpenAI API
-    if openai_client:
+    # Try to use Gemini API
+    if gemini_available:
         try:
-            system_prompt = """You are a professional air quality health advisor with expertise in environmental health and respiratory medicine.
+            system_instruction = """You are a professional air quality health advisor with expertise in environmental health and respiratory medicine.
 
 Generate exactly 3 concise, actionable health recommendations for the current air quality conditions.
 
@@ -208,19 +209,56 @@ Examples of good recommendations:
             
             user_prompt += "\nGenerate 3 specific health recommendations. Number them 1, 2, 3."
             
-            print(f"🔹 Calling OpenAI API (gpt-4o-mini) for recommendations")
+            print(f"🔹 Calling Gemini API (gemini-1.5-flash) for recommendations")
             
-            response = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
+            # Prepare Gemini API request
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            
+            payload = {
+                "system_instruction": {
+                    "parts": [
+                        {"text": system_instruction}
+                    ]
+                },
+                "contents": [
+                    {
+                        "parts": [
+                            {"text": user_prompt}
+                        ]
+                    }
                 ],
-                max_tokens=250,
-                temperature=0.7
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": 250
+                }
+            }
+            
+            # Make API request
+            response = requests.post(
+                f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
+                headers=headers,
+                json=payload,
+                timeout=30
             )
             
-            ai_response = response.choices[0].message.content.strip()
+            # Check if request was successful
+            if response.status_code != 200:
+                print(f"❌ Gemini API Error: Status {response.status_code}")
+                print(f"Response: {response.text}")
+                raise Exception(f"Gemini API returned status {response.status_code}")
+            
+            # Parse response
+            response_data = response.json()
+            
+            # Extract recommendations from Gemini response
+            if 'candidates' in response_data and len(response_data['candidates']) > 0:
+                ai_response = response_data['candidates'][0]['content']['parts'][0]['text'].strip()
+            else:
+                print(f"❌ Unexpected Gemini response format: {response_data}")
+                raise Exception("Invalid response format from Gemini")
+            
             print(f"🤖 AI Response:\n{ai_response}")
             
             # Parse numbered recommendations
@@ -245,12 +283,12 @@ Examples of good recommendations:
                 print(f"⚠ FAILURE: Unable to get proper AI advice - using fallback")
                 
         except Exception as e:
-            print(f"❌ OpenAI API error: {e}")
+            print(f"❌ Gemini API error: {e}")
             print(f"⚠ FAILURE: Error in getting AI advice - using fallback")
             import traceback
             traceback.print_exc()
     else:
-        print("⚠ FAILURE: OpenAI client not initialized - using fallback")
+        print("⚠ FAILURE: Gemini API not initialized - using fallback")
     
     # Fallback to rule-based recommendations
     recommendations = get_fallback_recommendations(aqi, aqi_category, dominant_pollutant)

@@ -211,6 +211,69 @@
                 </div>
             </div>
 
+
+                        <!-- 24-Hour AQI Prediction Graph -->
+            <div class="prediction-section-pro" id="predictionSection" style="display: none;">
+                <div class="prediction-header">
+                    <h3 class="prediction-title-pro">
+                        <span class="title-icon">📈</span>
+                        24-Hour AQI Forecast
+                    </h3>
+                    <p class="prediction-subtitle">AI-powered predictions for the next 12 hours</p>
+                </div>
+                
+                <!-- Loading indicator for predictions -->
+                <div class="prediction-loading" id="predictionLoading" style="display: none;">
+                    <div class="spinner-small"></div>
+                    <p>Generating AI predictions...</p>
+                </div>
+                
+                <!-- Plotly Graph Container -->
+                <div class="graph-container-pro" id="aqiPredictionGraph"></div>
+                
+                <!-- Prediction Info Cards -->
+                <div class="prediction-info-cards">
+                    <div class="info-card-small">
+                        <div class="info-card-icon-small">📊</div>
+                        <div class="info-card-content">
+                            <div class="info-label">Historical Data</div>
+                            <div class="info-value" id="historicalCount">12 hours</div>
+                        </div>
+                    </div>
+                    <div class="info-card-small">
+                        <div class="info-card-icon-small">🔮</div>
+                        <div class="info-card-content">
+                            <div class="info-label">Predictions</div>
+                            <div class="info-value" id="forecastCount">12 hours</div>
+                        </div>
+                    </div>
+                    <div class="info-card-small">
+                        <div class="info-card-icon-small">⚡</div>
+                        <div class="info-card-content">
+                            <div class="info-label">Processing Time</div>
+                            <div class="info-value" id="processingTime">-</div>
+                        </div>
+                    </div>
+                    <div class="info-card-small">
+                        <div class="info-card-icon-small">🎯</div>
+                        <div class="info-card-content">
+                            <div class="info-label">Model Accuracy</div>
+                            <div class="info-value">~85%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Prediction Insights -->
+                <div class="prediction-insights">
+                    <h4 class="insights-title">📋 Key Insights</h4>
+                    <div class="insights-content" id="predictionInsights">
+                        <p>Loading insights...</p>
+                    </div>
+                </div>
+            </div>
+
+
+
             <!-- AI Health Recommendations Card -->
             <div class="recommendations-card-pro">
                 <div class="recommendations-header">
@@ -318,7 +381,7 @@
     </div>
 
 {% block script %}
-    <!-- {{super()}} -->
+    {{super()}}
     <!-- CheckAqi - Hamburger Navigation -->
     <!-- <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script> -->
 
@@ -331,11 +394,24 @@
     <!-- CheckAqi - Location Service -->
     <!-- <script src="{{ url_for('static', filename='js/locationService.js') }}"></script> -->
 
+    
+    <!-- CheckAqi - Ploly import Script -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+
     <!-- CheckAqi - Main AQI Script -->
     <script src="{{ url_for('static', filename='js/checkAqi.js') }}"></script>
 
     <!-- CheckAqi - Leaflet Maps -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+    // Toggle expandable cards (FIXED)
+    function toggleExpandCard(event) {
+        const card = event.target.closest('.expandable-card-pro');
+        if (!card) return;
+        card.classList.toggle('expanded');
+    }
+</script>
 
     <script>
     // Auto-fill user's city on page load

@@ -3,6 +3,9 @@ from .locationService import location_service
 import os
 import requests
 
+# Import the prediction service
+from .aqi_prediction_service import get_aqi_prediction, load_multi_horizon_models
+
 checkAqi_auth = Blueprint('checkAqi_auth', __name__)
 
 # AQI API Configuration
@@ -12,6 +15,13 @@ WAQI_API_TOKEN = os.getenv('WAQI_API_TOKEN', '46797eab2434e3cb85537e21e9a80bcb30
 # OpenWeather API Configuration
 OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5'
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '6589ed49a6410165ea63662b113ed824')
+
+# Load ML models at startup
+try:
+    load_multi_horizon_models()
+    print("✅ ML prediction models loaded successfully")
+except Exception as e:
+    print(f"⚠️ Warning: Could not load ML models: {e}")
 
 
 def get_aqi_category(aqi):
@@ -176,7 +186,7 @@ def get_aqi_by_geo():
             return jsonify({'error': 'Missing latitude or longitude'}), 400
         
         print(f"\n{'='*60}")
-        print(f"📍 Fetching AQI for coordinates:")
+        print(f"🔍 Fetching AQI for coordinates:")
         print(f"  📍 Lat: {lat}, Lon: {lon}")
         print(f"{'='*60}")
         
@@ -238,6 +248,96 @@ def get_aqi_by_geo():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+
+# ============================================================================
+# NEW: ML PREDICTION ENDPOINTS
+# ============================================================================
+
+@checkAqi_auth.route('/api/aqi/predict/city/<city_name>', methods=['GET'])
+def predict_aqi_by_city(city_name):
+    """Get 24-hour AQI prediction for a city (12h historical + 12h forecast)"""
+    try:
+        print(f"\n{'='*60}")
+        print(f"🤖 ML Prediction request for: {city_name}")
+        print(f"{'='*60}")
+        
+        # Get optional current_aqi parameter from query string
+        current_aqi = request.args.get('current_aqi', type=float)
+        
+        # Get coordinates from location service
+        result = location_service.get_aqi_from_location_name(city_name)
+        
+        if not result['success']:
+            return jsonify({'error': result['error']}), 404
+        
+        location_data = result['location']
+        lat = location_data['lat']
+        lon = location_data['lon']
+        
+        # Get prediction - pass current_aqi if provided
+        prediction_result = get_aqi_prediction(lat, lon, location_data['display_name'], current_aqi)
+        
+        if not prediction_result['success']:
+            return jsonify(prediction_result), 500
+        
+        print(f"✅ Prediction generated successfully")
+        print(f"  📊 Historical data points: {len(prediction_result['historical_data'])}")
+        print(f"  📊 Forecast data points: {len(prediction_result['forecast_data'])}")
+        if current_aqi:
+            print(f"  📊 Using WAQI current AQI: {current_aqi}")
+        
+        return jsonify(prediction_result), 200
+        
+    except Exception as e:
+        print(f"❌ Prediction error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+@checkAqi_auth.route('/api/aqi/predict/geo', methods=['GET'])
+def predict_aqi_by_geo():
+    """Get 24-hour AQI prediction for coordinates"""
+    try:
+        lat = request.args.get('lat', type=float)
+        lon = request.args.get('lng', type=float)
+        
+        if not lat or not lon:
+            return jsonify({'error': 'Missing latitude or longitude', 'success': False}), 400
+        
+        # Get optional current_aqi parameter from query string
+        current_aqi = request.args.get('current_aqi', type=float)
+        
+        print(f"\n{'='*60}")
+        print(f"🤖 ML Prediction request for: ({lat}, {lon})")
+        print(f"{'='*60}")
+        
+        # Get location name
+        result = location_service.get_aqi_from_coordinates(lat, lon)
+        location_name = result.get('location', {}).get('display_name', 'Unknown Location')
+        
+        # Get prediction - pass current_aqi if provided
+        prediction_result = get_aqi_prediction(lat, lon, location_name, current_aqi)
+        
+        if not prediction_result['success']:
+            return jsonify(prediction_result), 500
+        
+        print(f"✅ Prediction generated successfully")
+        if current_aqi:
+            print(f"  📊 Using WAQI current AQI: {current_aqi}")
+        
+        return jsonify(prediction_result), 200
+        
+    except Exception as e:
+        print(f"❌ Prediction error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'success': False}), 500
+
+
+# ============================================================================
+# EXISTING ENDPOINTS
+# ============================================================================
 
 @checkAqi_auth.route('/api/aqi/station/<uid>')
 def get_aqi_by_station(uid):

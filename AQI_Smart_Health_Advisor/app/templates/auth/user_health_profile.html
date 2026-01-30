@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% block title %}Health Profile - AQI Smart Health Advisor{% endblock %}
+
+{% block style %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-section">
+                <img src="{{ url_for('static', filename='images/app_logo.png') }}" alt="AQI Logo" class="logo-image">
+                <div class="logo-text">AQI Smart Health Advisor</div>
+            </div>
+            
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+            <div class="nav-links">
+                <a href="{{ url_for('home_auth.aqi_homepage') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="nav-link">AQI Status</a>
+                <a href="{{ url_for('ai_advisor_auth.ai_advisor') }}" class="nav-link">AI Advisor</a>
+                <a href="{{ url_for('profile_auth.profile') }}" class="nav-link active">Profile</a> <a href="{{ url_for('live_track_auth.live_track') }}" class="nav-link">Live Tracker</a>
+                <a href="{{ url_for('login_auth.logout') }}" class="nav-link btn-login-nav">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-professional">
+            <div class="header-content-pro">
+                <div class="hero-icon-container">
+                    <i class="fas fa-id-card-alt"></i>
+                </div>
+                <h1 class="main-title">Your Health Profile</h1>
+                <div class="separator-line-center"></div>
+                <p class="main-subtitle">Update your health metrics to receive hyper-personalized AI recommendations.</p>
+            </div>
+        </div>
+
+        <div class="profile-card">
+            <div class="card-header-strip"></div>
+            
+            <form action="{{ url_for('profile_auth.update_profile') }}" method="POST" class="profile-form">
+                
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-heartbeat"></i>
+                        <h3>Health Conditions</h3>
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="current_problems">Current Issues (Max 5)</label>
+                            <input type="text" id="current_problems" name="current_problems" 
+                                   placeholder="e.g. Cough, Eye Irritation, Headache..." class="modern-input">
+                            <span class="input-hint">Separate multiple issues with commas.</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="chronic_conditions">Chronic Diseases</label>
+                            <input type="text" id="chronic_conditions" name="chronic_conditions" 
+                                   placeholder="e.g. Asthma, COPD, Hypertension..." class="modern-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-walking"></i>
+                        <h3>Lifestyle & Exposure</h3>
+                    </div>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label for="daily_outdoor_hours">Daily Outdoor Exposure (Hours)</label>
+                            <div class="number-input-wrapper">
+                                <i class="fas fa-clock input-icon"></i>
+                                <input type="number" id="daily_outdoor_hours" name="daily_outdoor_hours" 
+                                       step="0.1" min="0" max="24" placeholder="0.0" class="modern-input icon-padding">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Peak Exposure Time</label>
+                            <div class="tile-selector">
+                                <label class="tile-option">
+                                    <input type="radio" name="peak_exposure_time" value="Morning">
+                                    <span class="tile-content">
+                                        <i class="fas fa-sun"></i> Morning
+                                    </span>
+                                </label>
+                                <label class="tile-option">
+                                    <input type="radio" name="peak_exposure_time" value="Afternoon">
+                                    <span class="tile-content">
+                                        <i class="fas fa-cloud-sun"></i> Afternoon
+                                    </span>
+                                </label>
+                                <label class="tile-option">
+                                    <input type="radio" name="peak_exposure_time" value="Evening">
+                                    <span class="tile-content">
+                                        <i class="fas fa-moon"></i> Evening
+                                    </span>
+                                </label>
+                                <label class="tile-option">
+                                    <input type="radio" name="peak_exposure_time" value="Night">
+                                    <span class="tile-content">
+                                        <i class="fas fa-star"></i> Night
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-sliders-h"></i>
+                        <h3>Health Metrics (Scale 1-10)</h3>
+                    </div>
+
+                    <div class="scale-group">
+                        <div class="scale-label">
+                            <span>Physical Activity Level</span>
+                            <small>1 = Sedentary, 10 = Athlete</small>
+                        </div>
+                        <div class="number-strip">
+                            {% for i in range(1, 11) %}
+                            <label class="num-btn">
+                                <input type="radio" name="physical_activity_level" value="{{ i }}" required>
+                                <span>{{ i }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="scale-group">
+                        <div class="scale-label">
+                            <span>Pollution Sensitivity</span>
+                            <small>1 = Not Sensitive, 10 = Extremely Sensitive</small>
+                        </div>
+                        <div class="number-strip color-scale">
+                            {% for i in range(1, 11) %}
+                            <label class="num-btn">
+                                <input type="radio" name="pollution_sensitivity" value="{{ i }}" required>
+                                <span>{{ i }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="scale-group">
+                        <div class="scale-label">
+                            <span>Respiratory Risk</span>
+                            <small>1 = Low Risk, 10 = High Vulnerability</small>
+                        </div>
+                        <div class="number-strip color-scale">
+                            {% for i in range(1, 11) %}
+                            <label class="num-btn">
+                                <input type="radio" name="respiratory_risk" value="{{ i }}">
+                                <span>{{ i }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="scale-group">
+                        <div class="scale-label">
+                            <span>Immunity Level</span>
+                            <small>1 = Weak, 10 = Strong</small>
+                        </div>
+                        <div class="number-strip">
+                            {% for i in range(1, 11) %}
+                            <label class="num-btn">
+                                <input type="radio" name="immunity_level" value="{{ i }}">
+                                <span>{{ i }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-user-shield"></i>
+                        <h3>Protective Habits & Risks (0-10)</h3>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="scale-group">
+                            <div class="scale-label">
+                                <span>Smoking Level</span>
+                                <small>0 = Non-Smoker, 10 = Heavy</small>
+                            </div>
+                            <div class="number-strip compact">
+                                {% for i in range(0, 11) %}
+                                <label class="num-btn">
+                                    <input type="radio" name="smoking_level" value="{{ i }}">
+                                    <span>{{ i }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="scale-group">
+                            <div class="scale-label">
+                                <span>Mask Usage Effectiveness</span>
+                                <small>0 = Never, 10 = N95 Always</small>
+                            </div>
+                            <div class="number-strip compact">
+                                {% for i in range(0, 11) %}
+                                <label class="num-btn">
+                                    <input type="radio" name="mask_usage_level" value="{{ i }}">
+                                    <span>{{ i }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-robot"></i>
+                        <h3>AI Context</h3>
+                    </div>
+                    <div class="input-group">
+                        <label for="additional_notes">Additional Notes for AI</label>
+                        <textarea id="additional_notes" name="additional_notes" rows="4" 
+                                  class="modern-textarea" placeholder="Any specific allergies, recent surgeries, or specific concerns..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save"></i> Save Profile
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>AQI Smart Health Advisor</h3>
+                <p>Monitor air quality, predict health risks, and stay protected with AI-powered insights.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="{{ url_for('checkAqi_auth.check_aqi') }}">Check AQI</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Learn More</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">AQI Guide</a></li>
+                    <li><a href="#">Health Tips</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 AQI Smart Health Advisor. All rights reserved.</p>
+        </div>
+    </footer>
+
+{% endblock %}
