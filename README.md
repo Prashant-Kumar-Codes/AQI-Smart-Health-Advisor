@@ -137,12 +137,13 @@ Health advisories include **mask usage**, **activity restrictions**, **medicatio
 
 ## 📁 Project Structure
 
+```text
 AQI_SMART_HEALTH_ADVISOR_WEB_APP/
 │
 ├── app/
-│ ├── routes/
-│ ├── static/
-│ ├── templates/
+│   ├── routes/
+│   ├── static/
+│   ├── templates/
 │
 ├── models/
 ├── run.py
