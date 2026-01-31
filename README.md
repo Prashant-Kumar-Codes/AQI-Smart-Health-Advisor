@@ -33,7 +33,6 @@ Using **Machine Learning models** and **Gemini AI**, the system predicts near-fu
 ### 📊 AQI Prediction (Machine Learning)
 - Predicts short-term AQI trends
 - Helps users plan outdoor activities proactively
-- Designed to be location-agnostic (not dependent on specific lat/long during training)
 
 ### 👤 User Health Profiling
 - Numeric health parameters (1–10 scale) for AI compatibility
@@ -142,21 +141,25 @@ AQI_SMART_HEALTH_ADVISOR_WEB_APP/
 │
 ├── app/
 │   ├── routes/
+│   ├── models/
 │   ├── static/
 │   ├── templates/
+│   ├──init.py
 │
-├── models/
 ├── run.py
 ├── requirements.txt
 ├── README.md
+```
 
 ## Getting Started
 
 1. Clone the repository
 2. Configure environment variables for AQI data sources and notification providers
 3. Install backend and frontend dependencies
-4. Run backend and frontend services locally
-5. Create or import user profiles to receive personalized AQI health recommendations
+4. Create MySql database and tables
+5. Create a SMTP API key on Brevo and add in the app/init.py
+6. Run backend and frontend services locally
+7. Create user profiles to receive personalized AQI health recommendations
 
 ## Data Sources & Reliability
 
