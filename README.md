@@ -1,65 +1,171 @@
-# AQI-Smart-Health-Advisor
-An AI-powered AQI monitoring platform that transforms real-time air quality data into personalized health insights, preventive measures, and safety recommendations.
+# 🌍 AQI Smart Health Advisor
 
-## Overview
+An **AI-powered Air Quality Intelligence Platform** that transforms real-time AQI data into **personalized health insights, predictive alerts, and preventive recommendations** using Machine Learning and Generative AI.
 
-AQI Smart Health Advisor is a web and mobile application designed to address the growing health risks caused by air pollution. The platform continuously tracks real-time Air Quality Index (AQI) data and combines it with user-specific information—such as age, health conditions, and lifestyle habits—to predict potential health impacts using machine learning.
+---
 
-Based on this analysis, the app delivers personalized health advisories, preventive measures, and safety guidelines to help individuals, families, and communities minimize pollution-related health risks. The solution focuses on awareness, early prevention, and data-driven decision-making for better public health outcomes.
+## 📌 Overview
 
-## Key Features
+**AQI Smart Health Advisor** is a web-based application designed to reduce the health risks associated with air pollution through **data-driven awareness and personalized guidance**.
 
-- Real-time AQI monitoring from trusted public data sources
-- Multi-pollutant support (PM2.5, PM10, O₃, NO₂, CO, SO₂)
-- AI-driven health impact prediction based on user profiles
-- Personalized recommendations for children, elderly users, and people with respiratory or cardiac conditions
-- Preventive measures and lifestyle guidance during high pollution levels
-- Location-based advisories and alerts
-- Historical AQI trends and exposure summaries
-- Community and family safety recommendations
+The platform continuously monitors real-time **Air Quality Index (AQI)** data from trusted public sources and combines it with **user-specific health and lifestyle data** such as age, outdoor exposure, activity level, and pollution sensitivity.
 
-## AQI Categories & Health Guidance
+Using **Machine Learning models** and **Gemini AI**, the system predicts near-future AQI trends and generates **context-aware health recommendations**, helping users make safer decisions in polluted environments.
 
-- **Good (0–50):** Air quality is satisfactory; no health risk for the general population.
-- **Moderate (51–100):** Acceptable for most users; sensitive individuals should limit prolonged outdoor activity.
-- **Unhealthy for Sensitive Groups (101–150):** Increased risk for children, elderly, and individuals with heart or lung conditions.
-- **Unhealthy (151–200):** Health effects possible for everyone; outdoor exertion should be avoided.
-- **Very Unhealthy (201–300):** Serious health risks; stay indoors and follow strict preventive measures.
-- **Hazardous (301–500):** Emergency conditions; minimize exposure and follow official health advisories.
+---
 
-All advisories are configurable and can include mask usage, indoor air quality tips, activity restrictions, and medication reminders.
+## 🚀 Core Features
 
-## System Architecture
+### 🌫️ Real-Time AQI Monitoring
+- Live AQI data using **WAQI API**
+- Supports city-based and GPS-based AQI detection
+- Standardized AQI categories with health impact interpretation
 
-- **Data Ingestion:** Real-time AQI data from public APIs and optional local sensors
-- **Backend:** AQI normalization, health risk prediction, recommendation engine, user profiling
-- **Frontend:** Responsive web dashboard and mobile application
-- **Database:** Storage of AQI history, user profiles, and exposure data
-- **Notification System:** Alerts via push notifications, email, or SMS
-- **Optional GIS Layer:** Location-aware advisories and regional pollution insights
+### 🧠 AI-Powered Personalized Health Advisory
+- Uses **Gemini AI** for natural-language recommendations
+- Considers:
+  - AQI level & pollutants
+  - User age and gender
+  - Health problems (stored as structured inputs)
+  - Outdoor working duration
+  - Pollution sensitivity and physical activity level
 
-## Suggested Tech Stack
+### 📊 AQI Prediction (Machine Learning)
+- Predicts short-term AQI trends
+- Helps users plan outdoor activities proactively
 
-- **Backend:** Python (Flask / FastAPI) or Node.js
-- **Machine Learning:** Scikit-learn / TensorFlow (for health impact prediction)
-- **Frontend:** React (Web), React Native / Flutter (Mobile)
-- **Database:** PostgreSQL / Time-series database (TimescaleDB, InfluxDB)
-- **Deployment:** Docker, cloud-based hosting (AWS / GCP / Azure)
-- **CI/CD:** GitHub Actions
+### 👤 User Health Profiling
+- Numeric health parameters (1–10 scale) for AI compatibility
+- Structured MySQL schema for explainable AI reasoning
+- Enables adaptive and personalized advisories
+
+### 🔐 Secure Authentication
+- OTP-based user verification
+- Secure credential storage
+- Session-based access control
+
+---
+
+## 🧪 Supported Pollutants
+
+- PM2.5
+- PM10
+- O₃ (Ozone)
+- NO₂
+- CO
+- SO₂
+
+---
+
+## 🚦 AQI Categories & Health Guidance
+
+| AQI Range | Category | Health Guidance |
+|----------|----------|----------------|
+| 0–50 | Good | No health risk |
+| 51–100 | Moderate | Sensitive individuals should limit prolonged outdoor activity |
+| 101–150 | Unhealthy for Sensitive Groups | Increased risk for children, elderly, and people with respiratory conditions |
+| 151–200 | Unhealthy | Everyone may experience health effects |
+| 201–300 | Very Unhealthy | Serious health effects; stay indoors |
+| 301–500 | Hazardous | Emergency conditions; avoid exposure |
+
+Health advisories include **mask usage**, **activity restrictions**, **medication reminders**, and **indoor air safety tips**.
+
+---
+
+## 🧠 AI Recommendation Flow
+
+1. Fetch real-time AQI data
+2. Normalize AQI to Indian standards
+3. Load user health profile from MySQL
+4. Combine AQI + health risk factors
+5. Generate structured prompt
+6. Gemini AI produces actionable health guidance
+
+---
+
+## 🧱 System Architecture
+
+### Backend
+- Flask (REST APIs)
+- AQI normalization & processing
+- ML-based AQI prediction
+- AI recommendation engine
+
+### Frontend
+- HTML, CSS, JavaScript
+- Interactive AQI dashboards
+- User health input forms
+
+### Database
+- MySQL
+- Stores:
+  - User authentication data
+  - Health profiles
+  - Exposure-related attributes
+
+### AI & ML
+- Gemini API (Generative recommendations)
+- Scikit-learn (AQI prediction models)
+
+---
+
+## 🛠️ Tech Stack
+
+**Backend**
+- Python (Flask)
+- RESTful APIs
+
+**Frontend**
+- HTML5
+- CSS3
+- JavaScript
+
+**AI & ML**
+- Gemini AI
+- Scikit-learn
+- Pandas, NumPy
+
+**Database**
+- MySQL
+
+**APIs**
+- WAQI
+- OpenWeather (optional)
+
+---
+
+## 📁 Project Structure
+
+```text
+AQI_SMART_HEALTH_ADVISOR_WEB_APP/
+│
+├── app/
+│   ├── routes/
+│   ├── models/
+│   ├── static/
+│   ├── templates/
+│   ├──init.py
+│
+├── run.py
+├── requirements.txt
+├── README.md
+```
 
 ## Getting Started
 
 1. Clone the repository
 2. Configure environment variables for AQI data sources and notification providers
 3. Install backend and frontend dependencies
-4. Run backend and frontend services locally
-5. Create or import user profiles to receive personalized AQI health recommendations
+4. Create MySql database and tables
+5. Create a SMTP API key on Brevo and add in the app/init.py
+6. Run backend and frontend services locally
+7. Create user profiles to receive personalized AQI health recommendations
 
 ## Data Sources & Reliability
 
 - Integrates with trusted public AQI providers (e.g., WAQI, OpenAQ)
 - Supports calibration for improved accuracy with local sensors
-- Designed to adapt to regional AQI standards and scales
+- Uses WAQI standard AQI scale
 
 ## Customization & Extensibility
 
@@ -69,7 +175,7 @@ All advisories are configurable and can include mask usage, indoor air quality t
 
 ## Privacy & Ethics
 
-- Minimal personal data collection — only what is required for personalization and notifications
+- Minimal personal data collection — only what is required for personalization and notifications(temporary during session + 1hr only)
 - User data used only for health personalization and analytics with clear consent
 - Built with privacy, transparency, and regulatory compliance in mind
 
