@@ -26,17 +26,17 @@ def create_app():
     # ========== MYSQL CONFIGURATION ==========
     app.config['MYSQL_HOST'] = "localhost"
     app.config['MYSQL_USER'] = "root"
-    app.config['MYSQL_PASSWORD'] = "My@MySql8044"
+    app.config['MYSQL_PASSWORD'] = "password_here"
     app.config['MYSQL_DATABASE'] = "aqi_app_db"
     
     # ========== MAIL CONFIGURATION ==========
     # Brevo SMTP config
-    app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
+    app.config['MAIL_SERVER'] = 'mail_server'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = '969fcc001@smtp-brevo.com'
-    app.config['MAIL_PASSWORD'] = 'xsmtpsib-2d7e8d94c7a80158e62323dd015b24864969f5183eafae9b3752555f756e275d-diEpUbGSYI0AExBV'
-    app.config['MAIL_DEFAULT_SENDER'] = 'pkthisisfor1234@gmail.com'
+    app.config['MAIL_USERNAME'] = 'mail_username'
+    app.config['MAIL_PASSWORD'] = 'password'
+    app.config['MAIL_DEFAULT_SENDER'] = 'your_account_email'
     mail.init_app(app)
     
     # socketio.init_app(app, cors_allowed_origins="*")
