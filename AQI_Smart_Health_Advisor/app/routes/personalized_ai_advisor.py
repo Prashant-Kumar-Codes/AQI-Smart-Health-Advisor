@@ -11,7 +11,7 @@ from flask import session
 from datetime import datetime
 
 # Gemini API Configuration
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyC8R96XiTZ1U90D5N-YztBh9VpZQbuWoNE')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'GeminiAPIKey')
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 

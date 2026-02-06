@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 # OpenWeather API Configuration
-API_KEY = "6589ed49a6410165ea63662b113ed824"
+API_KEY = "YOUR_OPEN_WEATHER_API"
 API_HISTORICAL_URL = "http://api.openweathermap.org/data/2.5/air_pollution/history"
 
 # Database Configuration

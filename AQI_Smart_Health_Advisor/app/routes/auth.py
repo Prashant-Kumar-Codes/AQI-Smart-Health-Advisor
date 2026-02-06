@@ -14,7 +14,6 @@ mycon_obj = mysql.connector.connect(
     password='admin123',
     database='college_placement_database'
 )
-# mycon_obj = mysql.connector.connect( host="sql12.freesqldatabase.com", user="sql12805427", password="xtFCQmMibE", database="sql12805427")
 
 cursor_auth = mycon_obj.cursor(dictionary=True)
 
