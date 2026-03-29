@@ -27,7 +27,7 @@ def cleanup_stale_unverified():
     cutoff = datetime.now() - timedelta(seconds=STALE_ACCOUNT_SECONDS)
     try:
         cursor_auth.execute(
-            "DELETE FROM login_data WHERE is_verified=0 AND otp_created_at IS NOT NULL AND otp_created_at < %s",
+            "DELETE FROM aqi_login_data WHERE is_verified=0 AND otp_created_at IS NOT NULL AND otp_created_at < %s",
             (cutoff,)
         )
         mycon_obj.commit()
@@ -73,13 +73,13 @@ def signup():
             return redirect(url_for('auth.login_signup_page'))
 
         # Check if email already exists
-        cursor_auth.execute('SELECT email, is_verified FROM login_data WHERE email=%s', (email,))
+        cursor_auth.execute('SELECT email, is_verified FROM aqi_login_data WHERE email=%s', (email,))
         existing_user = cursor_auth.fetchone()
 
         if existing_user:
             if existing_user['is_verified'] == 0:
                 # Delete unverified account and allow re-signup
-                cursor_auth.execute("DELETE FROM login_data WHERE email=%s", (email,))
+                cursor_auth.execute("DELETE FROM aqi_login_data WHERE email=%s", (email,))
                 mycon_obj.commit()
                 flash('Previous attempt was incomplete. Please try again.', "info")
             else:
@@ -102,7 +102,7 @@ def signup():
 
             # Insert into database
             cursor_auth.execute(
-                "INSERT INTO login_data (username, email, password, role, otp, otp_created_at, is_verified) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO aqi_login_data (username, email, password, role, otp, otp_created_at, is_verified) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 (username, email, password, role, otp, now, 0)
             )
             mycon_obj.commit()
@@ -135,7 +135,7 @@ def login():
 
         # Check if user exists and password matches
         cursor_auth.execute(
-            "SELECT * FROM login_data WHERE email=%s AND password=%s",
+            "SELECT * FROM aqi_login_data WHERE email=%s AND password=%s",
             (email, password)
         )
         user = cursor_auth.fetchone()
@@ -155,7 +155,7 @@ def login():
                         print('\ninside try --\n', user['user'])
                         unique_id = user['user'][0:3] + str(random.randint(10000,99999))
                         cursor_auth.execute(
-                            "INSERT INTO login_data SET unique_id = %s where email = %s",
+                            "INSERT INTO aqi_login_data SET unique_id = %s where email = %s",
                             (unique_id,user['email'])
                         )
                         session['unique_id'] = unique_id
@@ -209,7 +209,7 @@ def verify():
             flash("Please enter the OTP.", "danger")
             return redirect(url_for('auth.verify'))
 
-        cursor_auth.execute("SELECT * FROM login_data WHERE email=%s", (email,))
+        cursor_auth.execute("SELECT * FROM aqi_login_data WHERE email=%s", (email,))
         user = cursor_auth.fetchone()
 
         if not user or not user.get('otp') or not user.get('otp_created_at'):
@@ -230,7 +230,7 @@ def verify():
 
             if user['otp'] == entered_otp:
                 cursor_auth.execute(
-                    "UPDATE login_data SET is_verified = 1, otp = NULL, otp_created_at = NULL WHERE email = %s",
+                    "UPDATE aqi_login_data SET is_verified = 1, otp = NULL, otp_created_at = NULL WHERE email = %s",
                     (email,)
                 )
                 mycon_obj.commit()
@@ -252,7 +252,7 @@ def verify():
     # GET request - show verify page
     remaining = 0
     try:
-        cursor_auth.execute("SELECT otp_created_at FROM login_data WHERE email=%s", (email,))
+        cursor_auth.execute("SELECT otp_created_at FROM aqi_login_data WHERE email=%s", (email,))
         data = cursor_auth.fetchone()
         if data and data['otp_created_at']:
             otp_created_at = data['otp_created_at']
@@ -275,7 +275,7 @@ def resend_otp():
         flash("Session expired. Please sign up again.", "danger")
         return redirect(url_for('auth.login_signup_page'))
 
-    cursor_auth.execute("SELECT otp_created_at FROM login_data WHERE email=%s", (email,))
+    cursor_auth.execute("SELECT otp_created_at FROM aqi_login_data WHERE email=%s", (email,))
     data = cursor_auth.fetchone()
 
     if data and data['otp_created_at']:
@@ -293,7 +293,7 @@ def resend_otp():
     otp_created_at = datetime.utcnow()
     try:
         cursor_auth.execute(
-            "UPDATE login_data SET otp=%s, otp_created_at=%s WHERE email=%s",
+            "UPDATE aqi_login_data SET otp=%s, otp_created_at=%s WHERE email=%s",
             (otp, otp_created_at, email)
         )
         mycon_obj.commit()

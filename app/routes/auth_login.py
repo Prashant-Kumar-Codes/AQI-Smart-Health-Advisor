@@ -39,7 +39,7 @@ def verify_page():
     
     mycon = get_db_connection()
     cursor = mycon.cursor()
-    cursor.execute("SELECT otp_created_at FROM login_data WHERE email = %s", (email,))
+    cursor.execute("SELECT otp_created_at FROM aqi_login_data WHERE email = %s", (email,))
     result = cursor.fetchone()
     cursor.close()
     mycon.close()
@@ -74,7 +74,7 @@ def verify():
         mycon = get_db_connection()
         cursor = mycon.cursor()
         cursor.execute(
-            "SELECT otp, otp_created_at FROM login_data WHERE email = %s",
+            "SELECT otp, otp_created_at FROM aqi_login_data WHERE email = %s",
             (email,)
         )
         result = cursor.fetchone()
@@ -103,7 +103,7 @@ def verify():
         
         # Mark as verified
         cursor.execute(
-            "UPDATE login_data SET is_verified = TRUE, otp = NULL WHERE email = %s",
+            "UPDATE aqi_login_data SET is_verified = TRUE, otp = NULL WHERE email = %s",
             (email,)
         )
         mycon.commit()
@@ -142,7 +142,7 @@ def resend_otp():
         mycon = get_db_connection()
         cursor = mycon.cursor()
         cursor.execute(
-            "UPDATE login_data SET otp = %s, otp_created_at = NOW() WHERE email = %s",
+            "UPDATE aqi_login_data SET otp = %s, otp_created_at = NOW() WHERE email = %s",
             (otp, email)
         )
         mycon.commit()
@@ -187,7 +187,7 @@ def login():
         
         mycon = get_db_connection()
         cursor = mycon.cursor()
-        cursor.execute("SELECT id, username, email, age, gender, city, password, is_verified FROM login_data WHERE email = %s", (email,))
+        cursor.execute("SELECT id, username, email, age, gender, city, password, is_verified FROM aqi_login_data WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
         mycon.close()
@@ -286,7 +286,7 @@ def signup():
         cursor = mycon.cursor()
         
         # Check if email already exists
-        cursor.execute("SELECT email FROM login_data WHERE email = %s", (email,))
+        cursor.execute("SELECT email FROM aqi_login_data WHERE email = %s", (email,))
         if cursor.fetchone():
             cursor.close()
             mycon.close()
@@ -294,7 +294,7 @@ def signup():
         
         # Insert user
         cursor.execute(
-            """INSERT INTO login_data (username, email, age, gender, city, password, otp, otp_created_at, is_verified) 
+            """INSERT INTO aqi_login_data (username, email, age, gender, city, password, otp, otp_created_at, is_verified) 
                VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), FALSE)""",
             (username, email, age, gender, city, hashed_password, otp)
         )

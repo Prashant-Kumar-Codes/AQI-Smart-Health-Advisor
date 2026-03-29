@@ -9,9 +9,9 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyC8R96XiTZ1U90D5N-YztBh9VpZQb
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 
-def get_user_profile_from_login_data(user_id, db):
+def get_user_profile_from_aqi_login_data(user_id, db):
     """
-    Retrieve user profile from login_data table
+    Retrieve user profile from aqi_login_data table
     
     Args:
         user_id: User ID from session
@@ -25,7 +25,7 @@ def get_user_profile_from_login_data(user_id, db):
         
         query = """
         SELECT username, email, age, gender, city
-        FROM login_data
+        FROM aqi_login_data
         WHERE id = %s AND is_verified = TRUE
         """
         
@@ -49,7 +49,7 @@ def get_user_health_profile(email, db):
     Uses only fields that have data (NULL fields are ignored)
     
     Args:
-        email: User email from login_data
+        email: User email from aqi_login_data
         db: Database connection
         
     Returns:
@@ -109,7 +109,7 @@ def build_user_context_string(login_profile, health_profile=None):
     Only includes data that is present
     
     Args:
-        login_profile: User profile from login_data
+        login_profile: User profile from aqi_login_data
         health_profile: Health profile (filtered, only non-NULL fields)
         
     Returns:
@@ -120,7 +120,7 @@ def build_user_context_string(login_profile, health_profile=None):
     
     context_parts = []
     
-    # ========== BASIC INFO FROM LOGIN_DATA ==========
+    # ========== BASIC INFO FROM aqi_login_data ==========
     if login_profile:
         if login_profile.get('username'):
             context_parts.append(f"User: {login_profile['username']}")
@@ -238,7 +238,7 @@ def generate_personalized_recommendation(aqi_value, aqi_category, location, logi
         aqi_value: Current AQI value
         aqi_category: AQI category (Good, Moderate, etc.)
         location: Location name
-        login_profile: User profile from login_data
+        login_profile: User profile from aqi_login_data
         health_profile: Health profile from user_health_profile (filtered)
         pollutants: Dictionary of pollutant concentrations
         weather: Weather data dictionary
@@ -408,7 +408,7 @@ def get_fallback_recommendation(aqi_value, aqi_category, login_profile=None, hea
     Args:
         aqi_value: Current AQI value
         aqi_category: AQI category
-        login_profile: User profile from login_data
+        login_profile: User profile from aqi_login_data
         health_profile: Health profile from user_health_profile
         
     Returns:
@@ -579,7 +579,7 @@ EXTREME DANGER for ALL age groups. Life-threatening conditions for everyone, esp
 def handle_personalized_recommendation_request(request_data, db_connection):
     """
     Handle Flask request for personalized recommendation
-    Fetches BOTH login_data and user_health_profile (if available)
+    Fetches BOTH aqi_login_data and user_health_profile (if available)
     
     Args:
         request_data: Request JSON data
@@ -604,8 +604,8 @@ def handle_personalized_recommendation_request(request_data, db_connection):
         if user_id:
             print(f"👤 User ID {user_id} is logged in - fetching profiles...")
             
-            # Get basic profile from login_data
-            login_profile = get_user_profile_from_login_data(user_id, db_connection)
+            # Get basic profile from aqi_login_data
+            login_profile = get_user_profile_from_aqi_login_data(user_id, db_connection)
             
             if login_profile and login_profile.get('email'):
                 # Get extended health profile if available

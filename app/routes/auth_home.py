@@ -14,7 +14,7 @@ def get_active_user_count():
             return 0
         cursor_home_auth = conn.cursor()
         # Fixed SQL query - removed space in table name
-        query = 'SELECT COUNT(id) FROM login_data;'
+        query = 'SELECT COUNT(id) FROM aqi_login_data;'
         cursor_home_auth.execute(query)
         result = cursor_home_auth.fetchone()
         cursor_home_auth.close()

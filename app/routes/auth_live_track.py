@@ -363,7 +363,7 @@ def store_alert_in_db(user_email, alert, recommendations):
         
         query = """
         INSERT INTO tracking_alerts 
-        (user_email, alert_type, timestamp, location, latitude, longitude, 
+        (user_email, alert_type, alert_timestamp, location, latitude, longitude, 
          aqi, aqi_category, message, recommendations, pollutants, expiry_time)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
@@ -411,11 +411,11 @@ def get_alerts_from_db(user_email):
         
         # Get active alerts
         query = """
-        SELECT alert_type, timestamp, location, latitude, longitude,
+        SELECT alert_type, alert_timestamp, location, latitude, longitude,
                aqi, aqi_category, message, recommendations, pollutants
         FROM tracking_alerts
         WHERE user_email = %s AND expiry_time >= NOW()
-        ORDER BY timestamp DESC
+        ORDER BY alert_timestamp DESC
         LIMIT 50
         """
         

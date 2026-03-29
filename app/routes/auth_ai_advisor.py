@@ -470,7 +470,7 @@ def check_user_logged_in():
                 return jsonify({'logged_in': False, 'error': 'Database connection failed'}), 500
             cursor = conn.cursor()
             print('cursor is created successfully')
-            cursor.execute("SELECT username, email, age, gender, city FROM login_data WHERE id = %s", (user_id,))
+            cursor.execute("SELECT username, email, age, gender, city FROM aqi_login_data WHERE id = %s", (user_id,))
             user = cursor.fetchone()
             cursor.close()
             conn.close()
@@ -514,7 +514,7 @@ def get_user_city():
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute("SELECT city FROM login_data WHERE id = %s", (session.get('user_id'),))
+            cursor.execute("SELECT city FROM aqi_login_data WHERE id = %s", (session.get('user_id'),))
             result = cursor.fetchone()
             cursor.close()
             conn.close()
