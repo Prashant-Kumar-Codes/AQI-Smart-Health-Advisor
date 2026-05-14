@@ -1,12 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mail import Message
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import psycopg2
 import random
 from app.db import get_db_connection
-from app.__init__ import mail
-
 
 login_auth = Blueprint('login_auth', __name__)
 
@@ -40,22 +38,21 @@ def verify_page():
     email = session['verification_email']
     
     mycon = get_db_connection()
-    if not mycon:
-        flash('Database connection failed. Please try again later.', 'error')
-        return redirect(url_for('home_auth.aqi_homepage'))
-        
     cursor = mycon.cursor()
-    cursor.execute("SELECT otp_created_at FROM aqi_login_data WHERE email = %s", (email,))
+    cursor.execute("SELECT otp_created_at FROM login_data WHERE email = %s", (email,))
     result = cursor.fetchone()
     cursor.close()
     mycon.close()
     
-    remaining = 600  # Default 10 minutes
+    remaining = 300  # Default 5 minutes
     if result and result[0]:
         otp_created_at = result[0]
-        # Use utcnow() to match DB (UTC)
-        elapsed = (datetime.utcnow() - otp_created_at).total_seconds()
-        remaining = max(0, 600 - int(elapsed))  # 600 seconds = 10 minutes
+        # Ensure otp_created_at is timezone-aware (assume UTC from DB)
+        if otp_created_at.tzinfo is None:
+            otp_created_at = otp_created_at.replace(tzinfo=timezone.utc)
+            
+        elapsed = (datetime.now(timezone.utc) - otp_created_at).total_seconds()
+        remaining = max(0, 300 - int(elapsed))  # 300 seconds = 5 minutes
     
     return render_template('auth/verify.html', remaining=remaining)
 
@@ -79,13 +76,9 @@ def verify():
             return redirect(url_for('login_auth.verify_page'))
         
         mycon = get_db_connection()
-        if not mycon:
-            flash('Database connection failed. Please try again later.', 'error')
-            return redirect(url_for('login_auth.verify_page'))
-            
         cursor = mycon.cursor()
         cursor.execute(
-            "SELECT otp, otp_created_at FROM aqi_login_data WHERE email = %s",
+            "SELECT otp, otp_created_at FROM login_data WHERE email = %s",
             (email,)
         )
         result = cursor.fetchone()
@@ -98,9 +91,12 @@ def verify():
         
         stored_otp, otp_created_at = result
         
-        # Check if OTP is expired (10 minutes)
-        # Use utcnow() to match DB (UTC)
-        if datetime.utcnow() - otp_created_at > timedelta(minutes=10):
+        # Ensure otp_created_at is timezone-aware
+        if otp_created_at.tzinfo is None:
+            otp_created_at = otp_created_at.replace(tzinfo=timezone.utc)
+            
+        # Check if OTP is expired (5 minutes)
+        if datetime.now(timezone.utc) - otp_created_at > timedelta(minutes=5):
             cursor.close()
             mycon.close()
             flash('OTP has expired. Please request a new code.', 'error')
@@ -115,7 +111,7 @@ def verify():
         
         # Mark as verified
         cursor.execute(
-            "UPDATE aqi_login_data SET is_verified = TRUE, otp = NULL WHERE email = %s",
+            "UPDATE login_data SET is_verified = TRUE, otp = NULL WHERE email = %s",
             (email,)
         )
         mycon.commit()
@@ -152,13 +148,9 @@ def resend_otp():
         otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
         
         mycon = get_db_connection()
-        if not mycon:
-            flash('Database connection failed. Please try again later.', 'error')
-            return redirect(url_for('login_auth.verify_page'))
-            
         cursor = mycon.cursor()
         cursor.execute(
-            "UPDATE aqi_login_data SET otp = %s, otp_created_at = NOW() WHERE email = %s",
+            "UPDATE login_data SET otp = %s, otp_created_at = CURRENT_TIMESTAMP AT TIME ZONE 'UTC' WHERE email = %s",
             (otp, email)
         )
         mycon.commit()
@@ -202,11 +194,8 @@ def login():
             return jsonify({'success': False, 'message': 'Email and password required'}), 400
         
         mycon = get_db_connection()
-        if not mycon:
-            return jsonify({'success': False, 'message': 'Database connection failed'}), 503
-            
         cursor = mycon.cursor()
-        cursor.execute("SELECT id, username, email, age, gender, city, password, is_verified FROM aqi_login_data WHERE email = %s", (email,))
+        cursor.execute("SELECT id, username, email, age, gender, city, password, is_verified FROM login_data WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
         mycon.close()
@@ -240,7 +229,7 @@ def login():
         print(f'Session Data : {user_id}, {username}, {user_email}, {age}, {gender}, {city}')
         
         # FIXED: Better redirect handling
-        redirect_url = '/'  # Default
+        redirect_url = '/check_aqi'  # Default
         
         if redirect_to:
             # Direct page names
@@ -302,13 +291,10 @@ def signup():
         otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
         
         mycon = get_db_connection()
-        if not mycon:
-            return jsonify({'success': False, 'message': 'Database connection failed'}), 503
-            
         cursor = mycon.cursor()
         
         # Check if email already exists
-        cursor.execute("SELECT email FROM aqi_login_data WHERE email = %s", (email,))
+        cursor.execute("SELECT email FROM login_data WHERE email = %s", (email,))
         if cursor.fetchone():
             cursor.close()
             mycon.close()
@@ -316,8 +302,8 @@ def signup():
         
         # Insert user
         cursor.execute(
-            """INSERT INTO aqi_login_data (username, email, age, gender, city, password, otp, otp_created_at, is_verified) 
-               VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), FALSE)""",
+            """INSERT INTO login_data (username, email, age, gender, city, password, otp, otp_created_at, is_verified) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP AT TIME ZONE 'UTC', FALSE)""",
             (username, email, age, gender, city, hashed_password, otp)
         )
         mycon.commit()
@@ -334,6 +320,12 @@ def signup():
             print(f"✓ OTP sent to {email}")
         except Exception as e:
             print(f"⚠ Failed to send OTP email: {e}")
+            # If email fails, we should probably inform the user or even rollback, 
+            # but for now let's at least include it in the response
+            return jsonify({
+                'success': False, 
+                'message': f'Account created but failed to send verification email: {str(e)}. Please try Resend OTP.'
+            }), 500
         
         return jsonify({
             'success': True, 
@@ -477,7 +469,7 @@ def send_otp_email(email, otp, username):
                 </div>
                 
                 <div class="message-box">
-                    This OTP is valid for <strong>10 minutes</strong>. Please enter it in the verification page to complete your registration.
+                    This OTP is valid for <strong>5 minutes</strong>. Please enter it in the verification page to complete your registration.
                 </div>
                 
                 <div class="warning-box">
@@ -494,6 +486,9 @@ def send_otp_email(email, otp, username):
     """
         )
         mail.send(msg)
+        print('✅ --------OTP Sent Successfully----------')
     except Exception as e:
-        print(f"Error sending email: {e}")
-        raise
+        print(f"❌ Error sending email to {email}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise Exception(f"SMTP Error: {str(e)}")
