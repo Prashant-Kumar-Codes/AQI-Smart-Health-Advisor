@@ -10,11 +10,12 @@ from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 from math import radians, sin, cos, sqrt, atan2
 import os
 from flask import Blueprint, request, jsonify
+from datetime import datetime
 
-# AQI API Configuration
-WAQI_API_TOKEN = os.getenv('WAQI_API_TOKEN', '46797eab2434e3cb85537e21e9a80bcb309220e3')
-WAQI_BASE_URL = 'https://api.waqi.info'
-
+# OpenWeather API Configuration
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '').strip()
+OPENWEATHER_BASE_URL = 'http://api.openweathermap.org/data/2.5'
+OPENWEATHER_AQI_URL = 'http://api.openweathermap.org/data/2.5'
 
 class LocationService:
     """Centralized location and AQI service"""
@@ -146,38 +147,93 @@ class LocationService:
                 'error': str(e)
             }
     
+    def calculate_aqi(self, pollutants):
+        """
+        Calculate standard AQI (0-500) from pollutant concentrations
+        Based on Indian CPCB breakpoints
+        pollutants: dict with concentrations in µg/m³
+        """
+        breakpoints = {
+            'pm25': [(0, 30, 0, 50), (31, 60, 51, 100), (61, 90, 101, 200), (91, 120, 201, 300), (121, 250, 301, 400), (251, 1000, 401, 500)],
+            'pm10': [(0, 50, 0, 50), (51, 100, 51, 100), (101, 250, 101, 200), (251, 350, 201, 300), (351, 430, 301, 400), (431, 1000, 401, 500)],
+            'no2': [(0, 40, 0, 50), (41, 80, 51, 100), (81, 180, 101, 200), (181, 280, 201, 300), (281, 400, 301, 400), (401, 1000, 401, 500)],
+            'so2': [(0, 40, 0, 50), (41, 80, 51, 100), (81, 380, 101, 200), (381, 800, 201, 300), (801, 1600, 301, 400), (1601, 2500, 401, 500)],
+            'co': [(0, 1000, 0, 50), (1001, 2000, 51, 100), (2001, 10000, 101, 200), (10001, 17000, 201, 300), (17001, 34000, 301, 400), (34001, 100000, 401, 500)],
+            'o3': [(0, 50, 0, 50), (51, 100, 51, 100), (101, 168, 101, 200), (169, 208, 201, 300), (209, 748, 301, 400), (749, 1500, 401, 500)]
+        }
+        
+        aqi_values = []
+        for p, concentration in pollutants.items():
+            if p in breakpoints and concentration is not None:
+                # OWM gives CO in µg/m³, CPCB uses mg/m³ (so we use µg scale in breakpoints above)
+                for lo, hi, aqi_lo, aqi_hi in breakpoints[p]:
+                    if lo <= concentration <= hi:
+                        aqi = ((aqi_hi - aqi_lo) / (hi - lo)) * (concentration - lo) + aqi_lo
+                        aqi_values.append(aqi)
+                        break
+        
+        return round(max(aqi_values)) if aqi_values else 0
+
     def get_aqi_by_coordinates(self, lat, lon):
-        """
-        Fetch AQI data using precise coordinates
-        Returns: dict with AQI data
-        """
         try:
-            print(f"\n🌡️ Fetching AQI for: {lat:.4f}, {lon:.4f}")
+            print(f"\n🌡️ Fetching AQI for: {lat:.4f}, {lon:.4f} (OpenWeatherMap)")
             
-            url = f"{WAQI_BASE_URL}/feed/geo:{lat};{lon}/?token={WAQI_API_TOKEN}"
+            # --- ADD THIS CHECK ---
+            if not OPENWEATHER_API_KEY:
+                print("❌ OPENWEATHER_API_KEY is not set!")
+                return {'success': False, 'error': 'OpenWeather API key not configured'}
             
+            url = f"{OPENWEATHER_AQI_URL}/air_pollution?lat={lat}&lon={lon}&appid={OPENWEATHER_API_KEY}"
             response = requests.get(url, timeout=10)
             data = response.json()
             
-            if data.get('status') != 'ok':
-                return {
-                    'success': False,
-                    'error': 'AQI data not available for this location'
-                }
+            # --- IMPROVE THIS BLOCK ---
+            if response.status_code != 200:
+                print(f"❌ OpenWeatherMap API Error: Status {response.status_code}")
+                print(f"   Response: {response.text[:300]}")   # <-- was already here, extend to 300 chars
+                return {'success': False, 'error': f'AQI API Error (Status {response.status_code}): {data.get("message", "")}'}
             
-            station_data = data.get('data', {})
-            aqi_value = station_data.get('aqi', 0)
-            station_name = station_data.get('city', {}).get('name', 'Unknown Station')
+            if not data.get('list'):
+                print(f"⚠️ OWM returned empty list. Full response: {data}")   # <-- log full response
+                return {'success': False, 'error': 'AQI data not available for this location'}
             
-            print(f"✅ AQI data retrieved: {aqi_value} from {station_name}")
+            # ... rest unchanged
             
+            main_data = data['list'][0]
+            components = main_data.get('components', {})
+            owm_aqi = main_data.get('main', {}).get('aqi', 0)
+            
+            # Map OWM components to standard names
+            pollutants = {
+                'pm25': components.get('pm2_5'),
+                'pm10': components.get('pm10'),
+                'no2': components.get('no2'),
+                'so2': components.get('so2'),
+                'co': components.get('co'),
+                'o3': components.get('o3'),
+                'nh3': components.get('nh3'),
+                'no': components.get('no')
+            }
+            
+            # Calculate standard AQI (0-500)
+            calculated_aqi = self.calculate_aqi(pollutants)
+            
+            # Use geocoding to get station name (as station name isn't in OWM response)
+            reverse_result = self.reverse_geocode(lat, lon)
+            station_name = reverse_result['display_name'] if reverse_result['success'] else "Local Area"
+            
+            print(f"✅ AQI data retrieved: {calculated_aqi} (OWM Index: {owm_aqi})")
+            
+            # Format to match previous WAQI structure for compatibility
             return {
                 'success': True,
-                'aqi': aqi_value,
-                'city': station_data.get('city', {}),
-                'iaqi': station_data.get('iaqi', {}),
-                'time': station_data.get('time', {}),
-                'dominentpol': station_data.get('dominentpol'),
+                'aqi': calculated_aqi,
+                'owm_aqi': owm_aqi,
+                'city': {'name': station_name, 'geo': [lat, lon]},
+                'iaqi': {k: {'v': v} for k, v in pollutants.items() if v is not None},
+                'pollutants': pollutants,
+                'time': {'s': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'tz': 'UTC'},
+                'dominentpol': max(pollutants, key=lambda x: pollutants[x] if pollutants[x] else 0),
                 'station_name': station_name
             }
             
