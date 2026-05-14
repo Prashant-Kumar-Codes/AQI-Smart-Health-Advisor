@@ -104,7 +104,7 @@
     const verifyForm = document.getElementById('verifyForm');
     const resendForm = document.getElementById('resendForm');
 
-    let timeLeft = parseInt("{{ remaining|default(60) }}") || 60;
+    let timeLeft = parseInt("{{ remaining|default(300) }}") || 300;
     let timerInterval = null;
 
     function formatTime(seconds) {
@@ -181,7 +181,7 @@
         
         resendBtn.disabled = true;
         resendText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-        timeLeft = 60;
+        timeLeft = 300;
         
         fetch(resendForm.action, {
             method: 'POST',
