@@ -4,7 +4,6 @@ from flask_mail import Mail
 from dotenv import load_dotenv
 from datetime import timedelta
 import os
-from app.config.config import Config
 
 socketio = SocketIO()
 mail = Mail()
@@ -16,10 +15,30 @@ def create_app():
                 template_folder='templates')
     
     # ========== SESSION CONFIGURATION ==========
-    app.secret_key = os.getenv("SECRET_KEY")
+    app.secret_key = os.getenv("SECRET_KEY", "")
     
-    app.config.from_object(Config)
-
+    # IMPORTANT: Configure session to be permanent and last longer
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)  # Sessions last 7 days
+    app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+    app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to session cookie
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
+    #app.config['SESSION_REFRESH_EACH_REQUEST'] = True  # Refresh session on each request
+    
+    # ========== POSTGRESQL CONFIGURATION ==========
+    app.config['POSTGRES_HOST'] = os.getenv("POSTGRES_HOST", "")
+    app.config['POSTGRES_USER'] = os.getenv("POSTGRES_USER", "")
+    app.config['POSTGRES_PASSWORD'] = os.getenv("", "")
+    app.config['POSTGRES_DB'] = os.getenv("POSTGRES_DB", "")
+    app.config['POSTGRES_PORT'] = os.getenv("POSTGRES_PORT", "")
+    
+    # ========== MAIL CONFIGURATION ==========
+    # Brevo SMTP config
+    app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER", '')
+    app.config['MAIL_PORT'] = int(os.getenv("MAIL_PORT", ))
+    app.config['MAIL_USE_TLS'] = os.getenv("MAIL_USE_TLS", "True") == "True"
+    app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME", '')
+    app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD", '')
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER", '')
     mail.init_app(app)
     
     # socketio.init_app(app, cors_allowed_origins="*")
