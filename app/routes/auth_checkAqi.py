@@ -8,13 +8,9 @@ from .aqi_prediction_service import get_aqi_prediction, load_multi_horizon_model
 
 checkAqi_auth = Blueprint('checkAqi_auth', __name__)
 
-# AQI API Configuration
-WAQI_BASE_URL = 'https://api.waqi.info'
-WAQI_API_TOKEN = os.getenv('WAQI_API_TOKEN', '46797eab2434e3cb85537e21e9a80bcb309220e3')
-
 # OpenWeather API Configuration
 OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5'
-OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '6589ed49a6410165ea63662b113ed824')
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '').strip()
 
 # Load ML models at startup
 try:
@@ -71,31 +67,12 @@ def fetch_weather_data(lat, lon):
         return {}
 
 
-def parse_waqi_response(station_data):
-    """Parse WAQI API response and extract relevant data"""
+def parse_pollutants(aqi_data):
+    """Extract pollutants from OpenWeatherMap formatted response"""
     try:
-        iaqi = station_data.get('iaqi', {})
-        
-        pollutants = {}
-        
-        # Extract pollutant values
-        if 'pm25' in iaqi:
-            pollutants['pm25'] = iaqi['pm25'].get('v')
-        if 'pm10' in iaqi:
-            pollutants['pm10'] = iaqi['pm10'].get('v')
-        if 'o3' in iaqi:
-            pollutants['o3'] = iaqi['o3'].get('v')
-        if 'no2' in iaqi:
-            pollutants['no2'] = iaqi['no2'].get('v')
-        if 'so2' in iaqi:
-            pollutants['so2'] = iaqi['so2'].get('v')
-        if 'co' in iaqi:
-            pollutants['co'] = iaqi['co'].get('v')
-        
-        return pollutants
-        
+        return aqi_data.get('pollutants', {})
     except Exception as e:
-        print(f"⚠️ Parse WAQI response error: {e}")
+        print(f"⚠️ Parse pollutants error: {e}")
         return {}
 
 
@@ -127,21 +104,7 @@ def get_aqi_by_city(city_name):
         weather_data = fetch_weather_data(location_data['lat'], location_data['lon'])
         
         # Parse pollutants from AQI data
-        pollutants = {}
-        if 'iaqi' in aqi_data:
-            iaqi = aqi_data['iaqi']
-            if 'pm25' in iaqi:
-                pollutants['pm25'] = iaqi['pm25'].get('v')
-            if 'pm10' in iaqi:
-                pollutants['pm10'] = iaqi['pm10'].get('v')
-            if 'o3' in iaqi:
-                pollutants['o3'] = iaqi['o3'].get('v')
-            if 'no2' in iaqi:
-                pollutants['no2'] = iaqi['no2'].get('v')
-            if 'so2' in iaqi:
-                pollutants['so2'] = iaqi['so2'].get('v')
-            if 'co' in iaqi:
-                pollutants['co'] = iaqi['co'].get('v')
+        pollutants = aqi_data.get('pollutants', {})
         
         aqi_category = get_aqi_category(aqi_data['aqi'])
         
@@ -204,21 +167,7 @@ def get_aqi_by_geo():
         weather_data = fetch_weather_data(lat, lon)
         
         # Parse pollutants
-        pollutants = {}
-        if 'iaqi' in aqi_data:
-            iaqi = aqi_data['iaqi']
-            if 'pm25' in iaqi:
-                pollutants['pm25'] = iaqi['pm25'].get('v')
-            if 'pm10' in iaqi:
-                pollutants['pm10'] = iaqi['pm10'].get('v')
-            if 'o3' in iaqi:
-                pollutants['o3'] = iaqi['o3'].get('v')
-            if 'no2' in iaqi:
-                pollutants['no2'] = iaqi['no2'].get('v')
-            if 'so2' in iaqi:
-                pollutants['so2'] = iaqi['so2'].get('v')
-            if 'co' in iaqi:
-                pollutants['co'] = iaqi['co'].get('v')
+        pollutants = aqi_data.get('pollutants', {})
         
         aqi_category = get_aqi_category(aqi_data['aqi'])
         
@@ -339,24 +288,18 @@ def predict_aqi_by_geo():
 # EXISTING ENDPOINTS
 # ============================================================================
 
-@checkAqi_auth.route('/api/aqi/station/<uid>')
-def get_aqi_by_station(uid):
-    """Get specific station data"""
+@checkAqi_auth.route('/api/aqi/history/<lat>/<lon>')
+def get_aqi_history(lat, lon):
+    """Get historical data (using OpenWeatherMap Air Pollution History API)"""
     try:
-        url = f"{WAQI_BASE_URL}/feed/@{uid}/?token={WAQI_API_TOKEN}"
-        response = requests.get(url, timeout=10)
-        data = response.json()
+        from .aqi_prediction_service import fetch_historical_data_from_api
+        from datetime import datetime, timedelta
         
-        if data.get('status') == 'ok':
-            station_data = data['data']
-            aqi_value = station_data.get('aqi')
-            
-            if aqi_value:
-                station_data['category'] = get_aqi_category(int(aqi_value))
-            
-            return jsonify(station_data), 200
+        end_time = datetime.now()
+        start_time = end_time - timedelta(hours=24)
         
-        return jsonify({'error': 'Station not available'}), 404
+        history = fetch_historical_data_from_api(float(lat), float(lon), start_time, end_time)
+        return jsonify(history), 200
     except Exception as e:
         print(f"❌ Error: {e}")
         return jsonify({'error': str(e)}), 500
