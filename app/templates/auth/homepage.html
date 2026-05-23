@@ -29,18 +29,7 @@
     <section class="hero-section">
 
         <div class="hero-background">
-            <video class="bg-video video-desktop" autoplay muted loop playsinline disablePictureInPicture>
-                <source src="{{ url_for('static', filename='videos/1400x900HomepageBackgroundVideo.mp4') }}" type="video/mp4">
-            </video>
-            <video class="bg-video video-laptop" autoplay muted loop playsinline disablePictureInPicture>
-                <source src="{{ url_for('static', filename='videos/1200x900HomepageBackgroundVideo.mp4') }}" type="video/mp4">
-            </video>
-            <video class="bg-video video-tablet" autoplay muted loop playsinline disablePictureInPicture>
-                <source src="{{ url_for('static', filename='videos/800x900HomepageBackgroundVideo.mp4') }}" type="video/mp4">
-            </video>
-            <video class="bg-video video-mobile" autoplay muted loop playsinline disablePictureInPicture>
-                <source src="{{ url_for('static', filename='videos/500x900HomepageBackgroundVideo.mp4') }}" type="video/mp4">
-            </video>
+            <video id="homepage-bg-video" class="bg-video" autoplay muted loop playsinline disablePictureInPicture preload="metadata"></video>
         </div>
         
         <div class="hero-overlay"></div>
@@ -90,6 +79,35 @@
             </div>
         </div>
     </section>
+
+    <script>
+        (function() {
+            const sources = [
+                { media: '(min-width: 1201px)', src: "{{ url_for('static', filename='videos/1400x900HomepageBackgroundVideo.mp4') }}" },
+                { media: '(min-width: 801px) and (max-width: 1200px)', src: "{{ url_for('static', filename='videos/1200x900HomepageBackgroundVideo.mp4') }}" },
+                { media: '(min-width: 501px) and (max-width: 800px)', src: "{{ url_for('static', filename='videos/800x900HomepageBackgroundVideo.mp4') }}" },
+                { media: '(max-width: 500px)', src: "{{ url_for('static', filename='videos/500x900HomepageBackgroundVideo.mp4') }}" }
+            ];
+
+            const video = document.getElementById('homepage-bg-video');
+            function selectVideo() {
+                const selected = sources.find(item => window.matchMedia(item.media).matches) || sources[sources.length - 1];
+                if (!video.dataset.current || video.dataset.current !== selected.src) {
+                    video.dataset.current = selected.src;
+                    video.src = selected.src;
+                    video.load();
+                    video.play().catch(() => {});
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', selectVideo);
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(selectVideo, 200);
+            });
+        })();
+    </script>
 
    <section class="what-is-aqi-section">
         <div class="what-is-aqi-bg">

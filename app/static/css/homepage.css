@@ -172,7 +172,7 @@ h1, h2, h3, h4, .logo-text, .section-label, .stat-number {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: none;
+    display: block;
 }
 
 .hero-overlay {
@@ -536,11 +536,27 @@ h1, h2, h3, h4, .logo-text, .section-label, .stat-number {
     align-items: center;
 }
 
+.features-visual {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .features-visual .image-frame {
+    width: 100%;
+    max-width: 100%;
     transform: rotate(-2deg);
 }
 .features-visual .image-frame:hover {
     transform: rotate(0deg);
+}
+
+.features-illustration {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
 
 .features-steps {
@@ -889,6 +905,32 @@ h1, h2, h3, h4, .logo-text, .section-label, .stat-number {
     .section-label { margin-bottom: 10px; }
 }
 
+@media (max-width: 900px) {
+    .features-section,
+    .what-is-aqi-section {
+        padding: 80px 30px;
+    }
+
+    .features-split-layout {
+        gap: 40px;
+    }
+
+    .features-visual {
+        margin-bottom: 30px;
+    }
+
+    .features-illustration {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .image-frame {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     .navbar { padding: 10px 0; }
     .nav-container { padding: 0 20px; }
@@ -897,6 +939,24 @@ h1, h2, h3, h4, .logo-text, .section-label, .stat-number {
     .hero-container { padding: 30px 20px; }
     .hero-title { font-size: 2.2em; }
     
+    .features-section,
+    .what-is-aqi-section {
+        padding: 60px 20px;
+    }
+
+    .features-split-layout {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .features-intro {
+        max-width: 100%;
+    }
+
+    .feature-step {
+        padding: 20px;
+    }
+
     .impact-cards-grid { flex-direction: column; align-items: center; }
     .impact-card-bg { width: 100%; max-width: 400px; height: 350px; }
     
@@ -905,4 +965,32 @@ h1, h2, h3, h4, .logo-text, .section-label, .stat-number {
     .stat-divider { width: 100px; height: 1px; }
     
     .footer-content { grid-template-columns: 1fr; gap: 40px; }
+}
+
+@media (max-width: 500px) {
+    .features-section,
+    .what-is-aqi-section {
+        padding: 40px 15px;
+    }
+
+    .section-title-dark {
+        font-size: 1.8em;
+    }
+
+    .features-intro {
+        font-size: 0.95em;
+    }
+
+    .feature-step {
+        gap: 16px;
+        padding: 18px;
+    }
+
+    .step-text h3 {
+        font-size: 1.15em;
+    }
+
+    .image-frame {
+        padding: 8px;
+    }
 }
