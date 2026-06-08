@@ -523,7 +523,7 @@ function displayAQIData(data) {
 
     updateBodyBackground(aqiInfo.class);
 
-    displayWeatherInfo(data.iaqi, data.enhanced_weather);
+    displayWeatherInfo(data.weather, data.iaqi, data.enhanced_weather);
     displayPollutants(data.iaqi);
     displayDominantPollutant(data.dominentpol);
     displayRecommendations(aqi);
@@ -531,31 +531,51 @@ function displayAQIData(data) {
     showSuccess();
 }
 
-function displayWeatherInfo(iaqi, enhancedWeather) {
+function displayWeatherInfo(weather, iaqi, enhancedWeather) {
     const weatherInfo = document.getElementById('weatherInfo');
     weatherInfo.innerHTML = '';
     
-    if (!iaqi) {
-        weatherInfo.innerHTML = '<p style="text-align: center; color: #6b7280;">Weather data not available</p>';
-        return;
-    }
+    const w = weather || {};
+    const ia = iaqi || {};
 
     const roundValue = (val, decimals = 1) => {
         if (val === undefined || val === null) return 'N/A';
         return typeof val === 'number' ? val.toFixed(decimals) : val;
     };
 
+    const getVal = (weatherVal, iaqiKey, unit) => {
+        if (weatherVal !== undefined && weatherVal !== null) {
+            return `${roundValue(weatherVal, 1)}${unit}`;
+        }
+        if (ia[iaqiKey]?.v !== undefined && ia[iaqiKey]?.v !== null) {
+            return `${roundValue(ia[iaqiKey].v, 1)}${unit}`;
+        }
+        return 'N/A';
+    };
+
+    const temp = getVal(w.temperature, 't', '°C');
+    const hum = getVal(w.humidity, 'h', '%');
+    const press = getVal(w.pressure, 'p', ' hPa');
+    const wind = getVal(w.wind_speed, 'w', ' m/s');
+
     const weatherData = [
-        { label: 'Temperature', value: iaqi.t?.v !== undefined ? `${roundValue(iaqi.t.v, 1)}°C` : 'N/A', icon: '🌡️' },
-        { label: 'Humidity', value: iaqi.h?.v !== undefined ? `${roundValue(iaqi.h.v, 1)}%` : 'N/A', icon: '💧' },
-        { label: 'Pressure', value: iaqi.p?.v !== undefined ? `${roundValue(iaqi.p.v, 1)} hPa` : 'N/A', icon: '🔽' },
-        { label: 'Wind Speed', value: iaqi.w?.v !== undefined ? `${roundValue(iaqi.w.v, 1)} m/s` : 'N/A', icon: '💨' }
+        { label: 'Temperature', value: temp, icon: '🌡️' },
+        { label: 'Humidity', value: hum, icon: '💧' },
+        { label: 'Pressure', value: press, icon: '🔽' },
+        { label: 'Wind Speed', value: wind, icon: '💨' }
     ];
 
-    if (enhancedWeather && enhancedWeather.description) {
+    let conditionsVal = null;
+    if (w.conditions) {
+        conditionsVal = w.conditions;
+    } else if (enhancedWeather && enhancedWeather.description) {
+        conditionsVal = enhancedWeather.description;
+    }
+
+    if (conditionsVal) {
         weatherData.push({
             label: 'Conditions',
-            value: enhancedWeather.description.charAt(0).toUpperCase() + enhancedWeather.description.slice(1),
+            value: conditionsVal.charAt(0).toUpperCase() + conditionsVal.slice(1),
             icon: '🌤️'
         });
     }
