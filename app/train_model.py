@@ -294,8 +294,6 @@ def plot_metrics_comparison(metrics_list):
     axes[1].set_xticks(horizons)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(MODELS_DIR, 'metrics_comparison.png'), dpi=300)
-    print(f"✓ Saved metrics comparison plot")
     plt.close()
 
 
@@ -327,8 +325,6 @@ def plot_sample_predictions(all_models, hours_to_plot=[1, 3, 6, 12]):
             axes[idx].grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(MODELS_DIR, 'sample_predictions.png'), dpi=300)
-    print(f"✓ Saved sample predictions plot")
     plt.close()
 
 
@@ -386,8 +382,6 @@ def main():
     print("  - aqi_rf_model_1h.pkl ... aqi_rf_model_12h.pkl")
     print("  - feature_names.txt")
     print("  - model_metrics.json")
-    print("  - metrics_comparison.png")
-    print("  - sample_predictions.png")
     
     return all_models, all_metrics
 
