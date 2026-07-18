@@ -47,7 +47,7 @@ Whether you're managing respiratory conditions, planning outdoor activities, or 
 - Helps users proactively plan outdoor activities
 - Data-driven predictive models trained on historical patterns
 
-### 👤 User Health Profiling
+### 👤 User Health Profiling (feature not added yet)
 - Comprehensive health profile system with structured data collection
 - Numeric health parameters (1–10 scale) for AI compatibility
 - Supports multiple health conditions and exposure factors
@@ -56,12 +56,11 @@ Whether you're managing respiratory conditions, planning outdoor activities, or 
 ### 🔐 Secure Authentication & Session Management
 - OTP-based email verification for user registration
 - Secure password storage and session handling
-- Role-based access control
 - Temporary session data retention (1 hour + session duration)
 
 ### ⚠️ Real-Time Alert System
 - Location-based AQI threshold monitoring
-- Persistent alert tracking and history
+- Persistent alert tracking and history (for a specific time only)
 - Multi-parameter alert generation
 - Alert recommendations based on health profile
 
@@ -96,19 +95,13 @@ Whether you're managing respiratory conditions, planning outdoor activities, or 
 ## 🧠 AI Recommendation Flow
 
 ```
-1. Fetch real-time AQI data from WAQI API
+1. Prompt given to AI - Real time Aqi data, User health detials
    ↓
-2. Normalize and process AQI to Indian standards
+2. AI Combine AQI metrics + health risk factors
    ↓
-3. Retrieve user health profile from database
+3. AI processes and generates recommendations
    ↓
-4. Combine AQI metrics + health risk factors
-   ↓
-5. Generate contextual system prompt
-   ↓
-6. Gemini AI processes and generates recommendations
-   ↓
-7. Return structured health guidance to user
+4. Return structured health guidance to user
 ```
 
 ---
@@ -132,7 +125,7 @@ Whether you're managing respiratory conditions, planning outdoor activities, or 
 - **PostgreSQL** – Primary data store
 - **Schema Components**:
   - User authentication and profiles
-  - Health condition tracking
+  - Health condition tracking (not added yet)
   - Historical AQI data and trends
   - Alert and notification logs
 
@@ -142,8 +135,8 @@ Whether you're managing respiratory conditions, planning outdoor activities, or 
 - **Pandas & NumPy** – Data processing and analysis
 
 ### External APIs
-- **WAQI (World Air Quality Index)** – Real-time AQI data
-- **Geopy** – Geocoding and location services
+- **OpenWeather API** – Real-time AQI data
+- **Geopy & OpenStreat** – Geocoding and location services
 
 ### Deployment & Infrastructure
 - **Docker** – Containerization
