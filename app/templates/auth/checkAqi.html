@@ -3,6 +3,9 @@
 
 {% block style %}
     {{ super() }}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/checkAqi.css') }}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -13,7 +16,7 @@
     <nav class="aqi-navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <span class="brand-icon">🌍</span>
+                <span class="brand-icon"><i class="fas fa-earth-americas"></i></span>
                 <span class="brand-text">AQI Smart Health Advisor</span>
             </div>
             
@@ -44,21 +47,21 @@
             <p class="main-subtitle">Real-time environmental data with AI-powered health insights</p>
             <div class="header-features">
                 <div class="feature-badge">
-                    <span class="feature-icon">🌐</span>
+                    <span class="feature-icon"><i class="fas fa-globe"></i></span>
                     <div class="feature-info">
                         <div class="feature-label">Coverage</div>
                         <div class="feature-value">Global</div>
                     </div>
                 </div>
                 <div class="feature-badge">
-                    <span class="feature-icon">⚡</span>
+                    <span class="feature-icon"><i class="fas fa-bolt"></i></span>
                     <div class="feature-info">
                         <div class="feature-label">Updates</div>
                         <div class="feature-value">Real-time</div>
                     </div>
                 </div>
                 <div class="feature-badge">
-                    <span class="feature-icon">🤖</span>
+                    <span class="feature-icon"><i class="fas fa-brain"></i></span>
                     <div class="feature-info">
                         <div class="feature-label">AI Powered</div>
                         <div class="feature-value">GPT-4</div>
@@ -76,7 +79,7 @@
             
             <div class="search-controls">
                 <div class="input-group-pro">
-                    <span class="input-icon">📍</span>
+                    <span class="input-icon"><i class="fas fa-location-dot"></i></span>
                     <input 
                         type="text" 
                         id="locationInput" 
@@ -87,20 +90,20 @@
                 </div>
                 <div class="button-group">
                     <button class="btn-pro btn-primary-pro" onclick="searchAQI()">
-                        <span class="btn-icon-pro">🔍</span>
+                        <span class="btn-icon-pro"><i class="fas fa-magnifying-glass"></i></span>
                         <span>Search</span>
                     </button>
                     <button class="btn-pro btn-secondary-pro" onclick="getCurrentLocation()">
-                        <span class="btn-icon-pro">📍</span>
+                        <span class="btn-icon-pro"><i class="fas fa-location-crosshairs"></i></span>
                         <span>Current Location</span>
                     </button>
                     <button class="btn-pro btn-map-pro" onclick="openMapSelector()">
-                        <span class="btn-icon-pro">🗺️</span>
+                        <span class="btn-icon-pro"><i class="fas fa-map-location-dot"></i></span>
                         <span>Select on Map</span>
                     </button>
                     <a href="{{url_for('live_track_auth.live_track')}}" style="text-decoration: none;">
                         <button class="btn-pro btn-live-tracking-pro">
-                            <span class="btn-icon-pro">🛰️</span>
+                            <span class="btn-icon-pro"><i class="fas fa-satellite-dish"></i></span>
                             <span>Live Tracking</span>
                         </button>
                     </a>
@@ -111,18 +114,18 @@
             <div class="quick-access">
                 <span class="quick-label">Quick Access:</span>
                 <div class="city-chips">
-                    <button class="city-chip" onclick="quickSearch('Delhi')">🇮🇳 Delhi</button>
-                    <button class="city-chip" onclick="quickSearch('Mumbai')">🇮🇳 Mumbai</button>
-                    <button class="city-chip" onclick="quickSearch('Beijing')">🇨🇳 Beijing</button>
-                    <button class="city-chip" onclick="quickSearch('London')">🇬🇧 London</button>
-                    <button class="city-chip" onclick="quickSearch('New York')">🇺🇸 New York</button>
-                    <button class="city-chip" onclick="quickSearch('Tokyo')">🇯🇵 Tokyo</button>
+                    <button class="city-chip" onclick="quickSearch('Delhi')"><i class="fas fa-building-columns"></i> Delhi</button>
+                    <button class="city-chip" onclick="quickSearch('Mumbai')"><i class="fas fa-city"></i> Mumbai</button>
+                    <button class="city-chip" onclick="quickSearch('Beijing')"><i class="fas fa-torii-gate"></i> Beijing</button>
+                    <button class="city-chip" onclick="quickSearch('London')"><i class="fas fa-landmark"></i> London</button>
+                    <button class="city-chip" onclick="quickSearch('New York')"><i class="fas fa-building"></i> New York</button>
+                    <button class="city-chip" onclick="quickSearch('Tokyo')"><i class="fas fa-mountain-sun"></i> Tokyo</button>
                 </div>
             </div>
 
             <!-- Nearest Location Alert -->
             <div class="nearest-alert" id="nearestAlert" style="display: none;">
-                <div class="alert-icon">ℹ️</div>
+                <div class="alert-icon"><i class="fas fa-circle-info"></i></div>
                 <div class="alert-text">
                     <strong>Showing nearest monitoring station:</strong>
                     <span id="nearestStationInfo"></span>
@@ -133,7 +136,7 @@
             <!-- Alternative Stations -->
             <div class="alternative-stations" id="alternativeStations" style="display: none;">
                 <p style="font-weight: 600; margin-bottom: 10px; color: #1f2937;">
-                    📍 Other nearby monitoring stations:
+                    <i class="fas fa-location-dot"></i> Other nearby monitoring stations:
                 </p>
                 <div id="alternativeStationsList"></div>
             </div>
@@ -173,7 +176,7 @@
                     <div class="location-info-pro">
                         <h2 id="cityName">-</h2>
                         <p id="updateTime" class="update-time-pro">
-                            <span class="time-icon">🕒</span>
+                            <span class="time-icon"><i class="far fa-clock"></i></span>
                             <span id="updateTimeText">-</span>
                         </p>
                     </div>
@@ -189,7 +192,7 @@
                 <!-- Weather Information -->
                 <div class="info-section-pro">
                     <h3 class="subsection-title-pro">
-                        <span class="title-icon">🌡️</span>
+                        <span class="title-icon"><i class="fas fa-temperature-half"></i></span>
                         Weather Conditions
                     </h3>
                     <div class="weather-info-pro" id="weatherInfo"></div>
@@ -198,7 +201,7 @@
                 <!-- Air Pollutants -->
                 <div class="info-section-pro">
                     <h3 class="subsection-title-pro">
-                        <span class="title-icon">⚗️</span>
+                        <span class="title-icon"><i class="fas fa-vial"></i></span>
                         Air Pollutants
                     </h3>
                     <div class="pollutants-grid-pro" id="pollutantsGrid"></div>
@@ -206,17 +209,17 @@
 
                 <!-- Dominant Pollutant Info -->
                 <div class="dominant-pollutant-card-pro" id="dominantPollutantCard">
-                    <div class="info-icon">⚠️</div>
+                    <div class="info-icon"><i class="fas fa-triangle-exclamation"></i></div>
                     <p id="dominantPollutant"></p>
                 </div>
             </div>
 
 
-                        <!-- 24-Hour AQI Prediction Graph -->
+            <!-- 24-Hour AQI Prediction Graph -->
             <div class="prediction-section-pro" id="predictionSection" style="display: none;">
                 <div class="prediction-header">
                     <h3 class="prediction-title-pro">
-                        <span class="title-icon">📈</span>
+                        <span class="title-icon"><i class="fas fa-chart-line"></i></span>
                         24-Hour AQI Forecast
                     </h3>
                     <p class="prediction-subtitle">AI-powered predictions for the next 12 hours</p>
@@ -234,28 +237,28 @@
                 <!-- Prediction Info Cards -->
                 <div class="prediction-info-cards">
                     <div class="info-card-small">
-                        <div class="info-card-icon-small">📊</div>
+                        <div class="info-card-icon-small icon-blue"><i class="fas fa-clock-rotate-left"></i></div>
                         <div class="info-card-content">
                             <div class="info-label">Historical Data</div>
                             <div class="info-value" id="historicalCount">12 hours</div>
                         </div>
                     </div>
                     <div class="info-card-small">
-                        <div class="info-card-icon-small">🔮</div>
+                        <div class="info-card-icon-small icon-purple"><i class="fas fa-chart-line"></i></div>
                         <div class="info-card-content">
                             <div class="info-label">Predictions</div>
                             <div class="info-value" id="forecastCount">12 hours</div>
                         </div>
                     </div>
                     <div class="info-card-small">
-                        <div class="info-card-icon-small">⚡</div>
+                        <div class="info-card-icon-small icon-amber"><i class="fas fa-microchip"></i></div>
                         <div class="info-card-content">
                             <div class="info-label">Processing Time</div>
                             <div class="info-value" id="processingTime">-</div>
                         </div>
                     </div>
                     <div class="info-card-small">
-                        <div class="info-card-icon-small">🎯</div>
+                        <div class="info-card-icon-small icon-green"><i class="fas fa-bullseye"></i></div>
                         <div class="info-card-content">
                             <div class="info-label">Model Accuracy</div>
                             <div class="info-value">~85%</div>
@@ -265,7 +268,7 @@
                 
                 <!-- Prediction Insights -->
                 <div class="prediction-insights">
-                    <h4 class="insights-title">📋 Key Insights</h4>
+                    <h4 class="insights-title"><i class="fas fa-clipboard-list"></i> Key Insights</h4>
                     <div class="insights-content" id="predictionInsights">
                         <p>Loading insights...</p>
                     </div>
@@ -278,12 +281,12 @@
             <div class="recommendations-card-pro">
                 <div class="recommendations-header">
                     <h3 class="recommendations-title-pro">
-                        <span class="title-icon">🤖</span>
+                        <span class="title-icon"><i class="fas fa-robot"></i></span>
                         AI-Powered Health Recommendations
                     </h3>
                     <a href="{{url_for('ai_advisor_auth.ai_advisor')}}" style="text-decoration: none;">
                         <button class="btn-more-insights">
-                            ✨ More AI Insights
+                            <i class="fas fa-wand-magic-sparkles"></i> More AI Insights
                         </button>
                     </a>
                 </div>
@@ -291,7 +294,7 @@
                 <!-- Custom AI Recommendation Section -->
                 <div class="ai-recommendation-box-pro" id="aiRecommendationBox">
                     <div class="ai-badge-pro">
-                        <span class="ai-icon">✨</span>
+                        <span class="ai-icon"><i class="fas fa-sparkles"></i></span>
                         <span>Personalized Insight</span>
                     </div>
                     <p id="customRecommendation" class="custom-recommendation-pro">
@@ -308,20 +311,20 @@
                 <div class="expandable-card-pro health-impact-card">
                     <div class="expandable-header-pro" onclick="toggleCard('healthImpactCard')">
                         <div class="expandable-title-pro">
-                            <div class="info-card-icon">🏥</div>
+                            <div class="info-card-icon"><i class="fas fa-hospital"></i></div>
                             <h4>Health Impact</h4>
                         </div>
-                        <span class="expand-icon-pro">▼</span>
+                        <span class="expand-icon-pro"><i class="fas fa-chevron-down"></i></span>
                     </div>
                     <div class="expandable-content-pro" id="healthImpactCard">
                         <div class="expandable-inner-pro">
                             <p><strong>Who is at Risk?</strong></p>
                             <ul class="impact-list-pro">
-                                <li><strong>👶 Children:</strong> Developing lungs, breathe more air per body weight</li>
-                                <li><strong>👴 Elderly:</strong> Susceptible to particle pollution effects</li>
-                                <li><strong>🫁 Respiratory Conditions:</strong> Asthma, COPD patients highly sensitive</li>
-                                <li><strong>❤️ Heart Conditions:</strong> Risk of heart attacks and arrhythmias</li>
-                                <li><strong>🏃 Active Outdoors:</strong> Athletes breathe more polluted air</li>
+                                <li><strong><i class="fas fa-child"></i> Children:</strong> Developing lungs, breathe more air per body weight</li>
+                                <li><strong><i class="fas fa-person-cane"></i> Elderly:</strong> Susceptible to particle pollution effects</li>
+                                <li><strong><i class="fas fa-lungs"></i> Respiratory Conditions:</strong> Asthma, COPD patients highly sensitive</li>
+                                <li><strong><i class="fas fa-heart-pulse"></i> Heart Conditions:</strong> Risk of heart attacks and arrhythmias</li>
+                                <li><strong><i class="fas fa-person-running"></i> Active Outdoors:</strong> Athletes breathe more polluted air</li>
                             </ul>
                             
                             <p style="margin-top: 15px;"><strong>Short-term Effects:</strong></p>
@@ -337,32 +340,32 @@
                 <div class="expandable-card-pro take-action-card">
                     <div class="expandable-header-pro" onclick="toggleCard('takeActionCard')">
                         <div class="expandable-title-pro">
-                            <div class="info-card-icon">🌱</div>
+                            <div class="info-card-icon"><i class="fas fa-seedling"></i></div>
                             <h4>Take Action</h4>
                         </div>
-                        <span class="expand-icon-pro">▼</span>
+                        <span class="expand-icon-pro"><i class="fas fa-chevron-down"></i></span>
                     </div>
                     <div class="expandable-content-pro" id="takeActionCard">
                         <div class="expandable-inner-pro">
                             <p><strong>Individual Actions:</strong></p>
                             <ul class="action-list-pro">
-                                <li>🚌 Use public transportation, carpool, or bike</li>
-                                <li>💡 Conserve energy at home</li>
-                                <li>🌡️ Use energy-efficient settings</li>
-                                <li>🚗 Maintain vehicle properly</li>
-                                <li>🔥 Avoid burning wood or trash</li>
-                                <li>🌳 Plant trees and support green spaces</li>
-                                <li>♻️ Reduce, reuse, and recycle</li>
+                                <li><i class="fas fa-bus"></i> Use public transportation, carpool, or bike</li>
+                                <li><i class="fas fa-lightbulb"></i> Conserve energy at home</li>
+                                <li><i class="fas fa-gauge"></i> Use energy-efficient settings</li>
+                                <li><i class="fas fa-car"></i> Maintain vehicle properly</li>
+                                <li><i class="fas fa-fire-flame-curved"></i> Avoid burning wood or trash</li>
+                                <li><i class="fas fa-tree"></i> Plant trees and support green spaces</li>
+                                <li><i class="fas fa-recycle"></i> Reduce, reuse, and recycle</li>
                             </ul>
                             
                             <p style="margin-top: 15px;"><strong>Protect Yourself:</strong></p>
                             <ul class="action-list-pro">
-                                <li>📱 Monitor air quality regularly</li>
-                                <li>😷 Keep N95/KN95 masks available</li>
-                                <li>💨 Use HEPA air purifiers at home</li>
-                                <li>🏃 Plan outdoor activities wisely</li>
-                                <li>🪟 Keep windows closed on bad days</li>
-                                <li>💊 Keep medications updated</li>
+                                <li><i class="fas fa-mobile-screen-button"></i> Monitor air quality regularly</li>
+                                <li><i class="fas fa-head-side-mask"></i> Keep N95/KN95 masks available</li>
+                                <li><i class="fas fa-fan"></i> Use HEPA air purifiers at home</li>
+                                <li><i class="fas fa-person-running"></i> Plan outdoor activities wisely</li>
+                                <li><i class="fas fa-border-all"></i> Keep windows closed on bad days</li>
+                                <li><i class="fas fa-pills"></i> Keep medications updated</li>
                             </ul>
                             
                             <p style="margin-top: 15px;"><strong>Community Action:</strong></p>
@@ -379,6 +382,7 @@
             <p class="attribution-note-pro">Real-time data from global monitoring stations</p>
         </div>
     </div>
+{% endblock %}
 
 {% block script %}
     {{super()}}
@@ -448,6 +452,4 @@ function toggleCard(cardId) {
         }
     });
     </script>
-{% endblock %}
-
 {% endblock %}

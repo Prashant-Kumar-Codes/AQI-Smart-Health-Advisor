@@ -55,16 +55,16 @@ function showNearestAlert(stationName, originalSearch, distance) {
         let colorClass = '';
         
         if (distanceNum < 5) {
-            distanceText = `📍 Distance: ${distance} km (Very close)`;
+            distanceText = `<i class="fas fa-location-dot"></i> Distance: ${distance} km (Very close)`;
             colorClass = 'color: #059669;';
         } else if (distanceNum < 20) {
-            distanceText = `📍 Distance: ${distance} km (Nearby)`;
+            distanceText = `<i class="fas fa-location-dot"></i> Distance: ${distance} km (Nearby)`;
             colorClass = 'color: #0891b2;';
         } else if (distanceNum < 50) {
-            distanceText = `📍 Distance: ${distance} km (Moderate distance)`;
+            distanceText = `<i class="fas fa-location-dot"></i> Distance: ${distance} km (Moderate distance)`;
             colorClass = 'color: #f59e0b;';
         } else {
-            distanceText = `⚠️ Distance: ${distance} km (Far - data may not be representative)`;
+            distanceText = `<i class="fas fa-triangle-exclamation"></i> Distance: ${distance} km (Far - data may not be representative)`;
             colorClass = 'color: #dc2626;';
         }
         
@@ -406,17 +406,17 @@ function displayCustomRecommendation(recommendation) {
 
 function getDefaultRecommendation(aqi) {
     if (aqi <= 50) {
-        return "🌟 Excellent news! The air quality today is outstanding. Perfect for outdoor activities and exercise!";
+        return "Excellent news! The air quality today is outstanding. Perfect for outdoor activities and exercise!";
     } else if (aqi <= 100) {
-        return "👍 Air quality is acceptable for most people. You can proceed with normal outdoor activities.";
+        return "Air quality is acceptable for most people. You can proceed with normal outdoor activities.";
     } else if (aqi <= 150) {
-        return "⚠️ Sensitive individuals should take precautions. Consider reducing prolonged outdoor activities.";
+        return "Sensitive individuals should take precautions. Consider reducing prolonged outdoor activities.";
     } else if (aqi <= 200) {
-        return "🚨 Air quality is unhealthy for everyone. Reduce outdoor activities and consider wearing masks.";
+        return "Air quality is unhealthy for everyone. Reduce outdoor activities and consider wearing masks.";
     } else if (aqi <= 300) {
-        return "⛔ Very unhealthy air! Everyone should minimize outdoor exposure. Use air purifiers indoors.";
+        return "Very unhealthy air! Everyone should minimize outdoor exposure. Use air purifiers indoors.";
     } else {
-        return "☢️ HAZARDOUS CONDITIONS - Health emergency! Stay indoors with sealed windows. Seek medical help if needed.";
+        return "HAZARDOUS CONDITIONS - Health emergency! Stay indoors with sealed windows. Seek medical help if needed.";
     }
 }
 
@@ -451,55 +451,55 @@ function updateBodyBackground(aqiClass) {
 function getRecommendations(aqi) {
     if (aqi <= 50) {
         return [
-            { icon: '✅', title: 'Excellent Air Quality', desc: 'Perfect time to enjoy the outdoors!' },
-            { icon: '🏃', title: 'Perfect for Outdoor Activities', desc: 'Great conditions for exercise and sports.' },
-            { icon: '🪟', title: 'Fresh Air Ventilation', desc: 'Open windows to circulate fresh air.' },
-            { icon: '👨‍👩‍👧‍👦', title: 'Safe for Everyone', desc: 'Air quality poses no risk to any groups.' }
+            { icon: '<i class="fas fa-circle-check"></i>', title: 'Excellent Air Quality', desc: 'Perfect time to enjoy the outdoors!' },
+            { icon: '<i class="fas fa-person-running"></i>', title: 'Perfect for Outdoor Activities', desc: 'Great conditions for exercise and sports.' },
+            { icon: '<i class="fas fa-wind"></i>', title: 'Fresh Air Ventilation', desc: 'Open windows to circulate fresh air.' },
+            { icon: '<i class="fas fa-users"></i>', title: 'Safe for Everyone', desc: 'Air quality poses no risk to any groups.' }
         ];
     } else if (aqi <= 100) {
         return [
-            { icon: '⚠️', title: 'Moderate Air Quality', desc: 'Acceptable for most people.' },
-            { icon: '🏃', title: 'Generally Safe Activities', desc: 'Most can enjoy normal outdoor activities.' },
-            { icon: '👶', title: 'Sensitive Groups Monitor', desc: 'Watch for symptoms if sensitive.' },
-            { icon: '🪟', title: 'Moderate Ventilation', desc: 'Safe to open windows moderately.' }
+            { icon: '<i class="fas fa-triangle-exclamation"></i>', title: 'Moderate Air Quality', desc: 'Acceptable for most people.' },
+            { icon: '<i class="fas fa-person-walking"></i>', title: 'Generally Safe Activities', desc: 'Most can enjoy normal outdoor activities.' },
+            { icon: '<i class="fas fa-child"></i>', title: 'Sensitive Groups Monitor', desc: 'Watch for symptoms if sensitive.' },
+            { icon: '<i class="fas fa-border-all"></i>', title: 'Moderate Ventilation', desc: 'Safe to open windows moderately.' }
         ];
     } else if (aqi <= 150) {
         return [
-            { icon: '⚠️', title: 'Unhealthy for Sensitive Groups', desc: 'Vulnerable groups may experience effects.' },
-            { icon: '😷', title: 'Masks Recommended', desc: 'Sensitive individuals should wear N95 masks.' },
-            { icon: '🏠', title: 'Limit Outdoor Exposure', desc: 'Reduce prolonged outdoor activities.' },
-            { icon: '🪟', title: 'Keep Windows Closed', desc: 'Prevent outdoor air from entering.' },
-            { icon: '💊', title: 'Monitor Symptoms', desc: 'Have rescue medications available.' }
+            { icon: '<i class="fas fa-triangle-exclamation"></i>', title: 'Unhealthy for Sensitive Groups', desc: 'Vulnerable groups may experience effects.' },
+            { icon: '<i class="fas fa-head-side-mask"></i>', title: 'Masks Recommended', desc: 'Sensitive individuals should wear N95 masks.' },
+            { icon: '<i class="fas fa-house"></i>', title: 'Limit Outdoor Exposure', desc: 'Reduce prolonged outdoor activities.' },
+            { icon: '<i class="fas fa-border-all"></i>', title: 'Keep Windows Closed', desc: 'Prevent outdoor air from entering.' },
+            { icon: '<i class="fas fa-pills"></i>', title: 'Monitor Symptoms', desc: 'Have rescue medications available.' }
         ];
     } else if (aqi <= 200) {
         return [
-            { icon: '🚨', title: 'Unhealthy Air Quality', desc: 'Everyone may experience health effects.' },
-            { icon: '😷', title: 'Masks Essential Outdoors', desc: 'Everyone should wear N95/KN95 masks.' },
-            { icon: '🏠', title: 'Stay Indoors', desc: 'Avoid all outdoor activities.' },
-            { icon: '💨', title: 'Use Air Purifiers', desc: 'Run HEPA purifiers indoors.' },
-            { icon: '🚫', title: 'Cancel Outdoor Events', desc: 'Postpone outdoor activities.' },
-            { icon: '💊', title: 'Health Monitoring', desc: 'Watch for respiratory symptoms.' }
+            { icon: '<i class="fas fa-circle-exclamation"></i>', title: 'Unhealthy Air Quality', desc: 'Everyone may experience health effects.' },
+            { icon: '<i class="fas fa-head-side-mask"></i>', title: 'Masks Essential Outdoors', desc: 'Everyone should wear N95/KN95 masks.' },
+            { icon: '<i class="fas fa-house"></i>', title: 'Stay Indoors', desc: 'Avoid all outdoor activities.' },
+            { icon: '<i class="fas fa-fan"></i>', title: 'Use Air Purifiers', desc: 'Run HEPA purifiers indoors.' },
+            { icon: '<i class="fas fa-ban"></i>', title: 'Cancel Outdoor Events', desc: 'Postpone outdoor activities.' },
+            { icon: '<i class="fas fa-heart-pulse"></i>', title: 'Health Monitoring', desc: 'Watch for respiratory symptoms.' }
         ];
     } else if (aqi <= 300) {
         return [
-            { icon: '🚨', title: 'Very Unhealthy Air', desc: 'Significant health risk for everyone.' },
-            { icon: '🏠', title: 'Mandatory Indoor Stay', desc: 'Everyone should stay indoors.' },
-            { icon: '😷', title: 'N95/N99 Masks Required', desc: 'Proper respirators essential if outside.' },
-            { icon: '💨', title: 'Air Purification Critical', desc: 'Keep purifiers running continuously.' },
-            { icon: '🏥', title: 'Health Vigilance', desc: 'Monitor for severe symptoms.' },
-            { icon: '🚗', title: 'Avoid Vehicle Emissions', desc: 'Limit driving to reduce pollution.' },
-            { icon: '📞', title: 'Emergency Contacts Ready', desc: 'Have medical contacts available.' }
+            { icon: '<i class="fas fa-circle-exclamation"></i>', title: 'Very Unhealthy Air', desc: 'Significant health risk for everyone.' },
+            { icon: '<i class="fas fa-house-lock"></i>', title: 'Mandatory Indoor Stay', desc: 'Everyone should stay indoors.' },
+            { icon: '<i class="fas fa-head-side-mask"></i>', title: 'N95/N99 Masks Required', desc: 'Proper respirators essential if outside.' },
+            { icon: '<i class="fas fa-fan"></i>', title: 'Air Purification Critical', desc: 'Keep purifiers running continuously.' },
+            { icon: '<i class="fas fa-hospital"></i>', title: 'Health Vigilance', desc: 'Monitor for severe symptoms.' },
+            { icon: '<i class="fas fa-car"></i>', title: 'Avoid Vehicle Emissions', desc: 'Limit driving to reduce pollution.' },
+            { icon: '<i class="fas fa-phone"></i>', title: 'Emergency Contacts Ready', desc: 'Have medical contacts available.' }
         ];
     } else {
         return [
-            { icon: '☢️', title: 'Hazardous - Emergency', desc: 'Severe health warning for everyone.' },
-            { icon: '🚫', title: 'Do NOT Go Outside', desc: 'Public health emergency - stay indoors!' },
-            { icon: '💨', title: 'Maximum Air Purification', desc: 'Run multiple HEPA purifiers.' },
-            { icon: '😷', title: 'Emergency Masks Only', desc: 'N95/N99/P100 respirators if evacuation needed.' },
-            { icon: '🏥', title: 'Medical Emergency Protocol', desc: 'Seek immediate help for symptoms.' },
-            { icon: '📞', title: 'Emergency Services', desc: 'Consider evacuation if high-risk.' },
-            { icon: '🚨', title: 'Follow Official Guidance', desc: 'Monitor emergency broadcasts.' },
-            { icon: '👥', title: 'Check on Vulnerable People', desc: 'Ensure neighbors have protection.' }
+            { icon: '<i class="fas fa-biohazard"></i>', title: 'Hazardous - Emergency', desc: 'Severe health warning for everyone.' },
+            { icon: '<i class="fas fa-ban"></i>', title: 'Do NOT Go Outside', desc: 'Public health emergency - stay indoors!' },
+            { icon: '<i class="fas fa-fan"></i>', title: 'Maximum Air Purification', desc: 'Run multiple HEPA purifiers.' },
+            { icon: '<i class="fas fa-head-side-mask"></i>', title: 'Emergency Masks Only', desc: 'N95/N99/P100 respirators if evacuation needed.' },
+            { icon: '<i class="fas fa-hospital-user"></i>', title: 'Medical Emergency Protocol', desc: 'Seek immediate help for symptoms.' },
+            { icon: '<i class="fas fa-phone-flip"></i>', title: 'Emergency Services', desc: 'Consider evacuation if high-risk.' },
+            { icon: '<i class="fas fa-bullhorn"></i>', title: 'Follow Official Guidance', desc: 'Monitor emergency broadcasts.' },
+            { icon: '<i class="fas fa-people-roof"></i>', title: 'Check on Vulnerable People', desc: 'Ensure neighbors have protection.' }
         ];
     }
 }
@@ -516,8 +516,15 @@ function displayAQIData(data) {
     const aqi = data.aqi || 0;
     const aqiInfo = getAQICategory(aqi);
 
+    const aqiHeader = document.getElementById('aqiHeader');
+    if (aqiHeader) {
+        aqiHeader.className = `aqi-header-pro ${aqiInfo.class}`;
+    }
+
     const aqiDisplay = document.getElementById('aqiDisplay');
-    aqiDisplay.className = `aqi-display-pro ${aqiInfo.class}`;
+    if (aqiDisplay) {
+        aqiDisplay.className = `aqi-display-pro ${aqiInfo.class}`;
+    }
     document.getElementById('aqiValue').textContent = aqi;
     document.getElementById('aqiCategory').textContent = aqiInfo.category;
 
@@ -559,10 +566,10 @@ function displayWeatherInfo(weather, iaqi, enhancedWeather) {
     const wind = getVal(w.wind_speed, 'w', ' m/s');
 
     const weatherData = [
-        { label: 'Temperature', value: temp, icon: '🌡️' },
-        { label: 'Humidity', value: hum, icon: '💧' },
-        { label: 'Pressure', value: press, icon: '🔽' },
-        { label: 'Wind Speed', value: wind, icon: '💨' }
+        { label: 'Temperature', value: temp, icon: '<i class="fas fa-temperature-half"></i>', color: '#f97316' },
+        { label: 'Humidity', value: hum, icon: '<i class="fas fa-droplet"></i>', color: '#3b82f6' },
+        { label: 'Pressure', value: press, icon: '<i class="fas fa-gauge-high"></i>', color: '#8b5cf6' },
+        { label: 'Wind Speed', value: wind, icon: '<i class="fas fa-wind"></i>', color: '#06b6d4' }
     ];
 
     let conditionsVal = null;
@@ -576,7 +583,8 @@ function displayWeatherInfo(weather, iaqi, enhancedWeather) {
         weatherData.push({
             label: 'Conditions',
             value: conditionsVal.charAt(0).toUpperCase() + conditionsVal.slice(1),
-            icon: '🌤️'
+            icon: '<i class="fas fa-cloud-sun"></i>',
+            color: '#eab308'
         });
     }
 
@@ -584,8 +592,13 @@ function displayWeatherInfo(weather, iaqi, enhancedWeather) {
         const weatherItem = document.createElement('div');
         weatherItem.className = 'weather-item';
         weatherItem.innerHTML = `
-            <div class="weather-item-label">${item.icon} ${item.label}</div>
-            <div class="weather-item-value">${item.value}</div>
+            <div class="weather-item-icon" style="background: ${item.color}18; color: ${item.color};">
+                ${item.icon}
+            </div>
+            <div class="weather-item-content">
+                <div class="weather-item-label">${item.label}</div>
+                <div class="weather-item-value">${item.value}</div>
+            </div>
         `;
         weatherInfo.appendChild(weatherItem);
     });
@@ -606,12 +619,12 @@ function displayPollutants(iaqi) {
     };
 
     const pollutantMapping = {
-        pm25: { name: 'PM2.5', unit: 'µg/m³', desc: 'Fine Particles' },
-        pm10: { name: 'PM10', unit: 'µg/m³', desc: 'Coarse Particles' },
-        o3: { name: 'O₃', unit: 'ppb', desc: 'Ozone' },
-        no2: { name: 'NO₂', unit: 'ppb', desc: 'Nitrogen Dioxide' },
-        so2: { name: 'SO₂', unit: 'ppb', desc: 'Sulfur Dioxide' },
-        co: { name: 'CO', unit: 'ppm', desc: 'Carbon Monoxide' }
+        pm25: { name: 'PM2.5', unit: 'µg/m³', desc: 'Fine Particles', icon: 'fa-smog', color: '#ef4444' },
+        pm10: { name: 'PM10', unit: 'µg/m³', desc: 'Coarse Particles', icon: 'fa-cloud-meatball', color: '#f97316' },
+        o3: { name: 'O₃', unit: 'ppb', desc: 'Ozone', icon: 'fa-sun', color: '#eab308' },
+        no2: { name: 'NO₂', unit: 'ppb', desc: 'Nitrogen Dioxide', icon: 'fa-industry', color: '#10b981' },
+        so2: { name: 'SO₂', unit: 'ppb', desc: 'Sulfur Dioxide', icon: 'fa-cloud', color: '#8b5cf6' },
+        co: { name: 'CO', unit: 'ppm', desc: 'Carbon Monoxide', icon: 'fa-car-side', color: '#06b6d4' }
     };
 
     let hasData = false;
@@ -623,9 +636,17 @@ function displayPollutants(iaqi) {
             const card = document.createElement('div');
             card.className = 'pollutant-card';
             card.innerHTML = `
-                <div class="pollutant-name">${pollutant.name}</div>
-                <div class="pollutant-value">${roundValue(iaqi[key].v, 1)}</div>
-                <div class="pollutant-unit">${pollutant.unit}</div>
+                <div class="pollutant-card-header">
+                    <span class="pollutant-name">${pollutant.name}</span>
+                    <span class="pollutant-icon-badge" style="background: ${pollutant.color}18; color: ${pollutant.color};">
+                        <i class="fas ${pollutant.icon}"></i>
+                    </span>
+                </div>
+                <div class="pollutant-card-body">
+                    <div class="pollutant-value">${roundValue(iaqi[key].v, 1)}</div>
+                    <div class="pollutant-unit">${pollutant.unit}</div>
+                </div>
+                <div class="pollutant-desc">${pollutant.desc}</div>
             `;
             card.title = pollutant.desc;
             pollutantsGrid.appendChild(card);
@@ -1058,15 +1079,15 @@ function generatePredictionInsights(predictionData) {
     // Determine trend
     let trendIcon, trendText, trendColor;
     if (aqiChange > 10) {
-        trendIcon = '📈';
+        trendIcon = '<i class="fas fa-arrow-trend-up"></i>';
         trendText = 'worsening';
         trendColor = '#ef4444';
     } else if (aqiChange < -10) {
-        trendIcon = '📉';
+        trendIcon = '<i class="fas fa-arrow-trend-down"></i>';
         trendText = 'improving';
         trendColor = '#10b981';
     } else {
-        trendIcon = '➡️';
+        trendIcon = '<i class="fas fa-arrow-right"></i>';
         trendText = 'stable';
         trendColor = '#3b82f6';
     }
@@ -1081,19 +1102,20 @@ function generatePredictionInsights(predictionData) {
     const bestTime = forecastData.find(d => parseFloat(d.aqi) === bestAQI).timestamp;
     const bestHour = new Date(bestTime).getHours();
     
-    // Generate HTML
+    // Generate HTML with vibrant colorful icon highlights
     const insightsHTML = `
-        <ul>
-            <li><span style="color: ${trendColor};">${trendIcon} <strong>Trend:</strong></span> AQI is predicted to be <strong>${trendText}</strong> over the next 12 hours (${aqiChangePercent > 0 ? '+' : ''}${aqiChangePercent}%)</li>
-            <li>📊 <strong>Current AQI:</strong> ${currentAQI.toFixed(1)} (${predictionData.current.category})</li>
-            <li>🔺 <strong>Peak AQI:</strong> ${peakAQI.toFixed(1)} expected around ${peakHour}:00</li>
-            <li>✅ <strong>Best time:</strong> ${bestHour}:00 with AQI of ${bestAQI.toFixed(1)}</li>
-            <li>🎯 <strong>Prediction accuracy:</strong> Our ML models achieve ~85% accuracy on 12-hour forecasts</li>
-            <li>⏱️ <strong>Data freshness:</strong> Using ${predictionData.metadata.data_points_used} hours of recent data</li>
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;">
+            <li><span style="color: ${trendColor}; font-weight: 600;">${trendIcon} <strong style="color: ${trendColor};">Trend:</strong></span> AQI is predicted to be <strong style="color: ${trendColor};">${trendText}</strong> over the next 12 hours (${aqiChangePercent > 0 ? '+' : ''}${aqiChangePercent}%)</li>
+            <li><i class="fas fa-chart-pie" style="color: #3b82f6; width: 20px; text-align: center;"></i> <strong>Current AQI:</strong>&nbsp;${currentAQI.toFixed(1)} (${predictionData.current.category})</li>
+            <li><i class="fas fa-chart-line" style="color: #ef4444; width: 20px; text-align: center;"></i> <strong>Peak AQI:</strong>&nbsp;${peakAQI.toFixed(1)} expected around ${peakHour}:00</li>
+            <li><i class="fas fa-circle-check" style="color: #10b981; width: 20px; text-align: center;"></i> <strong>Best time:</strong>&nbsp;${bestHour}:00 with AQI of ${bestAQI.toFixed(1)}</li>
+            <li><i class="fas fa-bullseye" style="color: #8b5cf6; width: 20px; text-align: center;"></i> <strong>Prediction accuracy:</strong>&nbsp;Our ML models achieve ~85% accuracy on 12-hour forecasts</li>
+            <li><i class="fas fa-clock" style="color: #06b6d4; width: 20px; text-align: center;"></i> <strong>Data freshness:</strong>&nbsp;Using ${predictionData.metadata.data_points_used} hours of recent data</li>
         </ul>
-        <p style="margin-top: 15px; font-size: 13px; opacity: 0.9;">
-            💡 <strong>Tip:</strong> ${getActivityRecommendation(currentAQI, bestAQI, peakAQI)}
-        </p>
+        <div style="margin-top: 16px; padding: 12px 16px; background: rgba(245, 158, 11, 0.1); border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.25); font-size: 0.92em; color: #92400e; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-lightbulb" style="color: #f59e0b; font-size: 1.15em; flex-shrink: 0;"></i> 
+            <span><strong>Tip:</strong> ${getActivityRecommendation(currentAQI, bestAQI, peakAQI)}</span>
+        </div>
     `;
     
     insightsDiv.innerHTML = insightsHTML;

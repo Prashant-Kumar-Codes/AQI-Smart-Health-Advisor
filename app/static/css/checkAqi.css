@@ -44,7 +44,7 @@ html {
 }
 
 body {
-    font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--cream-bg);
     color: var(--text-dark);
     line-height: 1.6;
@@ -53,7 +53,8 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6, .main-title, .location-title { 
-    font-family: 'Playfair Display', 'Georgia', serif; 
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+    font-weight: 600;
 }
 
 p {
@@ -765,15 +766,47 @@ a:hover {
 }
 
 .aqi-header-pro {
-    padding: 30px;
+    padding: 35px 40px;
     background: linear-gradient(135deg, var(--navy-primary) 0%, var(--navy-secondary) 100%);
     color: var(--white);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     position: relative;
     overflow: hidden;
+    transition: background 0.5s ease, border-color 0.5s ease;
+    border-bottom: 5px solid var(--gold-accent);
+}
+
+/* Dynamic AQI Background Color Gradients (Matching AQI Guide) */
+.aqi-header-pro.aqi-good {
+    background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%);
+    border-bottom: 5px solid #10b981;
+}
+
+.aqi-header-pro.aqi-moderate {
+    background: linear-gradient(135deg, #78350f 0%, #b45309 50%, #d97706 100%);
+    border-bottom: 5px solid #f59e0b;
+}
+
+.aqi-header-pro.aqi-unhealthy-sensitive {
+    background: linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #ea580c 100%);
+    border-bottom: 5px solid #f97316;
+}
+
+.aqi-header-pro.aqi-unhealthy {
+    background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 50%, #dc2626 100%);
+    border-bottom: 5px solid #ef4444;
+}
+
+.aqi-header-pro.aqi-very-unhealthy {
+    background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 50%, #7c3aed 100%);
+    border-bottom: 5px solid #8b5cf6;
+}
+
+.aqi-header-pro.aqi-hazardous {
+    background: linear-gradient(135deg, #450a0a 0%, #701a75 50%, #881337 100%);
+    border-bottom: 5px solid #be123c;
 }
 
 .aqi-header-pro::before {
@@ -783,7 +816,7 @@ a:hover {
     right: -10%;
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(192, 160, 98, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
     border-radius: 50%;
     z-index: 0;
 }
@@ -794,17 +827,20 @@ a:hover {
 }
 
 .location-info-pro h2 {
-    font-size: 2em;
+    font-size: 2.2em;
+    font-weight: 600;
     margin-bottom: 8px;
     color: var(--white);
+    letter-spacing: -0.5px;
 }
 
 .update-time-pro {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.85);
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.95em;
+    font-size: 0.9em;
+    font-weight: 400;
 }
 
 .time-icon {
@@ -813,44 +849,62 @@ a:hover {
 
 .aqi-display-pro {
     display: flex;
-    gap: 30px;
+    gap: 25px;
     align-items: center;
 }
 
 .aqi-badge-pro {
-    width: 140px;
-    height: 140px;
+    width: 125px;
+    height: 125px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 3px solid rgba(255, 255, 255, 0.4);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.aqi-badge-pro:hover {
+    transform: scale(1.05);
 }
 
 .aqi-value-pro {
     font-size: 3em;
     font-weight: 700;
     line-height: 1;
-    color: var(--gold-light);
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .aqi-label-pro {
-    font-size: 0.85em;
+    font-size: 0.78em;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 8px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 4px;
+    font-weight: 500;
 }
 
 .aqi-category-pro {
-    font-size: 1.3em;
-    font-weight: 700;
-    line-height: 1.8;
-    max-width: 200px;
+    font-size: 1.15em;
+    font-weight: 600;
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50px;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    letter-spacing: 0.5px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 /* ========== INFO SECTIONS ========== */
@@ -878,79 +932,132 @@ a:hover {
 
 .weather-info-pro {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
 }
 
-.weather-item-pro {
-    padding: 15px;
-    background: var(--light-gray);
-    border-radius: var(--radius);
-    border-left: 3px solid var(--gold-accent);
+.weather-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--white);
+    border: 1px solid rgba(26, 37, 47, 0.08);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     transition: var(--transition);
 }
 
-.weather-item-pro:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-sm);
-    background: var(--cream-bg);
+.weather-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border-color: rgba(192, 160, 98, 0.4);
 }
 
-.weather-label-pro {
-    font-size: 0.85em;
+.weather-item-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4em;
+    flex-shrink: 0;
+}
+
+.weather-item-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-item-label {
+    font-size: 0.8em;
     color: var(--text-muted);
     text-transform: uppercase;
     font-weight: 700;
-    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
 }
 
-.weather-value-pro {
-    font-size: 1.5em;
-    font-weight: 700;
+.weather-item-value {
+    font-size: 1.35em;
+    font-weight: 600;
     color: var(--navy-primary);
 }
 
 /* ========== POLLUTANTS GRID ========== */
 .pollutants-grid-pro {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
 }
 
-.pollutant-card-pro {
+.pollutant-card {
     padding: 20px;
-    background: var(--light-gray);
-    border-radius: var(--radius);
-    text-align: center;
-    border-top: 3px solid var(--gold-accent);
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(26, 37, 47, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.pollutant-card-pro:hover {
+.pollutant-card:hover {
     transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
-    background: var(--cream-bg);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.09);
+    border-color: rgba(192, 160, 98, 0.4);
 }
 
-.pollutant-name-pro {
-    font-size: 0.8em;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
+.pollutant-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
-.pollutant-value-pro {
-    font-size: 1.6em;
-    font-weight: 700;
+.pollutant-name {
+    font-size: 0.9em;
+    font-weight: 600;
     color: var(--navy-primary);
-    margin-bottom: 5px;
+    letter-spacing: 0.5px;
 }
 
-.pollutant-unit-pro {
-    font-size: 0.75em;
+.pollutant-icon-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1em;
+}
+
+.pollutant-card-body {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.pollutant-value {
+    font-size: 1.7em;
+    font-weight: 600;
+    color: var(--navy-primary);
+    line-height: 1;
+}
+
+.pollutant-unit {
+    font-size: 0.8em;
+    font-weight: 600;
     color: var(--text-muted);
+}
+
+.pollutant-desc {
+    font-size: 0.78em;
+    color: var(--text-muted);
+    font-weight: 600;
 }
 
 /* ========== DOMINANT POLLUTANT CARD ========== */
@@ -1056,16 +1163,50 @@ a:hover {
 
 .info-card-small {
     padding: 18px;
-    background: var(--light-gray);
-    border-radius: var(--radius);
-    border-top: 3px solid var(--gold-accent);
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(26, 37, 47, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+    transition: var(--transition);
+}
+
+.info-card-small:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
 }
 
 .info-card-icon-small {
-    font-size: 1.6em;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25em;
+    flex-shrink: 0;
+}
+
+.info-card-icon-small.icon-blue {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+
+.info-card-icon-small.icon-purple {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+}
+
+.info-card-icon-small.icon-amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+.info-card-icon-small.icon-green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
 }
 
 .info-card-content {
@@ -1076,27 +1217,37 @@ a:hover {
     font-size: 0.75em;
     color: var(--text-muted);
     text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 4px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    letter-spacing: 0.5px;
 }
 
 .info-value {
-    font-size: 1.1em;
+    font-size: 1.15em;
     color: var(--navy-primary);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .prediction-insights {
-    padding: 20px;
-    background: rgba(102, 126, 234, 0.05);
-    border-left: 4px solid var(--primary-gradient);
-    border-radius: var(--radius);
+    padding: 22px 25px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border-left: 4px solid #3b82f6;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(59, 130, 246, 0.15);
 }
 
 .insights-title {
-    color: var(--navy-primary);
-    margin-bottom: 12px;
-    font-size: 1em;
+    color: #1e40af;
+    margin-bottom: 14px;
+    font-size: 1.05em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.insights-title i {
+    color: #3b82f6;
 }
 
 .insights-content {
@@ -1185,25 +1336,52 @@ a:hover {
 
 .recommendations-pro {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
 }
 
 .recommendation-item {
-    padding: 18px;
-    background: var(--light-gray);
-    border-radius: var(--radius);
-    border-left: 3px solid var(--gold-accent);
+    padding: 20px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(26, 37, 47, 0.08);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
     transition: var(--transition);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 .recommendation-item:hover {
-    transform: translateX(5px);
-    box-shadow: var(--shadow-sm);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border-color: rgba(192, 160, 98, 0.4);
 }
 
-.recommendation-item strong {
+.recommendation-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(192, 160, 98, 0.12);
+    color: var(--gold-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.recommendation-text h4 {
+    font-size: 1.05em;
+    font-weight: 700;
     color: var(--navy-primary);
+    margin-bottom: 4px;
+}
+
+.recommendation-text p {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin: 0;
 }
 
 /* ========== ACTION CARDS CONTAINER ========== */
