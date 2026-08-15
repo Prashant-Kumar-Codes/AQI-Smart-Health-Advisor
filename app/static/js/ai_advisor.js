@@ -48,7 +48,12 @@ async function fetchAQIForLocation(cityName, lat, lng) {
         
         // ✅ Use centralized LocationService
         if (lat && lng) {
-            result = await window.LocationService.getAQIFromCurrentLocation();
+            const aqiData = await window.LocationService.getAQIByCoordinates(lat, lng);
+            const locationInfo = await window.LocationService.getNameFromCoordinates(lat, lng);
+            result = {
+                location: locationInfo,
+                aqiData: aqiData
+            };
         } else {
             result = await window.LocationService.getAQIFromLocationName(cityName);
         }

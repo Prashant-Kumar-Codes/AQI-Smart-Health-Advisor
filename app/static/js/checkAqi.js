@@ -228,7 +228,7 @@ async function getCurrentLocation() {
         await fetchAIRecommendation(result.aqiData.aqi);
         
         // Fetch predictions after getting location
-        await fetchAQIPrediction(null, result.location.lat, result.location.lon);
+        await fetchAQIPrediction(displayName, result.location.lat, result.location.lng);
         
         MessageManager.show(`Location detected: ${displayName}`, 'success');
         
@@ -307,12 +307,9 @@ async function confirmMapLocation() {
     hidePredictionSection();  // Hide predictions before confirming map location
     
     try {
-        console.log('🗺️ Using centralized LocationService for map location');
+        console.log('🗺️ Fetching AQI data for map location:', selectedLatLng);
         
-        // ✅ Use centralized LocationService
-        const result = await LocationService.getAQIFromCurrentLocation();
-        
-        // Override with selected coordinates
+        // Fetch AQI for selected coordinates
         const coordResult = await fetch(`/api/aqi/geo?lat=${selectedLatLng.lat}&lng=${selectedLatLng.lng}`);
         const data = await coordResult.json();
         
@@ -359,7 +356,7 @@ async function confirmMapLocation() {
             await fetchAIRecommendation(data.aqi);
             
             // Fetch predictions after confirming location
-            await fetchAQIPrediction(null, selectedLatLng.lat, selectedLatLng.lng);
+            await fetchAQIPrediction(displayName, selectedLatLng.lat, selectedLatLng.lng);
             
             MessageManager.show(`AQI data & graph loaded for ${displayName}`, 'success');
         } else {
@@ -718,6 +715,21 @@ async function fetchAQIPrediction(cityName, lat, lon) {
     try {
         console.log('🤖 Fetching ML predictions...');
         
+        let targetCity = cityName;
+        let targetLat = lat;
+        let targetLon = lon;
+
+        // Fallback to currentAQIData if parameters are incomplete
+        if (!targetCity && (targetLat === null || targetLat === undefined || targetLon === null || targetLon === undefined)) {
+            if (currentAQIData) {
+                targetCity = currentAQIData.city?.name || currentAQIData.query_location;
+                if (currentAQIData.city?.geo && currentAQIData.city.geo.length >= 2) {
+                    targetLat = currentAQIData.city.geo[0];
+                    targetLon = currentAQIData.city.geo[1];
+                }
+            }
+        }
+
         showPredictionSection(); // Show the section card immediately
         showPredictionLoading(); // Show the skeleton inside the section
         document.getElementById('aqiPredictionGraph').style.display = 'none'; // Hide empty graph area
@@ -726,14 +738,14 @@ async function fetchAQIPrediction(cityName, lat, lon) {
         // Get current AQI from the displayed data
         const currentAQI = currentAQIData ? currentAQIData.aqi : null;
         
-        if (cityName) {
-            url = `/api/aqi/predict/city/${encodeURIComponent(cityName)}`;
+        if (targetCity) {
+            url = `/api/aqi/predict/city/${encodeURIComponent(targetCity)}`;
             // Add current_aqi parameter if available
             if (currentAQI) {
                 url += `?current_aqi=${currentAQI}`;
             }
-        } else if (lat && lon) {
-            url = `/api/aqi/predict/geo?lat=${lat}&lng=${lon}`;
+        } else if ((targetLat !== null && targetLat !== undefined) && (targetLon !== null && targetLon !== undefined)) {
+            url = `/api/aqi/predict/geo?lat=${targetLat}&lng=${targetLon}`;
             // Add current_aqi parameter if available
             if (currentAQI) {
                 url += `&current_aqi=${currentAQI}`;
@@ -800,6 +812,9 @@ function createPredictionGraph(predictionData) {
         return;
     }
     
+    const isMobile = window.innerWidth <= 768;
+    const isSmallMobile = window.innerWidth <= 480;
+
     // Prepare data arrays
     const historicalTimes = [];
     const historicalAQI = [];
@@ -841,10 +856,10 @@ function createPredictionGraph(predictionData) {
             name: 'Historical AQI',
             line: {
                 color: '#3b82f6',
-                width: 3
+                width: isMobile ? 2.5 : 3
             },
             marker: {
-                size: 8,
+                size: isMobile ? 6 : 8,
                 color: '#3b82f6'
             },
             hovertemplate: '<b>Time:</b> %{x}<br><b>AQI:</b> %{y:.1f}<br><b>Type:</b> Actual<extra></extra>'
@@ -858,11 +873,11 @@ function createPredictionGraph(predictionData) {
             name: 'Predicted AQI',
             line: {
                 color: '#8b5cf6',
-                width: 3,
+                width: isMobile ? 2.5 : 3,
                 dash: 'dash'
             },
             marker: {
-                size: 8,
+                size: isMobile ? 6 : 8,
                 color: '#8b5cf6',
                 symbol: 'diamond'
             },
@@ -876,7 +891,7 @@ function createPredictionGraph(predictionData) {
             mode: 'markers',
             name: 'Current AQI',
             marker: {
-                size: 15,
+                size: isMobile ? 11 : 15,
                 color: '#ef4444',
                 symbol: 'star',
                 line: {
@@ -888,29 +903,27 @@ function createPredictionGraph(predictionData) {
         }
     ];
     
-    // Define layout with animation support
+    // Define layout with animation and mobile responsiveness
     const layout = {
-        hovermode: 'x unified',
-        hoverdistance: 100,
-        spikedistance: 100,
+        hovermode: isMobile ? 'closest' : 'x unified',
+        hoverdistance: 50,
+        spikedistance: 50,
         transition: {
-            duration: 1000,
+            duration: 800,
             easing: 'cubic-in-out'
-        },
-        frame: {
-            duration: 1000,
-            redraw: false
         },
         xaxis: {
             title: {
-                text: '<b>Time</b>',
-                font: { size: 14, color: '#4b5563' }
+                text: isSmallMobile ? '' : '<b>Time</b>',
+                font: { size: isMobile ? 11 : 14, color: '#4b5563' }
             },
+            tickfont: { size: isSmallMobile ? 9 : (isMobile ? 10 : 12) },
             tickformat: '%H:%M',
-            tickangle: 0,
+            tickangle: isMobile ? -45 : 0,
+            nticks: isSmallMobile ? 6 : (isMobile ? 8 : 12),
             gridcolor: '#e5e7eb',
             showgrid: true,
-            showspikes: true,
+            showspikes: !isMobile,
             spikethickness: 2,
             spikedash: 'dot',
             spikecolor: '#9ca3af',
@@ -918,13 +931,14 @@ function createPredictionGraph(predictionData) {
         },
         yaxis: {
             title: {
-                text: '<b>AQI Value</b>',
-                font: { size: 14, color: '#4b5563' }
+                text: isSmallMobile ? '<b>AQI</b>' : '<b>AQI Value</b>',
+                font: { size: isMobile ? 11 : 14, color: '#4b5563' }
             },
+            tickfont: { size: isSmallMobile ? 9 : (isMobile ? 10 : 12) },
             gridcolor: '#e5e7eb',
             showgrid: true,
             zeroline: false,
-            range: [0, Math.max(400, ...allHistoricalAQI, ...allForecastAQI) + 50]
+            range: [0, Math.max(400, ...allHistoricalAQI, ...allForecastAQI) + 30]
         },
         plot_bgcolor: 'rgba(0,0,0,0)',
         paper_bgcolor: 'rgba(0,0,0,0)',
@@ -932,104 +946,48 @@ function createPredictionGraph(predictionData) {
         legend: {
             x: 0.5,
             xanchor: 'center',
-            y: 1.1,
+            y: isMobile ? 1.2 : 1.1,
             yanchor: 'top',
             orientation: 'h',
-            font: { size: 12 }
+            font: { size: isSmallMobile ? 9 : (isMobile ? 10 : 12) }
         },
-        margin: {
-            l: 50,
-            r: 30,
-            t: 50,
-            b: 50
-        },
-        // Add AQI category background zones
+        margin: isSmallMobile 
+            ? { l: 30, r: 10, t: 35, b: 50 } 
+            : (isMobile ? { l: 40, r: 15, t: 40, b: 45 } : { l: 50, r: 30, t: 50, b: 50 }),
+        // AQI category background zones
         shapes: [
-            // Good (0-50)
-            {
-                type: 'rect',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                yref: 'y',
-                y0: 0,
-                y1: 50,
-                fillcolor: '#10b981',
-                opacity: 0.1,
-                line: { width: 0 }
-            },
-            // Satisfactory (51-100)
-            {
-                type: 'rect',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                yref: 'y',
-                y0: 51,
-                y1: 100,
-                fillcolor: '#fbbf24',
-                opacity: 0.1,
-                line: { width: 0 }
-            },
-            // Moderate (101-200)
-            {
-                type: 'rect',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                yref: 'y',
-                y0: 101,
-                y1: 200,
-                fillcolor: '#f97316',
-                opacity: 0.1,
-                line: { width: 0 }
-            },
-            // Poor (201-300)
-            {
-                type: 'rect',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                yref: 'y',
-                y0: 201,
-                y1: 300,
-                fillcolor: '#ef4444',
-                opacity: 0.1,
-                line: { width: 0 }
-            },
-            // Very Poor (301-400)
-            {
-                type: 'rect',
-                xref: 'paper',
-                x0: 0,
-                x1: 1,
-                yref: 'y',
-                y0: 301,
-                y1: 400,
-                fillcolor: '#dc2626',
-                opacity: 0.1,
-                line: { width: 0 }
-            }
+            { type: 'rect', xref: 'paper', x0: 0, x1: 1, yref: 'y', y0: 0, y1: 50, fillcolor: '#10b981', opacity: 0.08, line: { width: 0 } },
+            { type: 'rect', xref: 'paper', x0: 0, x1: 1, yref: 'y', y0: 51, y1: 100, fillcolor: '#fbbf24', opacity: 0.08, line: { width: 0 } },
+            { type: 'rect', xref: 'paper', x0: 0, x1: 1, yref: 'y', y0: 101, y1: 200, fillcolor: '#f97316', opacity: 0.08, line: { width: 0 } },
+            { type: 'rect', xref: 'paper', x0: 0, x1: 1, yref: 'y', y0: 201, y1: 300, fillcolor: '#ef4444', opacity: 0.08, line: { width: 0 } },
+            { type: 'rect', xref: 'paper', x0: 0, x1: 1, yref: 'y', y0: 301, y1: 400, fillcolor: '#dc2626', opacity: 0.08, line: { width: 0 } }
         ]
     };
     
-    // Configuration
+    // Configuration options
     const config = {
         responsive: true,
-        displayModeBar: false, // Hide modebar for a cleaner look
-        displaylogo: false
+        displayModeBar: false,
+        displaylogo: false,
+        scrollZoom: false
     };
     
     // Create the plot
     Plotly.newPlot(graphDiv, traces, layout, config).then(() => {
-        // Force a resize calculation
         Plotly.Plots.resize(graphDiv);
-        
-        // Sequential entry animation
-        console.log('✨ Animating graph entry...');
     });
+
+    if (!window.hasPredictionGraphResizeListener) {
+        window.hasPredictionGraphResizeListener = true;
+        window.addEventListener('resize', () => {
+            const gDiv = document.getElementById('aqiPredictionGraph');
+            if (gDiv && gDiv.data) {
+                Plotly.Plots.resize(gDiv);
+            }
+        });
+    }
     
-    console.log('✅ Plotly graph created successfully');
+    console.log('✅ Plotly mobile-optimized graph created successfully');
 }
 
 /**

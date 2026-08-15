@@ -1790,22 +1790,66 @@ a:hover {
     }
 
     .prediction-section-pro {
-        padding: 20px;
+        padding: 16px 12px;
+        border-radius: 16px;
+    }
+
+    .prediction-header {
+        margin-bottom: 16px;
+    }
+
+    .prediction-title-pro {
+        font-size: 1.2em;
+    }
+
+    .prediction-subtitle {
+        font-size: 0.85em;
     }
 
     .graph-container-pro {
-        min-height: 250px;
+        min-height: 280px;
+        touch-action: pan-y;
+        overflow-x: hidden;
+        width: 100%;
+        margin-bottom: 20px;
     }
 
     .prediction-info-cards {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 10px;
     }
 
     .info-card-small {
-        flex-direction: column;
-        text-align: center;
-        padding: 15px;
+        flex-direction: row;
+        text-align: left;
+        padding: 12px;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .info-card-icon-small {
+        width: 36px;
+        height: 36px;
+        font-size: 1em;
+        border-radius: 10px;
+    }
+
+    .info-label {
+        font-size: 0.68em;
+    }
+
+    .info-value {
+        font-size: 1em;
+    }
+
+    .prediction-insights {
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    .insights-content {
+        font-size: 0.88em;
+        line-height: 1.6;
     }
 
     .map-container-overlay {
