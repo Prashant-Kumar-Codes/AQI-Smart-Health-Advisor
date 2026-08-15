@@ -9,6 +9,13 @@
         {% block title %}AQI_SMART_HEALTH_ADVISOR{% endblock %}
     </title>
 
+    <script>
+        window.APP_CONFIG = {
+            env: "{{ config.get('FLASK_ENV', 'production') }}",
+            debug: {{ 'true' if (config.get('DEBUG') or config.get('FLASK_ENV') == 'development') else 'false' }}
+        };
+    </script>
+
     {%block style%}
         <style>
             .flash-container {
@@ -171,6 +178,9 @@
     <!-- IN BASE.HTML : ✅ Scripts go here at BOTTOM, just before </body> -->
     {% block script%}
         <!-- Common scripts for all pages -->
+
+        <!-- BASE.HTML - App Logger (Environment Controlled Logging) -->
+        <script src="{{ url_for('static', filename='js/appLogger.js') }}"></script>
 
         <!-- BASE.HTML - Hamburger Navigation -->
         <script src="{{ url_for('static', filename='js/hamburgerNavbar.js') }}"></script>

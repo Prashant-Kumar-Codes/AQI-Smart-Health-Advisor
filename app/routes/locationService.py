@@ -11,6 +11,7 @@ from math import radians, sin, cos, sqrt, atan2
 import os
 from flask import Blueprint, request, jsonify
 from datetime import datetime
+from app.logger import logger
 
 # OpenWeather API Configuration
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '').strip()
@@ -34,7 +35,7 @@ class LocationService:
             c = 2 * atan2(sqrt(a), sqrt(1-a))
             return round(6371 * c, 1)
         except Exception as e:
-            print(f"Distance calculation error: {e}")
+            logger.warning(f"Distance calculation error: {e}")
             return None
     
     def geocode_location(self, location_name):
@@ -43,7 +44,7 @@ class LocationService:
         Returns: dict with lat, lon, display_name, address
         """
         try:
-            print(f"\n🔍 Geocoding: {location_name}")
+            logger.debug(f"🔍 Geocoding: {location_name}")
             
             location = self.geolocator.geocode(
                 location_name,
@@ -77,17 +78,17 @@ class LocationService:
                 'address': location.raw.get('address', {})
             }
             
-            print(f"✅ Geocoded: {city_name} ({result['lat']:.4f}, {result['lon']:.4f})")
+            logger.debug(f"✅ Geocoded: {city_name} ({result['lat']:.4f}, {result['lon']:.4f})")
             return result
             
         except (GeocoderTimedOut, GeocoderServiceError) as e:
-            print(f"❌ Geocoding error: {e}")
+            logger.error(f"❌ Geocoding error: {e}")
             return {
                 'success': False,
                 'error': 'Geocoding service unavailable. Please try again.'
             }
         except Exception as e:
-            print(f"❌ Unexpected geocoding error: {e}")
+            logger.error(f"❌ Unexpected geocoding error: {e}")
             return {
                 'success': False,
                 'error': str(e)
@@ -99,7 +100,7 @@ class LocationService:
         Returns: dict with display_name, address
         """
         try:
-            print(f"\n📍 Reverse geocoding: {lat:.4f}, {lon:.4f}")
+            logger.debug(f"📍 Reverse geocoding: {lat:.4f}, {lon:.4f}")
             
             location = self.geolocator.reverse(
                 (lat, lon),
@@ -131,17 +132,17 @@ class LocationService:
                 'address': location.raw.get('address', {})
             }
             
-            print(f"✅ Reverse geocoded: {city_name}")
+            logger.debug(f"✅ Reverse geocoded: {city_name}")
             return result
             
         except (GeocoderTimedOut, GeocoderServiceError) as e:
-            print(f"❌ Reverse geocoding error: {e}")
+            logger.error(f"❌ Reverse geocoding error: {e}")
             return {
                 'success': False,
                 'error': 'Reverse geocoding service unavailable'
             }
         except Exception as e:
-            print(f"❌ Unexpected reverse geocoding error: {e}")
+            logger.error(f"❌ Unexpected reverse geocoding error: {e}")
             return {
                 'success': False,
                 'error': str(e)
@@ -176,11 +177,11 @@ class LocationService:
 
     def get_aqi_by_coordinates(self, lat, lon):
         try:
-            print(f"\n🌡️ Fetching AQI for: {lat:.4f}, {lon:.4f} (OpenWeatherMap)")
+            logger.debug(f"🌡️ Fetching AQI for: {lat:.4f}, {lon:.4f} (OpenWeatherMap)")
             
             # --- ADD THIS CHECK ---
             if not OPENWEATHER_API_KEY:
-                print("❌ OPENWEATHER_API_KEY is not set!")
+                logger.error("❌ OPENWEATHER_API_KEY is not set!")
                 return {'success': False, 'error': 'OpenWeather API key not configured'}
             
             url = f"{OPENWEATHER_AQI_URL}/air_pollution?lat={lat}&lon={lon}&appid={OPENWEATHER_API_KEY}"
@@ -189,15 +190,12 @@ class LocationService:
             
             # --- IMPROVE THIS BLOCK ---
             if response.status_code != 200:
-                print(f"❌ OpenWeatherMap API Error: Status {response.status_code}")
-                print(f"   Response: {response.text[:300]}")   # <-- was already here, extend to 300 chars
+                logger.error(f"❌ OpenWeatherMap API Error: Status {response.status_code} Response: {response.text[:300]}")
                 return {'success': False, 'error': f'AQI API Error (Status {response.status_code}): {data.get("message", "")}'}
             
             if not data.get('list'):
-                print(f"⚠️ OWM returned empty list. Full response: {data}")   # <-- log full response
+                logger.warning(f"⚠️ OWM returned empty list. Full response: {data}")
                 return {'success': False, 'error': 'AQI data not available for this location'}
-            
-            # ... rest unchanged
             
             main_data = data['list'][0]
             components = main_data.get('components', {})
@@ -222,7 +220,7 @@ class LocationService:
             reverse_result = self.reverse_geocode(lat, lon)
             station_name = reverse_result['display_name'] if reverse_result['success'] else "Local Area"
             
-            print(f"✅ AQI data retrieved: {calculated_aqi} (OWM Index: {owm_aqi})")
+            logger.debug(f"✅ AQI data retrieved: {calculated_aqi} (OWM Index: {owm_aqi})")
             
             # Format to match previous WAQI structure for compatibility
             return {
@@ -238,13 +236,13 @@ class LocationService:
             }
             
         except requests.RequestException as e:
-            print(f"❌ AQI API request error: {e}")
+            logger.error(f"❌ AQI API request error: {e}")
             return {
                 'success': False,
                 'error': 'Failed to fetch AQI data. Please try again.'
             }
         except Exception as e:
-            print(f"❌ Unexpected AQI fetch error: {e}")
+            logger.error(f"❌ Unexpected AQI fetch error: {e}")
             return {
                 'success': False,
                 'error': str(e)
@@ -372,7 +370,7 @@ def api_reverse_geocode():
         }), 200
         
     except Exception as e:
-        print(f"❌ Reverse geocode API error: {str(e)}")
+        logger.error(f"❌ Reverse geocode API error: {str(e)}")
         import traceback
         traceback.print_exc()
         
@@ -422,7 +420,7 @@ def api_forward_geocode():
         }), 200
         
     except Exception as e:
-        print(f"❌ Forward geocode API error: {str(e)}")
+        logger.error(f"❌ Forward geocode API error: {str(e)}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -476,7 +474,7 @@ def api_search_locations():
         return jsonify(results), 200
         
     except Exception as e:
-        print(f"❌ Location search error: {str(e)}")
+        logger.error(f"❌ Location search error: {str(e)}")
         return jsonify([]), 200  # Return empty array on error
 
 

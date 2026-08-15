@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from datetime import timedelta
 import os
 
+from .logger import setup_logging
+
 socketio = SocketIO()
 mail = Mail()
 load_dotenv()
@@ -14,6 +16,9 @@ def create_app():
     app = Flask(__name__,
                 static_folder='static',
                 template_folder='templates')
+    
+    # Configure logger based on environment
+    setup_logging(app)
     
     CORS(app, origins=[
         "https://prashantbuilds.in",

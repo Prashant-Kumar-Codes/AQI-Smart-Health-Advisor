@@ -3,6 +3,8 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
+from app.logger import logger
+
 load_dotenv()
 
 def get_db_connection():
@@ -19,7 +21,7 @@ def get_db_connection():
         )
         return conn
     except Exception as e:
-        print(f"❌ Database connection error: {e}")
+        logger.error(f"❌ Database connection error: {e}")
         return None
 
 def get_db_cursor(conn, dict_cursor=False):

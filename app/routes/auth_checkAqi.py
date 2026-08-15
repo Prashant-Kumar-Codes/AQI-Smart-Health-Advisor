@@ -2,6 +2,7 @@ from .extensions import *
 from .locationService import location_service
 import os
 import requests
+from app.logger import logger
 
 # Import the prediction service
 from .aqi_prediction_service import get_aqi_prediction, load_multi_horizon_models
@@ -15,9 +16,9 @@ OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', '').strip()
 # Load ML models at startup
 try:
     load_multi_horizon_models()
-    print("✅ ML prediction models loaded successfully")
+    logger.info("✅ ML prediction models loaded successfully")
 except Exception as e:
-    print(f"⚠️ Warning: Could not load ML models: {e}")
+    logger.warning(f"⚠️ Warning: Could not load ML models: {e}")
 
 
 def get_aqi_category(aqi):
@@ -59,11 +60,11 @@ def fetch_weather_data(lat, lon):
                 'conditions': data['weather'][0].get('description') if data.get('weather') else None
             }
         else:
-            print(f"⚠️ Weather API error: {response.status_code}")
+            logger.warning(f"⚠️ Weather API error: {response.status_code}")
             return {}
             
     except Exception as e:
-        print(f"⚠️ Weather API exception: {e}")
+        logger.warning(f"⚠️ Weather API exception: {e}")
         return {}
 
 
@@ -72,7 +73,7 @@ def parse_pollutants(aqi_data):
     try:
         return aqi_data.get('pollutants', {})
     except Exception as e:
-        print(f"⚠️ Parse pollutants error: {e}")
+        logger.warning(f"⚠️ Parse pollutants error: {e}")
         return {}
 
 
@@ -86,15 +87,13 @@ def check_aqi():
 def get_aqi_by_city(city_name):
     """Get AQI data using centralized location service"""
     try:
-        print(f"\n{'='*60}")
-        print(f"🔍 Fetching AQI for: {city_name}")
-        print(f"{'='*60}")
+        logger.debug(f"🔍 Fetching AQI for: {city_name}")
         
         # ✅ Use centralized location service
         result = location_service.get_aqi_from_location_name(city_name)
         
         if not result['success']:
-            print(f"❌ Failed to get AQI: {result['error']}")
+            logger.error(f"❌ Failed to get AQI: {result['error']}")
             return jsonify({'error': result['error']}), 404
         
         location_data = result['location']
@@ -108,11 +107,7 @@ def get_aqi_by_city(city_name):
         
         aqi_category = get_aqi_category(aqi_data['aqi'])
         
-        print(f"\n✅ Complete AQI Data Retrieved:")
-        print(f"  📊 Location: {location_data['display_name']}")
-        print(f"  📊 Coordinates: ({location_data['lat']:.4f}, {location_data['lon']:.4f})")
-        print(f"  📊 AQI: {aqi_data['aqi']}")
-        print(f"  📊 Category: {aqi_category}")
+        logger.debug(f"✅ AQI Data: {location_data['display_name']} ({location_data['lat']:.4f}, {location_data['lon']:.4f}) - AQI: {aqi_data['aqi']} ({aqi_category})")
         
         # Return structured data
         return jsonify({
@@ -132,7 +127,7 @@ def get_aqi_by_city(city_name):
         }), 200
             
     except Exception as e:
-        print(f"❌ Unexpected error: {e}")
+        logger.error(f"❌ Unexpected error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
@@ -148,16 +143,13 @@ def get_aqi_by_geo():
         if not lat or not lon:
             return jsonify({'error': 'Missing latitude or longitude'}), 400
         
-        print(f"\n{'='*60}")
-        print(f"🔍 Fetching AQI for coordinates:")
-        print(f"  📍 Lat: {lat}, Lon: {lon}")
-        print(f"{'='*60}")
+        logger.debug(f"🔍 Fetching AQI for coordinates: Lat {lat}, Lon {lon}")
         
         # ✅ Use centralized location service
         result = location_service.get_aqi_from_coordinates(lat, lon)
         
         if not result['success']:
-            print(f"❌ Failed to get AQI: {result['error']}")
+            logger.error(f"❌ Failed to get AQI: {result['error']}")
             return jsonify({'error': result['error']}), 404
         
         location_data = result['location']
@@ -171,10 +163,7 @@ def get_aqi_by_geo():
         
         aqi_category = get_aqi_category(aqi_data['aqi'])
         
-        print(f"\n✅ AQI Data Retrieved:")
-        print(f"  📊 Location: {location_data['display_name']}")
-        print(f"  📊 AQI: {aqi_data['aqi']}")
-        print(f"  📊 Category: {aqi_category}")
+        logger.debug(f"✅ AQI Data: {location_data['display_name']} - AQI: {aqi_data['aqi']} ({aqi_category})")
         
         return jsonify({
             'aqi': aqi_data['aqi'],
@@ -192,7 +181,7 @@ def get_aqi_by_geo():
         }), 200
             
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.error(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
@@ -206,9 +195,7 @@ def get_aqi_by_geo():
 def predict_aqi_by_city(city_name):
     """Get 24-hour AQI prediction for a city (12h historical + 12h forecast)"""
     try:
-        print(f"\n{'='*60}")
-        print(f"🤖 ML Prediction request for: {city_name}")
-        print(f"{'='*60}")
+        logger.debug(f"🤖 ML Prediction request for: {city_name}")
         
         # Get optional current_aqi parameter from query string
         current_aqi = request.args.get('current_aqi', type=float)
@@ -229,21 +216,17 @@ def predict_aqi_by_city(city_name):
         if not prediction_result['success']:
             return jsonify(prediction_result), 500
         
-        print(f"✅ Prediction generated successfully")
-        print(f"  📊 Historical data points: {len(prediction_result['historical_data'])}")
-        print(f"  📊 Forecast data points: {len(prediction_result['forecast_data'])}")
-        if current_aqi:
-            print(f"  📊 Using WAQI current AQI: {current_aqi}")
+        logger.debug(f"✅ Prediction generated: {len(prediction_result.get('forecast_data', []))} forecast points")
         
         return jsonify(prediction_result), 200
         
     except Exception as e:
-        print(f"❌ Prediction error: {e}")
+        logger.error(f"❌ Prediction error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e), 'success': False}), 500
-
-
+ 
+ 
 @checkAqi_auth.route('/api/aqi/predict/geo', methods=['GET'])
 def predict_aqi_by_geo():
     """Get 24-hour AQI prediction for coordinates"""
@@ -257,9 +240,7 @@ def predict_aqi_by_geo():
         # Get optional current_aqi parameter from query string
         current_aqi = request.args.get('current_aqi', type=float)
         
-        print(f"\n{'='*60}")
-        print(f"🤖 ML Prediction request for: ({lat}, {lon})")
-        print(f"{'='*60}")
+        logger.debug(f"🤖 ML Prediction request for: ({lat}, {lon})")
         
         # Get location name
         result = location_service.get_aqi_from_coordinates(lat, lon)
@@ -271,14 +252,12 @@ def predict_aqi_by_geo():
         if not prediction_result['success']:
             return jsonify(prediction_result), 500
         
-        print(f"✅ Prediction generated successfully")
-        if current_aqi:
-            print(f"  📊 Using WAQI current AQI: {current_aqi}")
+        logger.debug("✅ Prediction generated successfully")
         
         return jsonify(prediction_result), 200
         
     except Exception as e:
-        print(f"❌ Prediction error: {e}")
+        logger.error(f"❌ Prediction error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'error': str(e), 'success': False}), 500
@@ -301,7 +280,7 @@ def get_aqi_history(lat, lon):
         history = fetch_historical_data_from_api(float(lat), float(lon), start_time, end_time)
         return jsonify(history), 200
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.error(f"❌ Error: {e}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -341,7 +320,7 @@ def get_ai_recommendation():
         }), 200
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.error(f"❌ Error: {e}")
         return jsonify({'error': 'Failed to generate recommendation'}), 500
 
 
@@ -357,5 +336,5 @@ def get_user_city():
         return jsonify({'city': None}), 200
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.error(f"❌ Error: {e}")
         return jsonify({'city': None}), 200

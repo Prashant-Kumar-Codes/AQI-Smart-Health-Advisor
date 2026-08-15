@@ -36,3 +36,37 @@
 ### 5. Missing Python Environment Dependencies
 - **Symptom**: Backend startup failed with `ModuleNotFoundError: No module named 'flask_socketio'` and missing PostgreSQL drivers.
 - **Root Cause**: Dependencies were not installed in the active `/usr/local/bin/python3.12` environment.
+
+---
+
+### 6. Verbose Terminal & Browser Console Logging in Production
+- **Symptom**: On deployed website, browser console was filled with verbose `console.log` messages and backend terminal dumped full ASCII debug banners on every API call.
+- **Root Cause**: Lack of environment-gated logging abstractions in both client-side JavaScript and Python Flask routes.
+
+---
+
+### 7. Windows PowerShell Startup Hang & Encoding Crash (`UnicodeEncodeError`)
+- **Symptom**: Running `python run.py` on Windows PowerShell got stuck on `* Debugger is active!` or crashed with `UnicodeEncodeError: 'charmap' codec can't encode character '\u2705'`.
+- **Root Cause**:
+  1. Default Windows PowerShell stdout/stderr encoding uses `CP1252` which cannot encode UTF-8 emojis (`✅`, `⚠️`, `🤖`).
+  2. Flask's `use_reloader=True` re-spawned a child process that repeatedly encountered the encoding error and hung during IPC loop initialization.
+
+---
+
+### 8. Plotly Uncaught Resize Error on Mobile Graph
+- **Symptom**: Console throws `Uncaught (in promise) Error: Resize must be passed a displayed plot div element` occasionally after fetching predictions.
+- **Root Cause**: `Plotly.newPlot().then()` executed `.resize(graphDiv)` unconditionally, even if the graph container hadn't been fully painted or if it was temporarily hidden in the DOM during animations/tab switches.
+
+---
+
+### 9. Redundant OpenWeather API Fetching (Cache Misses)
+- **Symptom**: Even if a user searched "Mohali" multiple times in the same day, the backend kept querying OpenWeather API instead of returning the cached `aqi_hourly_data`.
+- **Root Cause**: 
+  1. The DB query `get_24h_data_from_db()` used strict 8-decimal exact coordinate matching (`WHERE latitude = %s`). GPS searches and Text searches yield slightly different decimal coordinate tails for the same city, causing the database to consider them different locations and trigger an API miss.
+  2. Stale records were never deleted, leading to infinite database bloat since there was no automated cleanup mechanism for records older than 24 hours.
+
+---
+
+### 10. Fragmented Database Migrations & Schemas
+- **Symptom**: `tracking_alerts` table definition existed in both `database_code.sql` and `live_tracking.sql`, leading to conflicting schemas regarding foreign keys and created_at timestamps.
+- **Root Cause**: Separated migration files were modifying overlapping entities without synchronization.

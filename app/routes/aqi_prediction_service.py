@@ -217,8 +217,8 @@ def get_24h_data_from_db(latitude: float, longitude: float, from_time: datetime)
                 pm2_5, pm10, no2, so2, co, o3,
                 indian_aqi, dominant_pollutant
             FROM aqi_hourly_data
-            WHERE latitude = %s
-              AND longitude = %s
+            WHERE ABS(latitude - %s) < 0.01 
+              AND ABS(longitude - %s) < 0.01
               AND hour_timestamp >= %s
               AND hour_timestamp < %s + INTERVAL '24 hours'
             ORDER BY hour_timestamp ASC
@@ -242,15 +242,27 @@ def get_24h_data_from_db(latitude: float, longitude: float, from_time: datetime)
         logger.error(f"❌ Error fetching data from database: {e}")
         return pd.DataFrame()
 
-
 def store_hourly_data(connection, latitude: float, longitude: float, hourly_records: List[Dict]) -> bool:
     """
     Store hourly AQI records in the database.
-
-    FIX: Uses row-by-row inserts instead of executemany so that a single
-    duplicate/bad record does not roll back the entire batch. Each failed
-    row is logged and skipped; the remaining rows are committed normally.
+    Normalizes coordinates to 4 decimal places and cleans up old data (>48 hours).
+    Uses row-by-row inserts so that a single duplicate/bad record does not roll back the entire batch.
     """
+    # Normalize coordinates
+    norm_lat = round(latitude, 4)
+    norm_lon = round(longitude, 4)
+    
+    # Cleanup old data (>24 hours)
+    try:
+        cleanup_query = "DELETE FROM aqi_hourly_data WHERE hour_timestamp < NOW() - INTERVAL '24 hours'"
+        cursor = connection.cursor()
+        cursor.execute(cleanup_query)
+        connection.commit()
+        cursor.close()
+    except Exception as e:
+        logger.warning(f"⚠️ Failed to cleanup old hourly data: {e}")
+        connection.rollback()
+
     insert_query = """
         INSERT INTO aqi_hourly_data (
             latitude, longitude, location_name,
@@ -286,6 +298,10 @@ def store_hourly_data(connection, latitude: float, longitude: float, hourly_reco
     skipped = 0
 
     for record in hourly_records:
+        # Override coords with normalized ones
+        record['latitude'] = norm_lat
+        record['longitude'] = norm_lon
+        
         cursor = connection.cursor()
         try:
             cursor.execute(insert_query, record)
@@ -296,15 +312,14 @@ def store_hourly_data(connection, latitude: float, longitude: float, hourly_reco
             skipped += 1
             logger.warning(
                 f"⚠️ Skipped record for {record.get('hour_timestamp')} "
-                f"at ({latitude}, {longitude}): {row_err}"
+                f"at ({norm_lat}, {norm_lon}): {row_err}"
             )
         finally:
             cursor.close()
 
     logger.info(f"✓ store_hourly_data: {stored} stored, {skipped} skipped "
-                f"out of {len(hourly_records)} records for ({latitude}, {longitude})")
+                f"out of {len(hourly_records)} records for ({norm_lat}, {norm_lon})")
     return stored > 0
-
 
 # ============================================================================
 # API FUNCTIONS

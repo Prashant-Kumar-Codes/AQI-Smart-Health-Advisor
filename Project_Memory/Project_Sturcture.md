@@ -12,6 +12,10 @@ AQI-Smart-Health-Advisor-WebApp/
 ├── app/
 │   ├── __init__.py                # Flask App initialization & extensions
 │   ├── db.py                      # PostgreSQL database connection factory
+│   ├── logger.py                  # Centralized environment-aware logging
+│   ├── database/
+│   │   └── migrations/
+│   │       └── database_code.sql  # Consolidated database schema and tracking tables
 │   ├── routes/
 │   │   ├── auth.py                # Standard auth routes & session management
 │   │   ├── auth_login.py          # User authentication (login, signup, OTP verify, logout)
@@ -34,7 +38,8 @@ AQI-Smart-Health-Advisor-WebApp/
 │   │   │   ├── locationService.js # Centralized location lookup service (client-side)
 │   │   │   ├── ai_advisor.js      # Client controller for AI Health Advisor
 │   │   │   ├── live_track.js      # GPS tracking, distance calculation, alert updates
-│   │   │   └── messageManager.js  # Global notification overlay system
+│   │   │   ├── messageManager.js  # Global notification overlay system
+│   │   │   └── appLogger.js       # Environment-aware console log controller
 │   │   ├── images/                # Static assets, badges, infographics
 │   │   └── videos/                # Responsive background video assets
 │   └── templates/

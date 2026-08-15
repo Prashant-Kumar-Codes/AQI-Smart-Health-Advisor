@@ -7,6 +7,7 @@ from flask import Blueprint, request, jsonify
 import requests
 from functools import lru_cache
 import time
+from app.logger import logger
 
 location_api = Blueprint('location_api', __name__)
 
@@ -48,7 +49,7 @@ def search_location_nominatim(query):
         
         return response.json()
     except requests.RequestException as e:
-        print(f"Nominatim API error: {e}")
+        logger.error(f"Nominatim API error: {e}")
         return []
 
 @location_api.route('/api/location/search', methods=['GET'])
@@ -96,7 +97,7 @@ def location_search():
         }), 200
         
     except Exception as e:
-        print(f"Location search error: {e}")
+        logger.error(f"Location search error: {e}")
         return jsonify({
             'success': False,
             'message': 'Location search failed',
@@ -107,4 +108,4 @@ def location_search():
 def clear_old_cache():
     """Clear location search cache"""
     cached_location_search.cache_clear()
-    print("Location search cache cleared")
+    logger.info("Location search cache cleared")

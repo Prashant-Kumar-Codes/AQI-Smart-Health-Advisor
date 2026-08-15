@@ -974,15 +974,23 @@ function createPredictionGraph(predictionData) {
     
     // Create the plot
     Plotly.newPlot(graphDiv, traces, layout, config).then(() => {
-        Plotly.Plots.resize(graphDiv);
+        if (graphDiv && graphDiv.offsetParent !== null) {
+            Plotly.Plots.resize(graphDiv);
+        }
+    }).catch(err => {
+        AppLogger.warn("Plotly render warning:", err);
     });
 
     if (!window.hasPredictionGraphResizeListener) {
         window.hasPredictionGraphResizeListener = true;
         window.addEventListener('resize', () => {
             const gDiv = document.getElementById('aqiPredictionGraph');
-            if (gDiv && gDiv.data) {
-                Plotly.Plots.resize(gDiv);
+            if (gDiv && gDiv.data && gDiv.offsetParent !== null) {
+                try {
+                    Plotly.Plots.resize(gDiv);
+                } catch (e) {
+                    // Ignore resize errors when hidden
+                }
             }
         });
     }
