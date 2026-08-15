@@ -16,12 +16,18 @@
                 <div class="logo-text">AQI Smart Health Advisor</div>
             </div>
             <div class="nav-buttons">
+                {% if session.get('user_id') or session.get('username') %}
+                <a href="{{ url_for('login_auth.logout') }}">
+                    <button class="btn-login" type="button">Logout</button>
+                </a>
+                {% else %}
                 <a href="{{ url_for('login_auth.login_signup_page') }}">
                     <button class="btn-login" type="button">Login</button>
                 </a>
                 <a href="{{ url_for('login_auth.login_signup_page', form='signup') }}">
                     <button class="btn-signup" type="button">Sign Up</button>
                 </a>
+                {% endif %}
             </div>
         </div>
     </nav>

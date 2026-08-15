@@ -15,10 +15,17 @@
                 <img src="{{ url_for('static', filename='images/app_logo.png') }}" alt="AQI Logo" class="logo-image">
                 <div class="logo-text">AQI Smart Health Advisor</div>
             </div>
-            <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="back-btn">
-                <i class="fas fa-arrow-left"></i>
-                <span>Back to Dashboard</span>
-            </a>
+            <div class="nav-links" style="display: flex; align-items: center; gap: 15px;">
+                <a href="{{ url_for('checkAqi_auth.check_aqi') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Dashboard</span>
+                </a>
+                {% if session.get('user_id') or session.get('username') %}
+                    <a href="{{ url_for('login_auth.logout') }}" class="nav-link btn-login-nav">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login_auth.login_signup_page') }}" class="nav-link btn-login-nav">Login</a>
+                {% endif %}
+            </div>
         </div>
     </nav>
 

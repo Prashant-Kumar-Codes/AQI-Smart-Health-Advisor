@@ -17,6 +17,17 @@
                 <span>Back to Dashboard</span>
             </a>
             <div class="nav-title">About Us</div>
+            {% if session.get('user_id') or session.get('username') %}
+                <a href="{{ url_for('login_auth.logout') }}" class="back-btn" style="margin-left: auto;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            {% else %}
+                <a href="{{ url_for('login_auth.login_signup_page') }}" class="back-btn" style="margin-left: auto;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login</span>
+                </a>
+            {% endif %}
         </div>
     </nav>
 
